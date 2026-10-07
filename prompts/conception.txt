@@ -1,6 +1,8 @@
 # Prompt de conception — Godot Visual Program & Execution Explorer
 
-Version révisée 2.0 — 7 octobre 2026
+Version révisée 2.1 — 7 octobre 2026
+
+Changements depuis la 2.0 : paramètres connus du projet, analyse de l’existant et décision réutiliser/construire, budget et critère d’arrêt, contrat runtime phasé entre POC, MVP et V1, jeux open source comme bancs d’essai, repérage du parallélisable et du niveau de modèle requis.
 
 ## 1. Mission et résultat attendu
 
@@ -16,18 +18,28 @@ Le résultat doit permettre de décider quoi construire, comment en démontrer l
 
 Commence par un tableau : information connue, hypothèse de travail, conséquence, vérification nécessaire.
 
-Recherche dans les éléments fournis : version exacte de Godot et édition standard/.NET, langages du projet, plateformes visées, taille représentative du projet, équipe et disponibilité, politique de dépendances, accès aux sources et possibilités d’instrumentation.
+Paramètres connus au 7 octobre 2026 :
+
+- moteur : Godot 4.7.x, édition standard (sans .NET), branche stable publiée le 18 juin 2026 ; le correctif exact est à fixer dans le manifeste avant le premier prototype exécutable ;
+- langage analysé : GDScript uniquement ; C#, GDExtension et sources absentes restent hors du MVP ;
+- équipe : un développeur, assisté par Claude Code avec Claude Opus 5.5 (effort medium par défaut) sur un forfait Claude Pro, dont l’usage est plafonné par fenêtres de 5 h et par semaine ;
+- modèle local : Qwen3.8-27B, pour l’implémentation des tâches bien spécifiées [à compléter : matériel] ;
+- disponibilité : [à compléter : heures par semaine] ;
+- système d’exploitation de développement : [à compléter] ;
+- bancs d’essai : jeux Godot open source déjà disponibles [à lister : nom, dépôt, licence du code et des assets, version de Godot d’origine] ; un mini-projet maison reste possible pour isoler le POC.
+
+Complète ces paramètres avec les éléments fournis : plateformes visées, taille représentative du projet, accès aux sources et possibilités d’instrumentation. Si un champ entre crochets reste vide, adopte une hypothèse révisable et indique son effet sur le planning.
 
 À défaut d’information, utilise ces hypothèses révisables :
 
-- un développeur assisté par IA ;
-- plugin local pour l’éditeur Godot 4, projet GDScript et exécution desktop de développement ;
-- instrumentation explicite acceptée sur un mini-projet de démonstration ;
+- plugin local pour l’éditeur, exécution desktop de développement ;
+- instrumentation explicite acceptée sur une copie de travail d’un jeu open source ou sur un mini-projet de démonstration ;
 - un processus de jeu et une session active pour la première preuve ;
 - APIs publiques du moteur ; aucune modification du moteur ni dépendance native obligatoire au MVP ;
+- addons GDScript tiers sous licence permissive acceptables derrière un adaptateur, sous réserve de validation ;
 - service IA distant facultatif et hors du chemin critique.
 
-Ne transforme pas « Godot 4.x » en garantie de compatibilité. Si aucune version exacte n’est fournie, indique « version cible à fixer avant le premier prototype exécutable ». Tu peux poursuivre la conception sous cette réserve. Ne choisis pas une prétendue dernière version de mémoire.
+La version fournie ne garantit pas la compatibilité : vérifie chaque API utilisée dans la documentation de la branche 4.7 et marque « non vérifié » ce que tu n’as pas pu consulter. Ne la remplace pas par une autre version tirée de ta mémoire.
 
 Ne pose une question bloquante que si aucune hypothèse réversible ne permet de poursuivre. Regroupe les autres décisions à confirmer à la fin.
 
@@ -109,6 +121,16 @@ Prévois les fichiers invalides ou en cours d’édition, l’annulation de l’
 
 Une relation peut avoir plusieurs preuves. Stocke séparément sa provenance, sa résolution (résolue/partielle/non résolue), sa fraîcheur et, si utile, un niveau de confiance qualitatif justifié. Une observation confirme un cas d’exécution, pas tous les cas possibles.
 
+Avant de concevoir l’acquisition statique ou l’affichage runtime, analyse l’existant. Évalue au minimum les outils suivants, repérés le 7 octobre 2026 et à revérifier :
+
+- GDScript AST Flow : parseur GDScript écrit en GDScript, graphe d’appels, flux de signaux, chaînes def-use et export JSON ; licence MIT ; Godot 4.7.x uniquement ;
+- Script Dependency Inspector : instantané validé des dépendances statiques, exports JSON, Mermaid et PlantUML, limites d’analyse déclarées ; licence MIT ; testé de Godot 4.3 à 4.7 ;
+- Signal Lens : graphe en direct des connexions et émissions de signaux, dans un onglet du débogueur ; licence MIT ;
+- le débogueur visuel de LimboAI, comme référence d’interface pour l’illumination runtime ;
+- le débogueur, le profileur et les moniteurs intégrés à Godot, pour ce qu’ils couvrent déjà.
+
+Pour chaque outil : couverture mesurée sur les fixtures, format et qualité des sorties, licence, compatibilité de version, activité et nombre de mainteneurs, coût d’intégration et coût de sortie. Conclus par une décision argumentée : réutiliser derrière un adaptateur, s’inspirer ou construire. Une dépendance tierce reste confinée à son adaptateur, ne dicte pas le modèle (INV-01) et garde une provenance visible (INV-03).
+
 ## 7. Modèle de données et identités
 
 Propose le plus petit modèle extensible couvrant les invariants. Évalue notamment : ProgramSnapshot, Definition, Relation, SourceAnchor, Evidence, RuntimeSession, RuntimeInstance, TraceEvent, Span, TemporalBlockDefinition, TemporalBlockOccurrence, ExecutionLane, Metric, ExpectedFlow, Issue, Annotation et InterventionPoint.
@@ -136,7 +158,7 @@ Sépare :
 
 - le déroulement déclaré d’un niveau et ses occurrences pendant des sessions réelles ;
 - le temps monotone du processus, les frames/ticks de physique et le temps de simulation ;
-- la durée écoulée, la durée active et le temps CPU lorsque celui-ci est effectivement mesuré ;
+- la durée écoulée sur horloge monotone et, si les points de suspension sont instrumentés, la durée active ; le temps CPU par fonction n’est pas attendu, car GDScript ne semble pas l’exposer : ne l’affiche qu’avec une source vérifiée ;
 - thread OS, tâche asynchrone, phase du moteur et lane logique.
 
 Un await ne prouve pas la création d’un thread. N’affiche pas des threads internes audio/physique/GPU comme observés sans mécanisme vérifié.
@@ -155,19 +177,17 @@ Une vue logique utilise des positions sémantiques ; une timeline métrique util
 
 Pour chacun, indique qui le produit. Le transport de messages du debugger ne constitue pas à lui seul une instrumentation automatique de toutes les fonctions et variables.
 
-Définis un contrat initial minimal : version de protocole, capacités négociées, session/processus, révision du programme, producteur, numéro de séquence, horodatage et domaine d’horloge, type, références de définition/instance, corrélations optionnelles, charge utile bornée. Les identifiants ou compteurs exposés à une perte de précision JSON doivent avoir une représentation sûre et testable.
+Phase le contrat runtime plutôt que de le spécifier entièrement d’emblée.
 
-Précise :
+Au POC, l’enveloppe se limite à : version de protocole, identifiant de session, identifiant de producteur (constant tant qu’il n’y en a qu’un), numéro de séquence par producteur, révision du programme, horodatage monotone en microsecondes, type, références de définition et d’instance, charge utile bornée. Chaque lot porte le nombre d’événements perdus depuis le lot précédent. Les identifiants d’objets Godot sont des entiers 64 bits : encode-les en chaîne dans tout format JSON.
 
-- démarrage, arrêt, connexion tardive, reconnexion et incompatibilité ;
-- absence de debugger, capture désactivée et configuration d’export ;
-- filtrage avant les coûts évitables, taille du buffer, taille/fréquence des lots ;
-- politique de saturation : échantillonnage, agrégation, priorités, abandon et compteurs de pertes ;
-- événements de contrôle et marqueurs de lacune, y compris si leur propre transport est retardé ;
-- ordre par producteur, limites de l’ordre global, doublons et références reçues tardivement ;
-- collecte multi-thread éventuelle, synchronisation et point d’envoi vérifié ;
-- validation des types, tailles, versions et profondeur ; aucune sérialisation d’objets vivants arbitraires ;
-- historique borné, indexation, arrêt incomplet et export de trace exploitable.
+Le POC précise aussi : comportement sans debugger ou capture désactivée, arrêt et redémarrage de session, filtrage avant les coûts évitables, taille du buffer et des lots, politique de saturation avec pertes comptées et affichées, validation des types et des tailles, aucune sérialisation d’objets vivants.
+
+Au MVP : capacités négociées, connexion tardive, reconnexion et incompatibilité de version, marqueurs de lacune, frames et ticks physiques comme domaines d’horloge supplémentaires, doublons et références reçues tardivement, historique borné et indexé, arrêt incomplet, export de trace exploitable.
+
+En V1 ou plus tard : corrélations causales avancées, collecte multi-thread et ordre entre producteurs, fonctionnement dans un build exporté sans debugger.
+
+Pour chaque élément reporté, indique ce que la phase précédente suppose à la place et le risque accepté.
 
 Ne promets pas zéro perte avec une mémoire finie et un débit illimité. Une priorité élevée réduit un risque de perte ; elle ne l’annule pas. Préserve la distinction entre événement absent, filtré, échantillonné, perdu et capture non active.
 
@@ -183,7 +203,7 @@ Tune Mode localise d’abord les points d’intervention. L’édition directe e
 
 ## 11. Architecture et interface
 
-Décris les responsabilités et dépendances de : core/model, acquisition statique, annotations, runtime, adaptateur debugger, Event Store, requêtes/projections, visualisation, intégration éditeur, persistance/export et diagnostics.
+Décris les responsabilités et dépendances de : core/model, acquisition statique, annotations, runtime, adaptateur debugger, Event Store, requêtes/projections, visualisation, intégration éditeur, persistance/export, diagnostics et, le cas échéant, adaptateurs vers des outils tiers.
 
 Un core GDScript peut utiliser les types fondamentaux de Godot. Son indépendance signifie absence de dépendance aux widgets, services éditeur et objets vivants du jeu. Isole le petit contrat partagé nécessaire au runtime, sans embarquer tout le modèle d’analyse.
 
@@ -209,11 +229,13 @@ AI Snapshot exporte un sous-graphe pertinent, sa provenance, la couverture de tr
 
 ## 13. Première preuve de valeur et progression
 
-Conserve le roguelike comme scénario de référence à terme : héros, cinq ennemis, détection, poursuite/attaque, collision, dégâts, UI, audio, mort, loot et fin de niveau.
+Conserve le scénario roguelike comme référence fonctionnelle : héros, cinq ennemis, détection, poursuite/attaque, collision, dégâts, UI, audio, mort, loot et fin de niveau. Choisis parmi les jeux open source disponibles celui qui s’en rapproche le plus ; à défaut, complète par un mini-projet maison.
+
+Pour chaque jeu retenu, indique : licence du code et des assets, version de Godot d’origine et effort de migration vers 4.7.x, taille, présence d’ennemis dont les décisions sont observables. Ne copie ni son code ni ses assets dans le dépôt du plugin sans compatibilité de licence vérifiée ; référence-le par dépôt et révision, ou par sous-module.
 
 Pour le POC, recommande une tranche plus petite :
 
-- un mini-projet GDScript et un graphe déclaré d’environ six à douze éléments ;
+- une scène isolée d’un jeu open source retenu, ou un mini-projet GDScript, et un graphe déclaré d’environ six à douze éléments ;
 - un spawn, une décision attack/chase et un résultat de condition instrumenté ;
 - deux instances permettant de vérifier le filtrage et l’identité ;
 - chemin réellement observé affiché, événement sélectionnable, ouverture du code ;
@@ -222,7 +244,15 @@ Pour le POC, recommande une tranche plus petite :
 
 Le POC est réussi si un développeur peut expliquer, preuves à l’appui, quelle instance a pris quelle branche dans cette démonstration. Un graphe JSON seul ne valide pas encore la collecte runtime ; une animation simulée ne doit pas être présentée comme une capture réelle.
 
-Le MVP ajoute une acquisition statique bornée sur un petit projet réel, l’historique nécessaire, la persistance, des filtres utiles, la visibilité des pertes et une installation fiable. Justifie les ajouts ; n’y inclus pas automatiquement toutes les vues.
+Fixe un budget et un critère de valeur avant de commencer. Hypothèse de budget à ajuster : POC en 15 à 25 sessions de travail de 2 à 3 h, ou l’équivalent en tâches exécutées par Claude Code. Un dépassement de 50 % déclenche une revue explicite plutôt qu’une prolongation tacite.
+
+Mesure la valeur sur deux ou trois bugs réels ou provoqués dans un jeu open source retenu : temps nécessaire pour localiser l’instance et la branche fautives avec l’outil, puis avec le seul débogueur intégré. Sans gain net, réoriente le projet avant d’investir dans l’acquisition statique, par exemple vers un débogueur de décisions instrumentées ou une contribution à un outil existant.
+
+Pour chaque phase suivante, donne un budget indicatif et une décision de sortie : continuer, réduire, réorienter ou arrêter.
+
+Pour chaque phase, distingue le travail de décision (contrats, protocole, architecture, interprétation des spikes) du travail d’implémentation vérifiable par des tests. Signale ce qui peut avancer en parallèle sans partager de fichiers ni de contrat en évolution, et ce qui exige un modèle de raisonnement avancé. La méthodologie s’en servira pour répartir le travail entre le grand modèle, un modèle local et les outils sans IA.
+
+Le MVP ajoute une acquisition statique bornée sur un des jeux open source retenus, l’historique nécessaire, la persistance, des filtres utiles, la visibilité des pertes et une installation fiable. Justifie les ajouts ; n’y inclus pas automatiquement toutes les vues.
 
 Reporte selon les preuves obtenues : parsing étendu, automatisation d’instrumentation, visualisation massive, diagnostics avancés, profiling détaillé, comparaison multi-session, multi-processus, IA et édition de paramètres.
 
@@ -234,17 +264,17 @@ Rends un document autonome intitulé « Plan directeur — Godot Visual Program 
 
 1. Synthèse décisionnelle : valeur, hypothèses, POC, MVP et principales inconnues.
 2. Vision, scénarios utilisateurs et glossaire des distinctions structurantes.
-3. Matrice des capacités, priorités, acquisition et faisabilité.
+3. Matrice des capacités, priorités, acquisition et faisabilité, avec l’analyse de l’existant et la décision réutiliser/construire.
 4. Architecture, frontières de modules et dépendances.
 5. Modèle minimal, identités et exemples de données cohérents.
 6. Runtime, protocole, temporalité, limites de preuve et diagnostic.
 7. Parcours de navigation, projections et stratégie de rendu.
 8. Performance, persistance, cycle de vie et exports.
-9. POC, MVP, roadmap, critères de passage et risques ordonnés.
+9. POC, MVP, roadmap, budgets, critères de passage et d’arrêt, risques ordonnés.
 10. Dossier de passage vers la méthodologie et décisions à confirmer.
 
 Utilise des tableaux pour les comparaisons et, si utile, quelques diagrammes compacts. Évite de redécrire la même fonctionnalité dans plusieurs chapitres. Justifie un choix recommandé et réserve les alternatives aux arbitrages qui changent réellement le coût ou la faisabilité.
 
-Le dossier de passage contient : identifiant/révision du plan, statut proposé/validé, paramètres Godot, invariants INV-xx, capacités CAP-xx, périmètres POC/MVP/V1, contrats candidats, inconnues SPIKE-xx et critères d’acceptation. Toute décision non approuvée conserve le statut de proposition.
+Le dossier de passage contient : identifiant/révision du plan, statut proposé/validé, paramètres Godot, invariants INV-xx, capacités CAP-xx, périmètres POC/MVP/V1, contrats candidats, décisions de réutilisation, budgets par phase, frontières parallélisables, niveau de modèle suggéré par capacité, inconnues SPIKE-xx et critères d’acceptation. Toute décision non approuvée conserve le statut de proposition.
 
-Termine par une vérification de cohérence : capacités couvertes ou explicitement reportées, mécanismes non vérifiés, contraintes contradictoires résolues et décisions bloquant réellement le démarrage. Ne prétends pas avoir exécuté les prototypes ou validé les performances pendant cette mission de conception.
+Termine par une vérification de cohérence : capacités couvertes ou explicitement reportées, mécanismes non vérifiés, contraintes contradictoires résolues, budgets et critères d’arrêt présents, et décisions bloquant réellement le démarrage. Ne prétends pas avoir exécuté les prototypes ou validé les performances pendant cette mission de conception.

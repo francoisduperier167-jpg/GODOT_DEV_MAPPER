@@ -1,6 +1,8 @@
 # Prompt de méthodologie — Godot Visual Program & Execution Explorer
 
-Version révisée 2.0 — 7 octobre 2026
+Version révisée 2.1 — 7 octobre 2026
+
+Changements depuis la 2.0 : paramètres connus du projet, environnement Claude Code sur forfait Pro, politique de réutilisation d’outils tiers, budgets et revues de continuation, protocole runtime phasé, jeux open source comme bancs d’essai, orchestration multi-modèles et parallélisme.
 
 ## 1. Mission et entrées
 
@@ -21,6 +23,8 @@ Commence par distinguer :
 S’il manque le plan directeur, produis une méthode provisoire sur la base des besoins disponibles et signale ce qui dépend de sa validation. Ne prétends pas disposer de documents, fichiers, contrats, commandes ou résultats de tests absents du contexte.
 
 La version exacte de Godot, son édition, les plateformes, dépendances et outils de test doivent être fixés avant un jalon exécutable. Une version manquante n’interdit pas de préparer la méthode ; elle interdit de certifier la compatibilité du code.
+
+Paramètres connus au 7 octobre 2026, à reprendre du dossier de passage s’il les précise : Godot 4.7.x édition standard, correctif exact à fixer dans le manifeste ; GDScript uniquement ; un développeur assisté par Claude Code sur forfait Claude Pro et par un modèle local Qwen3.8-27B ; disponibilité [à compléter : heures par semaine] ; bancs d’essai : jeux Godot open source déjà disponibles [à lister].
 
 ## 2. Invariants communs et résultat recherché
 
@@ -96,7 +100,7 @@ Priorise les contrats qui traversent la première tranche :
 5. ingestion, stockage borné et requête utilisée par la vue ;
 6. persistance minimale nécessaire à la démonstration.
 
-Pour Runtime ↔ Editor, prévois versions/capacités, séquences par producteur, horloges, corrélations, lots, limites, saturation, lacunes, incompatibilité et arrêt/reconnexion. Les types non représentables sans perte doivent être encodés explicitement. Les objets vivants ne traversent pas le protocole.
+Pour Runtime ↔ Editor, reprends le phasage du plan directeur. Le contrat du POC se limite à l’enveloppe minimale : version, session, producteur, séquence, révision, horodatage monotone, type, références, charge bornée et nombre d’événements perdus par lot. Capacités négociées, reconnexion, lacunes, domaines d’horloge supplémentaires et ordre entre producteurs arrivent au MVP ou en V1, chacun par une évolution additive du protocole. Les identifiants d’objets 64 bits et les autres types non représentables sans perte sont encodés explicitement. Les objets vivants ne traversent pas le protocole.
 
 La validation de l’ordre reçu ne suffit pas à prouver l’ordre causal. Le changement de code pendant une session doit invalider ou qualifier le rattachement des événements selon une règle explicite.
 
@@ -109,7 +113,9 @@ Risques à tester tôt :
 - message runtime réellement reçu par un plugin debugger, puis arrêt/redémarrage ;
 - métadonnées et relations statiques réellement accessibles sur la version ciblée ;
 - rendu et navigation sur le nombre d’éléments visibles prévu ;
-- surcharge, saturation et visibilité des pertes de capture.
+- surcharge, saturation et visibilité des pertes de capture ;
+- couverture et coût d’intégration d’un backend statique existant, comme GDScript AST Flow, comparés à une extraction maison minimale ;
+- gain de temps réel sur un bug d’un jeu open source retenu, avec l’outil puis avec le seul débogueur intégré.
 
 Ces prototypes ne doivent pas tous devenir une phase longue préalable. Enchaîne-les avec la plus petite démonstration complète utile.
 
@@ -117,7 +123,7 @@ Propose une première tranche alignée sur le plan directeur : petit graphe déc
 
 Chaque tranche suivante ajoute une capacité utilisateur vérifiable et les seuls contrats nécessaires. La première acquisition statique limitée arrive avant de revendiquer un explorateur de projet ; l’analyse statique exhaustive n’est pas un préalable au POC runtime.
 
-Réutilise le mini-roguelike comme fixture d’intégration progressive : héros, cinq ennemis, navigation, attaque, collision, dégâts, UI, audio, loot et fin de niveau. N’attends pas son achèvement pour vérifier la première branche.
+Utilise les jeux open source retenus comme fixtures d’intégration, référencés par dépôt et révision ; ne copie leur code ou leurs assets qu’après vérification des licences. Garde des fixtures maison minuscules pour les cas unitaires. N’attends pas l’intégration complète d’un jeu pour vérifier la première branche.
 
 ## 7. Tâches, contexte et autonomie de l’IA
 
@@ -126,6 +132,50 @@ Une tâche possède un objectif vérifiable, un périmètre réversible et un ri
 Fiche de tâche : ID, capacité et invariants liés, objectif, prérequis, révision de départ, entrées, fichiers autorisés/interdits, contrats, critères d’acceptation, vérifications, risques, niveau d’autonomie et résultat attendu. Distingue les chemins réellement présents des fichiers proposés à créer.
 
 Les context packs contiennent uniquement : tâche, extraits normatifs pertinents, contrats/ADR applicables, fichiers concernés et résultats utiles. Ils indiquent leurs révisions ; un résumé de conversation ou PROJECT_STATE ne remplace pas une lecture de l’état réel lorsqu’elle est possible.
+
+Environnement IA par défaut : Claude Code avec Claude Opus 5.5 (effort medium par défaut) sur forfait Claude Pro. L’usage y est plafonné par fenêtres de 5 h et par semaine, en commun avec les conversations Claude ; aucun nombre de tâches par fenêtre n’est publié. Adapte la méthode à ces limites :
+
+- une tâche par conversation, contexte remis à zéro entre deux tâches, CLAUDE.md court et tenu à jour ;
+- Opus pour planifier, revoir un contrat ou déboguer ; Sonnet pour l’exécution routinière lorsque la qualité le permet ;
+- consommation mesurée par tâche pendant les premières semaines, puis planification sur la capacité observée ;
+- tests lancés par l’agent en mode headless lorsque c’est possible ; validation visuelle humaine pour l’interface.
+
+Orchestration des modèles et du parallélisme. Produis un plan qui affecte chaque tâche à un niveau de modèle, un lieu d’exécution et une file de travail. But : exécuter localement tout ce qui est bien spécifié et vérifiable par des tests, réserver le grand modèle aux décisions et aux zones à risque, paralléliser ce qui ne partage ni fichiers ni contrats en évolution.
+
+Ressources disponibles :
+
+- grand modèle distant : Claude Opus 5.5 via Claude Code, sur le quota Pro ;
+- modèle intermédiaire distant : Sonnet via Claude Code, sur le même quota ;
+- modèle local : Qwen3.8-27B (dense, licence Apache 2.0, contexte natif de 262K tokens, raisonnement réglable), servi sur la machine du développeur [à compléter : matériel, quantification, débit en tokens/s, harnais d’agent] ;
+- outils déterministes locaux : Godot 4.7.x en mode headless, runner de tests, lint et formatage GDScript, contrôles de dépendances, validation de schémas.
+
+Routage par défaut, à recalibrer après le POC :
+
+| Travail | Niveau | Lieu | Parallélisable |
+| --- | --- | --- | --- |
+| Cadrage, ADR, contrats, modèle de données, protocole runtime | Grand modèle, validation humaine | Distant | Non : fixe les frontières des autres |
+| Spikes sur les API éditeur et débogueur, interprétation des mesures | Grand modèle | Distant, Godot local | Oui, entre spikes indépendants |
+| Implémentation sous contrat validé, tests d’acceptation fournis | Modèle local | Local | Oui, sur fichiers disjoints |
+| Tests unitaires et de contrat, fixtures, données de test | Modèle local | Local | Oui |
+| Sérialisation, validateurs, adaptateurs d’outils tiers | Modèle local ; revue du grand modèle si format persistant | Local | Oui |
+| Interface éditeur : EditorPlugin, GraphEdit, dessin personnalisé | Modèle intermédiaire ; retouches en local | Distant puis local | Partiellement |
+| Débogage difficile, régression inexpliquée, revue transverse | Grand modèle | Distant | Non |
+| Documentation, rapports de tâche, PROJECT_STATE.md | Modèle local | Local | Oui |
+| Tests, lint, mesures de performance | Outils déterministes, sans IA | Local | Oui |
+
+Files parallèles suggérées, à confirmer : socle (modèle, identités, sérialisation, Event Store) ; runtime (traceur, buffer, enveloppe, pont débogueur) ; éditeur (panneau, vue, sélection d’instance, ouverture du code) ; acquisition statique et évaluation de l’existant ; bancs d’essai (choix des jeux open source, migration vers 4.7.x, scénarios instrumentés).
+
+Règles d’orchestration :
+
+1. Le grand modèle rédige ou modifie un contrat ; l’humain le valide avant toute implémentation locale qui en dépend.
+2. Le modèle local reçoit un context pack autonome : contrat, invariants, fichiers autorisés, tests d’acceptation, extraits vérifiés des API Godot utilisées. Une API absente du pack est signalée comme inconnue, jamais devinée.
+3. Escalade : après deux échecs sur les mêmes tests, ou dès qu’une API Godot hors du pack devient nécessaire, la tâche passe au modèle intermédiaire, puis au grand modèle.
+4. Revue croisée : un diff local qui touche un format persistant, le protocole ou une frontière de module est relu par le grand modèle avant fusion ; les autres passent par les tests et la relecture humaine.
+5. Parallélisme : chaque file écrit dans des fichiers disjoints, sur une branche courte, depuis une même révision des contrats. Un changement de contrat partagé suspend les files concernées jusqu’à sa fusion.
+6. Garde-fous locaux : import headless sans erreur, blacklist de syntaxe Godot 3, lint, et tests réellement exécutés avant tout rapport « réussi ».
+7. Mesure : par niveau de modèle, taux de réussite au premier essai, escalades, temps et quota consommés. Le routage est réajusté à la fin du POC à partir de ces mesures.
+
+Le parallélisme ne lève pas la limite principale : une seule personne relit et valide. Dimensionne le nombre de files actives sur sa capacité de revue, pas sur la capacité de calcul.
 
 Prévois trois degrés proportionnés :
 
@@ -174,7 +224,7 @@ Propose une stratégie POC/MVP/V1 distinguant : tests unitaires utiles, contrats
 
 Toutes ces preuves n’ont pas à être automatisées au POC. Attribue chacune à une phase, un niveau de test et un environnement. Justifie le choix d’un runner de tests après vérification de sa compatibilité et de sa maintenance, sans imposer une dépendance de mémoire.
 
-Les fixtures doivent rester petites : appel simple, branche, signal, instances, temporalité, trace tronquée/perdue et source modifiée. Une golden fixture ne doit pas être régénérée automatiquement pour masquer une régression.
+Les fixtures doivent rester petites : appel simple, branche, signal, instances, temporalité, trace tronquée/perdue et source modifiée. Une golden fixture ne doit pas être régénérée automatiquement pour masquer une régression. Les jeux open source servent aux tests d’intégration et de mesure, à une révision épinglée.
 
 Sépare les vérifications headless de celles nécessitant une vraie session d’éditeur. Un import sans erreur ne prouve pas le bon fonctionnement de tous les scripts ; un test headless ne valide pas à lui seul l’interface. Documente les commandes réellement utilisables et le moyen de détecter un échec ; laisse les commandes non vérifiées clairement identifiées.
 
@@ -194,6 +244,8 @@ Aucun test synthétique unique ne permet de promettre la fluidité sur tous les 
 
 Fixe la version Godot et les outils dans un manifeste/document vérifiable et en CI. Prévois une procédure distincte de mise à jour du moteur : inventaire des APIs touchées, essais, compatibilité et décision. Une blacklist de syntaxe legacy est un filet secondaire, pas une preuve de validité.
 
+Pour un outil tiers réutilisé : version épinglée, licence vérifiée, mode d’inclusion documenté, adaptateur unique, tests de contrat sur ses sorties et plan de sortie si sa maintenance s’arrête ou si la version de Godot change.
+
 Définis le typage GDScript : types explicites aux frontières, valeurs d’événements stables, conversion validée des payloads flexibles. Justifie RefCounted/Resource/Dictionary selon ownership, sérialisation et usage dans l’éditeur, sans règle dogmatique.
 
 Distingue version du plugin, version de protocole, version des formats persistés et révision du programme analysé. Avant de supporter plusieurs versions de données, préciser les conversions acceptées, le refus des versions inconnues et la conservation des originaux. Ne construis pas une infrastructure générale de migration sans format réellement distribué à maintenir.
@@ -209,6 +261,8 @@ Prévois installation, mise à jour, désactivation et retrait du plugin ; netto
 Une tâche est terminée lorsque sa capacité est démontrée, les contrats respectés, les vérifications pertinentes exécutées ou leur absence justifiée, et les documents affectés mis à jour. Les limites et dettes résiduelles sont explicites. Une fonctionnalité factice ne remplit pas ces critères.
 
 Chaque phase indique : objectif utilisateur, capacités, dépendances, critères d’entrée, preuves de sortie, risques, artefacts et exclusions. Les critères portent sur des résultats observables, pas sur le seul nombre de fichiers ou tests créés.
+
+Chaque phase porte un budget indicatif en sessions ou en tâches. PROJECT_STATE.md suit la consommation réelle : sessions, heures et part du quota d’usage. À la fin du POC puis de chaque phase, tiens une revue de continuation fondée sur la preuve de valeur mesurée et l’écart au budget : continuer, réduire, réorienter ou arrêter. Un dépassement de 50 % déclenche cette revue sans attendre la fin de la phase.
 
 Recommande une progression par dépendances : cadrage court et inconnues critiques ; tranche déclarative + runtime réelle ; robustesse minimale ; acquisition statique limitée ; enrichissement du Game Flow et des données ; diagnostics ; fonctions avancées selon leurs preuves.
 
@@ -227,6 +281,8 @@ Fournis des modèles courts et directement utilisables pour :
 
 Le micro-prompt contient : objectif unique, références et révisions, état vérifié, contrats, invariants, fichiers autorisés, APIs vérifiées, critères d’acceptation, commandes de validation disponibles, autonomie et résultat attendu. Une donnée absente doit être marquée comme à fournir, jamais inventée.
 
+Prévois une variante exécutable par le modèle local : autonome, sans référence à une conversation antérieure, avec les extraits d’API vérifiés et les commandes de test à lancer.
+
 Ajoute trois micro-prompts illustratifs : implémenter un contrat d’événement validé ; ajouter une preuve runtime-editor ; corriger une régression à partir d’un échec fourni. Ce sont des exemples conditionnels, pas des tâches prétendument exécutables sur un dépôt inconnu.
 
 Le rapport de tâche indique : objectif atteint ou non, révision/diff, fichiers modifiés, contrats affectés, vérifications exactes et résultats, limites, dette, décisions nécessaires et prochaine dépendance. N’utilise jamais « tests passés » pour des tests seulement proposés.
@@ -238,16 +294,16 @@ Rends un document autonome intitulé « Méthodologie de construction — Godot 
 1. Hypothèses, entrées réelles et mode d’emploi de la méthode.
 2. Sources de vérité et documentation minimale puis cible.
 3. Gouvernance des invariants, décisions, contrats et dépendances.
-4. Première tranche, prototypes et roadmap par capacités.
-5. Tâches, context packs, autonomie et boucle de travail.
+4. Première tranche, prototypes, roadmap par capacités et budgets.
+5. Tâches, context packs, autonomie, boucle de travail et orchestration des modèles.
 6. Tests, fixtures, CI, budgets et preuves de passage.
 7. Versionnage, évolutions, migrations et maintenance.
 8. Gabarits prêts à adapter et trois exemples de micro-prompts.
 9. Les vingt premières tâches proposées et leur ordre de dépendance.
 10. Contrôle de cohérence et décisions réellement nécessaires au démarrage.
 
-Pour les vingt tâches, utilise un tableau compact : ID, capacité/objectif, pourquoi maintenant, dépendances, preuve de réussite et risque. Détaille les cinq premières prêtes à préciser avec la fiche complète ; les suivantes restent conditionnelles aux résultats des prototypes. Ne présente pas une liste prospective comme un engagement irrévocable.
+Pour les vingt tâches, utilise un tableau compact : ID, capacité/objectif, pourquoi maintenant, dépendances, preuve de réussite, risque, niveau de modèle (grand, intermédiaire, local, sans IA) et file parallèle. Détaille les cinq premières prêtes à préciser avec la fiche complète ; les suivantes restent conditionnelles aux résultats des prototypes. Ne présente pas une liste prospective comme un engagement irrévocable. Les premières tâches incluent l’évaluation de l’existant et la mesure de valeur du POC.
 
 Relie chaque tâche aux CAP-xx, INV-xx, contrats et fixtures pertinents. Les chemins proposés sont marqués « à créer ». Évite de répéter tout le plan directeur et de créer un chapitre pour chaque terme de méthode.
 
-Termine par deux checklists courtes, avant/après une tâche, et une vérification de cohérence : aucune tâche sans preuve, aucun contrat critique sans responsable, aucune API incertaine présentée comme vérifiée, aucun processus sans risque identifié. Les approbations portent sur des changements concrets et sur les décisions non déjà couvertes par le mandat.
+Termine par deux checklists courtes, avant/après une tâche, et une vérification de cohérence : aucune tâche sans preuve, aucun contrat critique sans responsable, aucune API incertaine présentée comme vérifiée, aucun processus sans risque identifié, aucune phase sans budget ni revue de continuation, aucune tâche confiée au modèle local sans tests d’acceptation ni règle d’escalade. Les approbations portent sur des changements concrets et sur les décisions non déjà couvertes par le mandat.
