@@ -8,10 +8,10 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 
 | Chemin | Rôle |
 | --- | --- |
-| `docs/plan-directeur.md` | Plan directeur PD-0.1 : capacités, architecture, couche de compatibilité, modèle de données, POC, MVP, roadmap, risques |
-| `docs/methodologie.md` | Méthode de construction MC-0.1 : sources de vérité, contrats, tests, CI multi-version, veille de Godot, gabarits |
-| `docs/orchestration.md` | Déroulé pas à pas, vingt premières tâches, routage entre modèles |
-| `docs/estimation.md` | Pertinence, faisabilité et charge |
+| `docs/plan-directeur.md` | Plan directeur PD-0.2 : capacités, architecture, frontière de compatibilité, modèle de données, POC, MVP, budgets en heures, risques |
+| `docs/methodologie.md` | Méthode de construction MC-0.2 : sources de vérité, contrats, tests, CI, veille de Godot, gabarits |
+| `docs/orchestration.md` | OR-0.2 : déroulé pas à pas, vingt premières tâches, routage entre quatre modèles |
+| `docs/estimation.md` | Pertinence, faisabilité et raisonnement de charge initial ; les budgets de référence sont ceux du plan directeur |
 | `docs/feuille-de-route.svg` | Feuille de route en sessions cumulées |
 | `docs/analyse-des-prompts-v2.0.md` | Analyse critique des prompts initiaux |
 | `prompts/conception.txt` | Prompt de conception v2.2 |
@@ -24,13 +24,13 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 
 ## Compatibilité avec les versions de Godot
 
-Godot publie une version mineure tous les quelques mois, et une version mineure peut modifier certaines API. Le plugin isole donc tout appel sensible dans une couche de compatibilité : c'est l'invariant INV-09.
+Godot publie une version mineure tous les quelques mois, et une version mineure peut modifier certaines API. Le plugin isole donc tout appel sensible derrière une frontière de compatibilité : c'est l'invariant INV-09.
 
-La CI teste la version de développement, 4.7.x, de façon bloquante, et la préversion suivante, 4.8, sans bloquer. Une veille hebdomadaire relance les tests sur chaque nouvelle préversion officielle.
+Avant la preuve de valeur, cette frontière reste légère : des façades, une CI bloquante sur Godot 4.7.2 et la préversion suivante testée à part. Les adaptateurs par version et la veille automatisée n'arrivent qu'au MVP, ou plus tôt si une rupture réelle apparaît.
 
 ## Orchestration des modèles
 
-Claude Opus 5.5, via Claude Code, prend les contrats, le protocole, les ports de compatibilité, les spikes et le débogage difficile. Qwen3.8-27B, exécuté localement, prend les tâches sous contrat validé et couvertes par des tests. Les outils sans IA exécutent les tests, le lint et les mesures.
+Claude Opus 5.5 prend les contrats, les façades de compatibilité, les spikes et le débogage difficile. Sonnet écrit le code de l'éditeur ; Gemini lit les jeux open source et relit les diffs de Sonnet. Qwen3.8-27B, exécuté localement, prend les tâches sous contrat validé et couvertes par des tests. Les outils sans IA exécutent les tests, le lint et les mesures.
 
 Le parallélisme reste borné par la capacité de relecture humaine.
 

@@ -1,19 +1,21 @@
 # Méthodologie de construction — Godot Visual Program & Execution Explorer
 
-Révision MC-0.1 · statut : **proposé** · 7 octobre 2026 · entrées : `prompts/methodologie.txt` v2.2, `docs/plan-directeur.md` PD-0.1 (proposé)
+Révision MC-0.2 · statut : **proposé** · 7 octobre 2026 · entrées : `prompts/methodologie.txt` v2.2, `docs/plan-directeur.md` PD-0.2 (proposé) · remplace MC-0.1
 
-La partie 9, les vingt premières tâches et le déroulé pas à pas, est dans `docs/orchestration.md`, qui sert de backlog vivant.
+Changements depuis MC-0.1 : unités de pilotage en heures ; spikes réordonnés ; compatibilité allégée avant la preuve de valeur ; quatre modèles ; fixtures de cycle de vie ; dossier runtime autonome dans le contrôle de dépendances.
+
+La partie 9, les vingt premières tâches et le déroulé pas à pas, est dans `docs/orchestration.md` (OR-0.2), qui sert de backlog vivant.
 
 ## 1. Hypothèses, entrées réelles et mode d'emploi
 
 | Élément | État au 7 octobre 2026 |
 | --- | --- |
 | Prompt de méthodologie | v2.2, fourni |
-| Plan directeur | PD-0.1, fourni, non validé |
+| Plan directeur | PD-0.2, fourni, non validé |
 | Estimation | `docs/estimation.md`, fournie |
 | Dépôt GODOT_DEV_MAPPER | Documents seulement, aucun code |
 | Décisions approuvées | Aucune, hors paramètres connus |
-| Versions de Godot | 4.7.x pour le développement, préversion 4.8 suivie |
+| Versions de Godot | 4.7.2 bloquante ; préversion 4.8 (dev 7) contrôlée à part |
 | Outils de test | Non choisis (D-05) ; aucune commande n'est encore vérifiée |
 
 Mode d'emploi :
@@ -73,24 +75,25 @@ Au POC, SPEC, ARCHITECTURE et CONTRACTS peuvent tenir dans un même fichier. On 
 **Dépendances.** La matrice du plan directeur (§4) est la règle. Un script `tools/check_deps` vérifie à chaque CI :
 
 - les `preload`, `load`, `extends` et références de classes entre dossiers de modules ;
-- la présence de noms d'API sensibles (EditorInterface, EditorPlugin, EditorDebuggerPlugin, EngineDebugger, GraphEdit, ClassDB, ProjectSettings, entre autres) hors de `compat/` et de `plugin.gd`.
+- la présence de noms d'API sensibles (EditorInterface, EditorPlugin, EditorDebuggerPlugin, EngineDebugger, GraphEdit, ClassDB, ProjectSettings, entre autres) hors de `compat/`, de `plugin.gd` et de la façade du dossier runtime ;
+- l'absence de toute dépendance du dossier runtime vers le plugin éditeur.
 
 Ce contrôle textuel ne voit pas les appels dynamiques ; la revue ciblée le complète.
 
 ## 4. Première tranche, prototypes et budgets
 
-| Spike | Question | Mesure | Succès | Durée max |
+| Spike | Question | Mesure | Succès | Durée max, heures humaines |
 | --- | --- | --- | --- | --- |
-| SPIKE-01 | Un message du jeu atteint-il le plugin, et après un redémarrage ? | Débit, latence, pertes | 2 000 événements par seconde en lots sans perte ; redémarrage propre | 1 session |
-| SPIKE-02 | Détection de capacités, UID et isolation de compilation tiennent-ils sur 4.7.x et 4.8 ? | Erreurs de compilation, comportement | Plugin actif sur les deux versions | 1 session |
-| SPIKE-03 | Quel rendu tient 300 éléments visibles ? | Temps de frame, latence d'interaction | 16 ms au plus à 300 éléments | 1 à 2 sessions |
-| SPIKE-04 | GDScript AST Flow ou extraction maison ? | Relations correctes, fausses, manquées ; coût d'intégration | 90 % des appels directs résolus, aucune relation certaine fausse | 1 à 2 sessions, au début du MVP |
-| SPIKE-05 | Quel surcoût de capture ? | Temps de frame avec et sans | 5 % au plus à 1 000 événements par seconde | 1 session, dans T11 |
-| SPIKE-06 | Le modèle local tient-il des tâches sous contrat ? | Réussite au premier essai, escalades, temps | 2 tâches sur 3 sans escalade | Mesuré pendant l'étape 4 |
+| SPIKE-01 | Un aller-retour jeu-éditeur fonctionne-t-il, y compris après un redémarrage et depuis une classe statique ? | Débit, latence, pertes | 2 000 événements par seconde en lots sans perte ; redémarrage propre | 3 h |
+| SPIKE-02 | Façade, détection de capacités, UID et isolation de compilation tiennent-ils sur 4.7.2 et la préversion, testés à la main ? | Erreurs de compilation, comportement | Plugin actif sur les deux versions | 3 h |
+| SPIKE-03 | Quel rendu tient 300 éléments visibles ? | Temps de frame, latence d'interaction | 16 ms au plus à 300 éléments | 3 à 6 h, au début du MVP |
+| SPIKE-04 | GDScript AST Flow ou extraction maison ? | Relations correctes, fausses, manquées ; coût d'intégration | 90 % des appels directs résolus, aucune relation certaine fausse | 3 à 6 h, au début du MVP |
+| SPIKE-05 | Quel surcoût de capture, chemin désactivé et côté appelant compris ? | Temps de frame, collecte inactive puis active | 5 % au plus à 1 000 événements par seconde ; chemin désactivé non mesurable | 3 h, dans T13 |
+| SPIKE-06 | Chaque modèle tient-il des tâches sous contrat ? | Réussite au premier essai, escalades, temps | 2 tâches sur 3 sans escalade | Mesuré pendant l'étape 4 |
 
 Chaque spike vit dans `spikes/`, hors du plugin, et se conclut par KEEP, REWRITE ou DISCARD dans `docs/spikes/`. Sans exécution réelle, son résultat reste « à vérifier ».
 
-La première tranche, les phases et leurs budgets sont ceux du plan directeur (§9). `PROJECT_STATE.md` suit la consommation réelle ; un dépassement de 50 % déclenche une revue de continuation sans attendre la fin de phase.
+La première tranche, les phases et leurs budgets sont ceux du plan directeur (§9). Le pilotage suit séparément les heures humaines, le temps agent et les capacités acceptées (définitions : PD-0.2, §0). `PROJECT_STATE.md` suit la consommation réelle ; un dépassement de 50 % déclenche une revue de continuation sans attendre la fin de phase.
 
 ## 5. Tâches, contexte, autonomie et orchestration
 
@@ -137,6 +140,7 @@ Chaque pack cite ses révisions ; un résumé ne remplace pas la lecture du dép
 | Implémentation sous contrat validé avec tests fournis | Modèle local (Qwen3.8-27B) | Local |
 | Tests, fixtures, sérialisation, adaptateurs, documentation | Modèle local | Local |
 | Interface éditeur | Modèle intermédiaire (Sonnet), retouches locales | Distant puis local |
+| Lecture des jeux open source ; relecture croisée des diffs de Sonnet | Gemini | Distant |
 | Débogage difficile, revue transverse | Grand modèle | Distant |
 | Tri des échecs CI sur une préversion | Modèle local ; grand modèle si une sémantique d'API change | Local puis distant |
 | Tests, lint, mesures | Outils sans IA | Local et CI |
@@ -154,7 +158,7 @@ Claude Code : `/clear` entre deux tâches ; `opusplan` pour les tâches de conce
 | Unitaires du socle et du protocole | Oui | Oui | Oui |
 | Contrats et sérialisation | Oui | Oui | Oui |
 | Intégration runtime-éditeur | Manuel guidé et un scénario automatisé | Automatisé | Automatisé |
-| Matrice de versions | 4.7.x bloquant, 4.8 non bloquant | Fenêtre complète | Deux stables et une préversion |
+| Matrice de versions | 4.7.2 bloquant ; préversion dans un job séparé | Fenêtre complète | Deux stables et une préversion |
 | Régression sur fixtures | Fixtures de base | Toutes | Toutes |
 | Interface | Vérification manuelle ciblée | Scénarios manuels suivis | Scénarios manuels suivis |
 | Performance | SPIKE-05 | Budgets mesurés | Suivi par version |
@@ -166,16 +170,17 @@ Claude Code : `/clear` entre deux tâches ; `opusplan` pour les tâches de conce
 | Transport incomplet | Capture réelle, redémarrage, debugger absent, lot invalide, version incompatible | POC et MVP |
 | Buffer saturé | Mémoire bornée, pertes comptées et affichées | POC |
 | Source obsolète | Un lien vers un fichier modifié est signalé périmé | POC |
-| Rupture de version | Suite verte sur 4.7.x ; écarts 4.8 listés ; aucune correction hors de compat | POC |
+| Rupture de version | Suite verte sur 4.7.2 ; résultat de la préversion rapporté ; aucune correction hors de la frontière | POC |
+| Cycle de vie | Retrait puis réinsertion sans destruction affichée ; plugin désactivé sans erreur dans le jeu ; session tuée en « fin inconnue » | POC |
 | Analyse trompeuse | Un appel dynamique ne devient jamais une relation certaine | MVP |
 | Temporalité incorrecte | Bloc interrompu et occurrence incomplète distingués | MVP |
 | Plugin fragile | Activer, désactiver et réactiver nettoie tout | POC |
 
-**CI, à créer en T02.** Le workflow `ci.yml`, à chaque push, exécute une matrice de versions. 4.7.x est bloquant. La dernière préversion 4.8 est non bloquante jusqu'à sa release candidate. Les binaires officiels sont téléchargés depuis les releases du projet godot-builds. Chaque job lance le runner en mode headless, le contrôle de dépendances et le lint. Le workflow `version-watch.yml` relance chaque semaine la suite sur la dernière préversion et ouvre une tâche en cas d'échec. Les commandes exactes sont vérifiées en T02 et T03 ; avant cela, elles restent « non vérifiées ».
+**CI, à créer en T03, après le runner de T02.** Le workflow `ci.yml` teste chaque push sur 4.7.2, de façon bloquante, et la dernière préversion dans un job séparé non bloquant. Les binaires officiels viennent de l'archive du projet godot-builds. Chaque job lance le runner en mode headless, le contrôle de dépendances et le lint. La veille hebdomadaire automatisée n'arrive qu'au MVP, ou plus tôt après une rupture constatée. Les commandes exactes restent « non vérifiées » jusqu'à leur exécution en T02 et T03.
 
 Un test headless ne valide pas l'interface. Un import sans erreur ne prouve pas que tous les scripts fonctionnent.
 
-**Fixtures**, petites et maison : appel simple, branche, signal, deux instances, bloc temporel, trace tronquée, source modifiée, syntaxe inconnue (construction absente de la grammaire connue). Les jeux open source servent aux tests d'intégration et de mesure, à une révision épinglée. Une golden fixture n'est jamais régénérée pour masquer une régression.
+**Fixtures**, petites et maison : appel simple, branche, signal, deux instances, retrait puis réinsertion, invocations imbriquées, réentrance signalée « non garantie », session tuée, bloc temporel, trace tronquée, source modifiée, syntaxe inconnue. Les jeux open source servent aux tests d'intégration et de mesure, à une révision épinglée. Une golden fixture n'est jamais régénérée pour masquer une régression.
 
 **Statuts de rapport** : exécuté et réussi, exécuté et échoué, non exécuté, non applicable. Une revue IA ne prouve pas qu'un test passe.
 
@@ -190,6 +195,8 @@ Un test headless ne valide pas l'interface. Un import sans erreur ne prouve pas 
 | Moteur | Profil moteur détecté ; fenêtre de support dans `compat/versions.json` |
 
 **Veille des versions de Godot**
+
+À partir du MVP, ou plus tôt après une rupture constatée :
 
 1. Chaque semaine, la CI teste la dernière préversion officielle.
 2. À chaque nouvelle version mineure en préversion : lire le guide de migration (Editor, GDScript, Core), mettre à jour la liste des API sensibles, ouvrir une tâche par rupture.
@@ -287,9 +294,9 @@ Mesures : temps, escalades, quota consommé
 
 **Exemples de micro-prompts, conditionnels**
 
-1. T10, modèle local : « Implémente le codec et le validateur de l'enveloppe C-04 v1 dans `protocol/`. Contrat complet ci-dessous. Fais passer `tests/contract/test_envelope.gd` : identifiants 64 bits encodés en chaîne sans perte, lot invalide rejeté avec un code d'erreur, champ inconnu ignoré. N'utilise aucune API hors des types fondamentaux. Si une API te manque, réponds BLOQUÉ. »
-2. T12, modèle intermédiaire : « Ajoute la preuve runtime vers éditeur. Le DebuggerPort (C-03) reçoit les lots du helper runtime ; valide-les avec le codec existant ; range-les dans l'Event Store (C-06). Le critère est le scénario `tests/integration/two_instances` : séquences continues, pertes comptées, deux instances distinctes. Signale toute API non couverte par l'adaptateur 4.7. »
-3. Régression sur la préversion 4.8, modèle local puis escalade : « La CI non bloquante 4.8 échoue. Log, diff de la dernière fusion et port concerné ci-dessous. Diagnostique, puis propose une correction limitée à `compat/adapters/`. Si la cause est un changement de sémantique d'API, réponds ESCALADE avec ton analyse. »
+1. T09, Qwen : « Implémente le codec de l'enveloppe C-04 v1 : encodage dans `addons/godot_dev_mapper_runtime/envelope.gd`, décodage et validation dans `protocol/`. Contrat complet ci-dessous. Fais passer `tests/contract/test_envelope.gd` : identifiants 64 bits encodés en chaîne sans perte, lot invalide rejeté avec un code d'erreur, champ inconnu ignoré. N'utilise aucune API hors des types fondamentaux. Si une API te manque, réponds BLOQUÉ. »
+2. T14, Sonnet : « Ajoute la réception côté éditeur. La façade débogueur (C-03) reçoit les lots envoyés par FlowTrace ; valide-les avec le codec existant ; range-les dans l'Event Store (C-06). Le critère est le scénario `tests/integration/two_instances` : séquences continues, pertes comptées, deux instances distinctes. Signale toute API non couverte par l'adaptateur 4.7. »
+3. Régression sur la préversion, Qwen puis escalade : « La CI non bloquante 4.8 échoue. Log, diff de la dernière fusion et façade concernée ci-dessous. Diagnostique, puis propose une correction limitée à la frontière de compatibilité. Si la cause est un changement de sémantique d'API, réponds ESCALADE avec ton analyse. »
 
 ## 9. Vingt premières tâches
 
@@ -305,7 +312,9 @@ Contrôle de cohérence :
 - Chaque mécanisme répond à un risque nommé dans le plan.
 - Chaque phase a un budget et une revue de continuation.
 - Aucune tâche n'est confiée au modèle local sans tests d'acceptation ni règle d'escalade.
-- Aucune API moteur sensible n'est appelée hors de la couche de compatibilité.
+- Aucune API moteur sensible n'est appelée hors de la frontière de compatibilité.
+- Le dossier runtime ne dépend d'aucun fichier du plugin éditeur.
+- Les budgets se suivent en heures humaines, en temps agent et en capacités acceptées.
 
 Décisions nécessaires au démarrage : D-01, D-02, D-05 et D-07. Les autres peuvent attendre leur phase.
 
