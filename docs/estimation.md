@@ -8,6 +8,8 @@ Avec les prompts 2.1, comptez 15 à 25 sessions pour le POC, 60 à 90 pour le MV
 
 En mode agent, avec Claude Code, Opus 5.5 et des tests automatiques, votre temps baisse d'environ 40 %. Le MVP demande alors 80 à 130 h de votre temps, la V1 175 à 260 h.
 
+La couche de compatibilité avec les versions de Godot, ajoutée avec les prompts 2.2, porte ces fourchettes à 17–28 sessions pour le POC, 63–98 pour le MVP et 138–211 pour la V1 ; le plan directeur les détaille par phase.
+
 ## Pertinence
 
 Pertinence élevée : le besoin est réel et l'intégration visée n'existe pas, mais l'analyse statique seule n'est plus un différenciateur.
@@ -94,7 +96,7 @@ Hypothèses de chiffrage :
 
 - Une session = 2 à 3 h de travail focalisé avec une IA sur une tâche atomique : contexte, plan, code, revue, test dans Godot, commit, rapport.
 - Développeur seul, à l'aise en GDScript et Godot 4, peu familier des API EditorPlugin et du débogueur.
-- Cible Godot 4.7.x et GDScript uniquement ; C# hors périmètre.
+- Développement sur Godot 4.7.x, préversion 4.8 suivie ; GDScript uniquement ; C# hors périmètre.
 - Périmètre des prompts 2.1 : POC resserré à deux instances et une décision, MVP sans toutes les vues.
 - Boucle de travail proportionnée au risque, sans neuf passes systématiques.
 - Bancs d'essai : jeux Godot open source déjà disponibles ; leur migration vers Godot 4.7 et leur instrumentation sont incluses, 1 à 2 sessions.
@@ -148,7 +150,7 @@ Le niveau de rigueur appliqué et l'outillage de l'IA pèsent plus lourd que tou
 | --- | --- |
 | Pipeline en neuf passes appliqué à chaque tâche | +30 à +50 % |
 | Viser dès le MVP des projets tiers inconnus | +20 à +40 sessions pour fiabiliser l'analyse statique |
-| Montée de version mineure de Godot en cours de projet | +2 à +6 sessions par montée |
+| Nouvelle version mineure de Godot, tous les quelques mois | Avec la couche de compatibilité : +2 à +3 sessions au POC, puis 1 à 3 par version ; sans elle, 2 à 6 par version et un risque de rupture |
 | Support C# | +30 sessions au minimum, hors périmètre actuel |
 | Agent de code qui lance lui-même Godot en mode headless et les tests | environ −40 % sur votre temps, voir la variante Claude Code |
 | Expérience préalable des API EditorPlugin et du débogueur | −10 à −15 % |

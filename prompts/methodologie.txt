@@ -1,8 +1,8 @@
 # Prompt de méthodologie — Godot Visual Program & Execution Explorer
 
-Version révisée 2.1 — 7 octobre 2026
+Version révisée 2.2 — 7 octobre 2026
 
-Changements depuis la 2.0 : paramètres connus du projet, environnement Claude Code sur forfait Pro, politique de réutilisation d’outils tiers, budgets et revues de continuation, protocole runtime phasé, jeux open source comme bancs d’essai, orchestration multi-modèles et parallélisme.
+Changements depuis la 2.0 : paramètres connus du projet, environnement Claude Code sur forfait Pro, politique de réutilisation d’outils tiers, budgets et revues de continuation, protocole runtime phasé, jeux open source comme bancs d’essai, orchestration multi-modèles et parallélisme. En 2.2 : couche de compatibilité moteur, matrice de versions en CI et veille des versions de Godot (INV-09).
 
 ## 1. Mission et entrées
 
@@ -24,7 +24,7 @@ S’il manque le plan directeur, produis une méthode provisoire sur la base des
 
 La version exacte de Godot, son édition, les plateformes, dépendances et outils de test doivent être fixés avant un jalon exécutable. Une version manquante n’interdit pas de préparer la méthode ; elle interdit de certifier la compatibilité du code.
 
-Paramètres connus au 7 octobre 2026, à reprendre du dossier de passage s’il les précise : Godot 4.7.x édition standard, correctif exact à fixer dans le manifeste ; GDScript uniquement ; un développeur assisté par Claude Code sur forfait Claude Pro et par un modèle local Qwen3.8-27B ; disponibilité [à compléter : heures par semaine] ; bancs d’essai : jeux Godot open source déjà disponibles [à lister].
+Paramètres connus au 7 octobre 2026, à reprendre du dossier de passage s’il les précise : Godot 4.7.x édition standard pour le développement et 4.8 testée dès sa préversion, correctifs exacts fixés dans un manifeste ; GDScript uniquement ; un développeur assisté par Claude Code sur forfait Claude Pro et par un modèle local Qwen3.8-27B ; disponibilité [à compléter : heures par semaine] ; bancs d’essai : jeux Godot open source déjà disponibles [à lister].
 
 ## 2. Invariants communs et résultat recherché
 
@@ -37,11 +37,12 @@ Réutilise les identifiants du plan directeur, notamment :
 - INV-05 — chronologie, causalité et intention attendue distinctes ;
 - INV-06 — runtime indépendant de l’éditeur ;
 - INV-07 — collecte, stockage et affichage bornés, pertes visibles ;
-- INV-08 — traces et références source rattachées à une révision du programme.
+- INV-08 — traces et références source rattachées à une révision du programme ;
+- INV-09 — API moteur sensibles aux versions appelées uniquement via la couche de compatibilité ; versions supportées vérifiées en CI.
 
 Si les entrées contredisent un invariant, expose le conflit et son effet. Propose une résolution ; ne réécris pas silencieusement la spécification.
 
-La méthode doit réduire quatre risques : dérive d’architecture, APIs inventées ou incompatibles, développement massif sans preuve utilisateur, diagnostics trompeurs issus de traces partielles.
+La méthode doit réduire cinq risques : dérive d’architecture, APIs inventées ou incompatibles, développement massif sans preuve utilisateur, diagnostics trompeurs issus de traces partielles, obsolescence rapide face aux nouvelles versions de Godot.
 
 Chaque mécanisme de gouvernance doit répondre à un risque précis et avoir un coût proportionné. La première preuve visible ne doit pas attendre la rédaction complète de tous les documents futurs.
 
@@ -95,10 +96,11 @@ Priorise les contrats qui traversent la première tranche :
 
 1. identités des définitions, instances, occurrences et sessions ;
 2. ancrages source et révision du programme ;
-3. modèle minimal, provenance et références non résolues ;
-4. événement runtime et enveloppe de transport ;
-5. ingestion, stockage borné et requête utilisée par la vue ;
-6. persistance minimale nécessaire à la démonstration.
+3. ports de la couche de compatibilité utilisés par la tranche et profil moteur ;
+4. modèle minimal, provenance et références non résolues ;
+5. événement runtime et enveloppe de transport ;
+6. ingestion, stockage borné et requête utilisée par la vue ;
+7. persistance minimale nécessaire à la démonstration.
 
 Pour Runtime ↔ Editor, reprends le phasage du plan directeur. Le contrat du POC se limite à l’enveloppe minimale : version, session, producteur, séquence, révision, horodatage monotone, type, références, charge bornée et nombre d’événements perdus par lot. Capacités négociées, reconnexion, lacunes, domaines d’horloge supplémentaires et ordre entre producteurs arrivent au MVP ou en V1, chacun par une évolution additive du protocole. Les identifiants d’objets 64 bits et les autres types non représentables sans perte sont encodés explicitement. Les objets vivants ne traversent pas le protocole.
 
@@ -114,6 +116,7 @@ Risques à tester tôt :
 - métadonnées et relations statiques réellement accessibles sur la version ciblée ;
 - rendu et navigation sur le nombre d’éléments visibles prévu ;
 - surcharge, saturation et visibilité des pertes de capture ;
+- isolation de compilation et détection de capacités sur 4.7.x et sur la dernière préversion 4.8 ;
 - couverture et coût d’intégration d’un backend statique existant, comme GDScript AST Flow, comparés à une extraction maison minimale ;
 - gain de temps réel sur un bug d’un jeu open source retenu, avec l’outil puis avec le seul débogueur intégré.
 
@@ -162,8 +165,9 @@ Routage par défaut, à recalibrer après le POC :
 | Débogage difficile, régression inexpliquée, revue transverse | Grand modèle | Distant | Non |
 | Documentation, rapports de tâche, PROJECT_STATE.md | Modèle local | Local | Oui |
 | Tests, lint, mesures de performance | Outils déterministes, sans IA | Local | Oui |
+| Veille de versions : tri des échecs CI sur une préversion | Modèle local ; grand modèle si la sémantique d’une API change | Local puis distant | Oui |
 
-Files parallèles suggérées, à confirmer : socle (modèle, identités, sérialisation, Event Store) ; runtime (traceur, buffer, enveloppe, pont débogueur) ; éditeur (panneau, vue, sélection d’instance, ouverture du code) ; acquisition statique et évaluation de l’existant ; bancs d’essai (choix des jeux open source, migration vers 4.7.x, scénarios instrumentés).
+Files parallèles suggérées, à confirmer : socle (modèle, identités, sérialisation, Event Store) ; runtime (traceur, buffer, enveloppe, pont débogueur) ; éditeur (panneau, vue, sélection d’instance, ouverture du code) ; acquisition statique et évaluation de l’existant ; bancs d’essai (choix des jeux open source, migration vers 4.7.x, scénarios instrumentés) ; compatibilité (ports, adaptateurs, matrice CI, veille de versions).
 
 Règles d’orchestration :
 
@@ -230,6 +234,8 @@ Sépare les vérifications headless de celles nécessitant une vraie session d�
 
 Rapporte « exécuté/réussi », « exécuté/échoué », « non exécuté » ou « non applicable ». Une revue IA est complémentaire ; elle ne prouve pas qu’un test passe.
 
+Exécute chaque suite sur chaque version supportée de Godot : la version stable de développement bloque la fusion, la préversion suivante produit un avertissement non bloquant jusqu’à sa release candidate. Une tâche hebdomadaire relance les tests sur la dernière préversion officielle.
+
 ## 10. Performance et budgets
 
 Définis des objectifs initiaux, à confirmer expérimentalement, pour surcharge runtime, latence, mémoire du buffer et historique, débit stable/rafale, coût de sérialisation et nombre d’éléments visibles. Consigne matériel, version, fixture et configuration.
@@ -242,7 +248,7 @@ Aucun test synthétique unique ne permet de promettre la fluidité sur tous les 
 
 ## 11. Versionnage, migrations et maintenance
 
-Fixe la version Godot et les outils dans un manifeste/document vérifiable et en CI. Prévois une procédure distincte de mise à jour du moteur : inventaire des APIs touchées, essais, compatibilité et décision. Une blacklist de syntaxe legacy est un filet secondaire, pas une preuve de validité.
+Fixe dans un manifeste vérifiable les versions de Godot supportées et les outils, et applique-le en CI. Fenêtre par défaut : dernière stable et préversion suivante, la stable précédente au besoin. Prévois une veille de versions : tests sur chaque nouvelle préversion officielle, lecture du guide de migration de chaque version mineure, tâche d’adaptation par rupture détectée, mise à jour d’une matrice de compatibilité publiée. Toute adaptation se fait dans la couche de compatibilité ; une rupture qui fuit ailleurs est un défaut d’architecture. Une blacklist de syntaxe legacy est un filet secondaire, pas une preuve de validité.
 
 Pour un outil tiers réutilisé : version épinglée, licence vérifiée, mode d’inclusion documenté, adaptateur unique, tests de contrat sur ses sorties et plan de sortie si sa maintenance s’arrête ou si la version de Godot change.
 
@@ -297,7 +303,7 @@ Rends un document autonome intitulé « Méthodologie de construction — Godot 
 4. Première tranche, prototypes, roadmap par capacités et budgets.
 5. Tâches, context packs, autonomie, boucle de travail et orchestration des modèles.
 6. Tests, fixtures, CI, budgets et preuves de passage.
-7. Versionnage, évolutions, migrations et maintenance.
+7. Versionnage, évolutions, migrations, maintenance et veille des versions de Godot.
 8. Gabarits prêts à adapter et trois exemples de micro-prompts.
 9. Les vingt premières tâches proposées et leur ordre de dépendance.
 10. Contrôle de cohérence et décisions réellement nécessaires au démarrage.
@@ -306,4 +312,4 @@ Pour les vingt tâches, utilise un tableau compact : ID, capacité/objectif, pou
 
 Relie chaque tâche aux CAP-xx, INV-xx, contrats et fixtures pertinents. Les chemins proposés sont marqués « à créer ». Évite de répéter tout le plan directeur et de créer un chapitre pour chaque terme de méthode.
 
-Termine par deux checklists courtes, avant/après une tâche, et une vérification de cohérence : aucune tâche sans preuve, aucun contrat critique sans responsable, aucune API incertaine présentée comme vérifiée, aucun processus sans risque identifié, aucune phase sans budget ni revue de continuation, aucune tâche confiée au modèle local sans tests d’acceptation ni règle d’escalade. Les approbations portent sur des changements concrets et sur les décisions non déjà couvertes par le mandat.
+Termine par deux checklists courtes, avant/après une tâche, et une vérification de cohérence : aucune tâche sans preuve, aucun contrat critique sans responsable, aucune API incertaine présentée comme vérifiée, aucun processus sans risque identifié, aucune phase sans budget ni revue de continuation, aucune tâche confiée au modèle local sans tests d’acceptation ni règle d’escalade, aucune API moteur sensible appelée hors de la couche de compatibilité. Les approbations portent sur des changements concrets et sur les décisions non déjà couvertes par le mandat.

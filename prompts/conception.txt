@@ -1,8 +1,8 @@
 # Prompt de conception — Godot Visual Program & Execution Explorer
 
-Version révisée 2.1 — 7 octobre 2026
+Version révisée 2.2 — 7 octobre 2026
 
-Changements depuis la 2.0 : paramètres connus du projet, analyse de l’existant et décision réutiliser/construire, budget et critère d’arrêt, contrat runtime phasé entre POC, MVP et V1, jeux open source comme bancs d’essai, repérage du parallélisable et du niveau de modèle requis.
+Changements depuis la 2.0 : paramètres connus du projet, analyse de l’existant et décision réutiliser/construire, budget et critère d’arrêt, contrat runtime phasé entre POC, MVP et V1, jeux open source comme bancs d’essai, repérage du parallélisable et du niveau de modèle requis. En 2.2 : couche de compatibilité moteur et politique de versions de Godot (INV-09).
 
 ## 1. Mission et résultat attendu
 
@@ -20,7 +20,7 @@ Commence par un tableau : information connue, hypothèse de travail, conséquenc
 
 Paramètres connus au 7 octobre 2026 :
 
-- moteur : Godot 4.7.x, édition standard (sans .NET), branche stable publiée le 18 juin 2026 ; le correctif exact est à fixer dans le manifeste avant le premier prototype exécutable ;
+- moteur : Godot 4.7.x, édition standard (sans .NET), branche stable publiée le 18 juin 2026, pour le développement ; 4.8 est déjà en préversion et une nouvelle version mineure sort tous les quelques mois. La compatibilité multi-version est donc une exigence d’architecture, pas une option. Le correctif exact de chaque version supportée est fixé dans un manifeste ;
 - langage analysé : GDScript uniquement ; C#, GDExtension et sources absentes restent hors du MVP ;
 - équipe : un développeur, assisté par Claude Code avec Claude Opus 5.5 (effort medium par défaut) sur un forfait Claude Pro, dont l’usage est plafonné par fenêtres de 5 h et par semaine ;
 - modèle local : Qwen3.8-27B, pour l’implémentation des tâches bien spécifiées [à compléter : matériel] ;
@@ -39,7 +39,7 @@ Complète ces paramètres avec les éléments fournis : plateformes visées, tai
 - addons GDScript tiers sous licence permissive acceptables derrière un adaptateur, sous réserve de validation ;
 - service IA distant facultatif et hors du chemin critique.
 
-La version fournie ne garantit pas la compatibilité : vérifie chaque API utilisée dans la documentation de la branche 4.7 et marque « non vérifié » ce que tu n’as pas pu consulter. Ne la remplace pas par une autre version tirée de ta mémoire.
+Les versions fournies ne garantissent pas la compatibilité : vérifie chaque API utilisée dans la documentation de chaque version supportée et dans les guides de migration entre versions mineures, et marque « non vérifié » ce que tu n’as pas pu consulter. Ne remplace pas ces versions par d’autres tirées de ta mémoire.
 
 Ne pose une question bloquante que si aucune hypothèse réversible ne permet de poursuivre. Regroupe les autres décisions à confirmer à la fin.
 
@@ -59,6 +59,7 @@ Respecte les invariants suivants, identifiés pour être réutilisés par la mé
 - INV-06 — Le runtime ne dépend pas de l’éditeur ni de son interface.
 - INV-07 — La collecte, le stockage et l’affichage ont des limites explicites ; les pertes sont visibles.
 - INV-08 — Toute trace et tout lien source indiquent la révision du programme à laquelle ils se rapportent.
+- INV-09 — Aucun module n’appelle directement une API moteur susceptible de changer entre versions : tout passe par la couche de compatibilité, et chaque version de Godot supportée est vérifiée en intégration continue.
 
 « Complete Program Model » désigne le modèle global disponible, potentiellement partiel et chargé progressivement. Ce terme ne promet ni une connaissance exhaustive du programme ni son chargement intégral en mémoire. La couverture et les inconnues sont consultables.
 
@@ -114,6 +115,8 @@ Distingue :
 Vérifie les APIs publiques dans la documentation de la version retenue. Fournis le symbole exact, la source officielle et ce qu’elle permet réellement. Sans accès documentaire, marque « non vérifié » et propose une vérification ; n’invente pas de signature.
 
 Les métadonnées de Script, l’accès au texte source, un AST, un graphe de contrôle et un graphe d’appels sont des résultats différents. Ne suppose pas qu’une API de réflexion fournit les autres. Les regex ne constituent pas un analyseur sémantique général.
+
+La grammaire GDScript évolue avec les versions mineures. L’extraction syntaxique tolère une construction inconnue : résultat partiel et provenance « non résolu », jamais l’échec du fichier entier. Pour les formats du moteur (scènes, ressources, UID), préfère les lecteurs fournis par Godot à un analyseur maison, afin que leurs évolutions soient absorbées par le moteur lui-même.
 
 Traite explicitement l’héritage, les scènes instanciées/héritées, les overrides, les autoloads, les Callables, groupes, chemins calculés, connexions dynamiques et objets créés à l’exécution. Déclare C#, GDExtension et les sources absentes comme périmètres distincts.
 
@@ -203,7 +206,17 @@ Tune Mode localise d’abord les points d’intervention. L’édition directe e
 
 ## 11. Architecture et interface
 
-Décris les responsabilités et dépendances de : core/model, acquisition statique, annotations, runtime, adaptateur debugger, Event Store, requêtes/projections, visualisation, intégration éditeur, persistance/export, diagnostics et, le cas échéant, adaptateurs vers des outils tiers.
+Décris les responsabilités et dépendances de : core/model, couche de compatibilité moteur, acquisition statique, annotations, runtime, adaptateur debugger, Event Store, requêtes/projections, visualisation, intégration éditeur, persistance/export, diagnostics et, le cas échéant, adaptateurs vers des outils tiers.
+
+Conçois la couche de compatibilité moteur comme un module de premier rang :
+
+- ports internes stables (éditeur, débogueur, introspection des scripts et des scènes, système de fichiers, runtime, syntaxe GDScript) et adaptateurs par plage de versions derrière ces ports ;
+- détection des capacités réellement présentes (classes, méthodes, comportements) plutôt que comparaison de numéros de version ; profil moteur visible dans l’interface ;
+- isolation de compilation : un script qui référence une API absente de la version courante peut échouer à sa compilation. Isole ces références dans des adaptateurs chargés à la demande, à valider par un prototype ;
+- fenêtre de support explicite : dernière version stable, version stable précédente au besoin, préversion suivante testée sans bloquer ; hors fenêtre, mode dégradé annoncé, jamais silencieux ;
+- veille de versions : tests automatiques sur chaque nouvelle préversion officielle, lecture des guides de migration, tâche d’adaptation ouverte pour chaque rupture.
+
+Une rupture de version qui oblige à modifier du code hors de cette couche est un défaut d’architecture à corriger.
 
 Un core GDScript peut utiliser les types fondamentaux de Godot. Son indépendance signifie absence de dépendance aux widgets, services éditeur et objets vivants du jeu. Isole le petit contrat partagé nécessaire au runtime, sans embarquer tout le modèle d’analyse.
 
@@ -240,7 +253,8 @@ Pour le POC, recommande une tranche plus petite :
 - deux instances permettant de vérifier le filtrage et l’identité ;
 - chemin réellement observé affiché, événement sélectionnable, ouverture du code ;
 - Game/Level/Encounter sous forme d’annotations simples si nécessaire ;
-- arrêt/redémarrage de session et comportement documenté sans debugger.
+- arrêt/redémarrage de session et comportement documenté sans debugger ;
+- couche de compatibilité minimale : profil moteur, ports utilisés par la tranche, tests exécutés sur 4.7.x et sur la dernière préversion 4.8.
 
 Le POC est réussi si un développeur peut expliquer, preuves à l’appui, quelle instance a pris quelle branche dans cette démonstration. Un graphe JSON seul ne valide pas encore la collecte runtime ; une animation simulée ne doit pas être présentée comme une capture réelle.
 
@@ -265,7 +279,7 @@ Rends un document autonome intitulé « Plan directeur — Godot Visual Program 
 1. Synthèse décisionnelle : valeur, hypothèses, POC, MVP et principales inconnues.
 2. Vision, scénarios utilisateurs et glossaire des distinctions structurantes.
 3. Matrice des capacités, priorités, acquisition et faisabilité, avec l’analyse de l’existant et la décision réutiliser/construire.
-4. Architecture, frontières de modules et dépendances.
+4. Architecture, frontières de modules, dépendances, couche de compatibilité moteur et politique de versions.
 5. Modèle minimal, identités et exemples de données cohérents.
 6. Runtime, protocole, temporalité, limites de preuve et diagnostic.
 7. Parcours de navigation, projections et stratégie de rendu.
@@ -275,6 +289,6 @@ Rends un document autonome intitulé « Plan directeur — Godot Visual Program 
 
 Utilise des tableaux pour les comparaisons et, si utile, quelques diagrammes compacts. Évite de redécrire la même fonctionnalité dans plusieurs chapitres. Justifie un choix recommandé et réserve les alternatives aux arbitrages qui changent réellement le coût ou la faisabilité.
 
-Le dossier de passage contient : identifiant/révision du plan, statut proposé/validé, paramètres Godot, invariants INV-xx, capacités CAP-xx, périmètres POC/MVP/V1, contrats candidats, décisions de réutilisation, budgets par phase, frontières parallélisables, niveau de modèle suggéré par capacité, inconnues SPIKE-xx et critères d’acceptation. Toute décision non approuvée conserve le statut de proposition.
+Le dossier de passage contient : identifiant/révision du plan, statut proposé/validé, versions de Godot supportées et politique de compatibilité, invariants INV-xx, capacités CAP-xx, périmètres POC/MVP/V1, contrats candidats, décisions de réutilisation, budgets par phase, frontières parallélisables, niveau de modèle suggéré par capacité, inconnues SPIKE-xx et critères d’acceptation. Toute décision non approuvée conserve le statut de proposition.
 
-Termine par une vérification de cohérence : capacités couvertes ou explicitement reportées, mécanismes non vérifiés, contraintes contradictoires résolues, budgets et critères d’arrêt présents, et décisions bloquant réellement le démarrage. Ne prétends pas avoir exécuté les prototypes ou validé les performances pendant cette mission de conception.
+Termine par une vérification de cohérence : capacités couvertes ou explicitement reportées, mécanismes non vérifiés, contraintes contradictoires résolues, budgets et critères d’arrêt présents, aucune API moteur sensible appelée hors de la couche de compatibilité, et décisions bloquant réellement le démarrage. Ne prétends pas avoir exécuté les prototypes ou validé les performances pendant cette mission de conception.
