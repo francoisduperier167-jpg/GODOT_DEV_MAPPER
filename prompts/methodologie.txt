@@ -1,2005 +1,253 @@
-Tu es un **Principal Tools Engineer / Software Architect senior spécialisé en Godot Engine 4.x**, architecture de plugins, tooling développeur, debugging, analyse statique, runtime tracing, visualisation nodale, profiling, systèmes événementiels, conception de modèles de données, tests, intégration continue et développement assisté par IA.
+# Prompt de méthodologie — Godot Visual Program & Execution Explorer
 
-Tu disposes déjà d’un **prompt maître de spécification fonctionnelle** décrivant le projet suivant :
+Version révisée 2.0 — 7 octobre 2026
 
-**Godot Visual Program & Execution Explorer**
+## 1. Mission et entrées
 
-Le produit doit permettre de construire une représentation navigable et multi-échelle de :
+Agis comme un responsable technique chargé de construire progressivement un plugin Godot de cartographie du code et d’observation de son exécution, avec l’aide d’une IA.
 
-- l’architecture complète d’un projet Godot ;
-- ses scènes ;
-- ses scripts ;
-- ses classes ;
-- ses fonctions ;
-- ses appels ;
-- ses signaux ;
-- ses ressources ;
-- ses paramètres ;
-- son data flow ;
-- ses décisions ;
-- ses branches logiques ;
-- ses états ;
-- son Game Flow ;
-- sa temporalité ;
-- ses niveaux ;
-- ses encounters ;
-- ses interruptions ;
-- ses threads ou execution lanes ;
-- ses instances runtime ;
-- son historique d’exécution ;
-- ses performances.
+Produis une méthode de développement applicable par une petite équipe, par défaut un développeur assisté par IA. Cette mission ne demande pas de coder le plugin ni de refaire sa conception fonctionnelle.
 
-Le runtime doit pouvoir se superposer à cette carte afin de montrer ce qui s’est réellement exécuté.
+Utilise comme entrée le résultat du prompt de conception, son dossier de passage et, s’ils existent, les documents et fichiers réels du projet. Le texte du prompt de conception n’est pas à lui seul une spécification validée.
 
-Le produit doit notamment permettre de répondre à des questions telles que :
+Commence par distinguer :
 
-« Comment ce jeu fonctionne-t-il ? »
+- documents effectivement fournis et leur révision ;
+- décisions explicitement approuvées ;
+- propositions encore ouvertes ;
+- état du dépôt effectivement observé, si un accès est disponible ;
+- hypothèses et vérifications préalables.
 
-« Quel script appelle quel script ? »
+S’il manque le plan directeur, produis une méthode provisoire sur la base des besoins disponibles et signale ce qui dépend de sa validation. Ne prétends pas disposer de documents, fichiers, contrats, commandes ou résultats de tests absents du contexte.
 
-« Quelle fonction appelle cette fonction ? »
+La version exacte de Godot, son édition, les plateformes, dépendances et outils de test doivent être fixés avant un jalon exécutable. Une version manquante n’interdit pas de préparer la méthode ; elle interdit de certifier la compatibilité du code.
 
-« Comment ce niveau se déroule-t-il ? »
+## 2. Invariants communs et résultat recherché
 
-« Qu’est-ce qui arrive avant et après cet événement ? »
+Réutilise les identifiants du plan directeur, notamment :
 
-« Pourquoi ce monstre ne bouge pas ? »
+- INV-01 — modèle indépendant des widgets et de la vue ;
+- INV-02 — définition, instance et occurrence d’exécution distinctes ;
+- INV-03 — provenance des informations extraite/déclarée/observée/inférée ;
+- INV-04 — non observé ne signifie pas non exécuté ;
+- INV-05 — chronologie, causalité et intention attendue distinctes ;
+- INV-06 — runtime indépendant de l’éditeur ;
+- INV-07 — collecte, stockage et affichage bornés, pertes visibles ;
+- INV-08 — traces et références source rattachées à une révision du programme.
 
-« Pourquoi ce script n’est-il jamais appelé ? »
+Si les entrées contredisent un invariant, expose le conflit et son effet. Propose une résolution ; ne réécris pas silencieusement la spécification.
 
-« Pourquoi cette collision ne fonctionne-t-elle pas ? »
+La méthode doit réduire quatre risques : dérive d’architecture, APIs inventées ou incompatibles, développement massif sans preuve utilisateur, diagnostics trompeurs issus de traces partielles.
 
-« Quelle condition a empêché cette branche d’être exécutée ? »
+Chaque mécanisme de gouvernance doit répondre à un risque précis et avoir un coût proportionné. La première preuve visible ne doit pas attendre la rédaction complète de tous les documents futurs.
 
-« Où est définie cette valeur ? »
+## 3. Sources de vérité et documentation minimale
 
-« Qu’est-ce qui utilise ce paramètre ? »
+Définis l’autorité par domaine plutôt qu’un classement simpliste entre tous les fichiers :
 
-« Où dois-je intervenir pour modifier ce comportement ? »
+| Domaine | Référence proposée |
+| --- | --- |
+| Besoin produit, périmètre, acceptation | SPEC.md et décisions produit approuvées |
+| Choix techniques durables et raisons | ADR acceptés, avec liens vers ceux qu’ils remplacent |
+| Responsabilités et dépendances | ARCHITECTURE.md, aligné avec les ADR |
+| Formats et interfaces | Contrats versionnés et schémas approuvés |
+| Comportements vérifiés | Tests, fixtures et résultats d’exécution attachés à une révision |
+| Prochaine action et état connu | Backlog et PROJECT_STATE.md, synthèses des éléments précédents |
 
-« Si je modifie ce paramètre, quelles autres parties du jeu seront affectées ? »
+Un test peut être erroné ; un contrat peut devoir évoluer ; le code peut révéler une contrainte oubliée. Une contradiction ouvre une analyse d’impact et une correction traçable. Aucun document ne doit être modifié artificiellement pour faire passer un test.
 
-« Pourquoi cette instance agit-elle différemment des autres ? »
+Propose un démarrage léger : SPEC.md, ARCHITECTURE.md, CONTRACTS.md, TEST_PLAN.md, ROADMAP.md, PROJECT_STATE.md et un répertoire de tâches/décisions lorsque nécessaire. Plusieurs sections peuvent partager un fichier au début.
 
-Le système comporte notamment les concepts suivants :
+Explique quand extraire DATA_MODEL.md, API_CONTRACTS.md, RUNTIME_PROTOCOL.md, GRAPH_MODEL.md et TEMPORAL_MODEL.md. Ne duplique pas la même définition dans plusieurs sources maintenues à la main. Prévois changelog et dette technique quand leur suivi devient utile.
 
-- Complete Program Model ;
-- Architecture Model ;
-- Logic Flow ;
-- Data Flow ;
-- Game Flow ;
-- Temporal Blocks ;
-- Runtime Execution ;
-- Flow Nodes ;
-- Flow Edges ;
-- Runtime Instances ;
-- Execution Lanes ;
-- Event Store ;
-- Timeline ;
-- Expected vs Actual ;
-- Instance Comparison ;
-- Diagnostic Mode ;
-- Explain Mode ;
-- Tune Mode ;
-- Performance Mode ;
-- AI Snapshot.
+Pour chaque document : propriétaire, contenu normatif ou informatif, événement déclenchant sa mise à jour et lien avec les tests. Donne une structure cible et un sous-ensemble réellement nécessaire au POC.
 
----
+## 4. Décisions et contrats évolutifs
 
-# TA MISSION
+Un ADR comprend : problème, contexte, options, décision, conséquences, périmètre, statut, date, preuves disponibles, liens et condition de réexamen. Les exemples du plan directeur restent candidats tant qu’ils ne sont pas acceptés.
 
-Tu ne dois PAS coder le plugin.
+Réserve les ADR aux choix difficiles à inverser ou affectant plusieurs modules. Une correction locale dans un contrat établi peut être expliquée dans sa tâche ou sa PR.
 
-Tu dois produire **la méthodologie complète permettant de construire ce projet de manière fiable, progressive, testable et compatible avec un développement assisté par IA**.
+Pour tout contrat utilisé par la tranche active, définis :
 
-La question principale n’est donc pas :
+- responsabilité, propriétaire et consommateurs ;
+- entrées, sorties, types, invariants et erreurs ;
+- dépendances autorisées/interdites ;
+- contexte d’exécution, ownership mémoire et contraintes de thread ;
+- version, compatibilité, limites et comportement dégradé ;
+- exemples valides/invalides et tests de contrat nécessaires.
 
-« Comment implémenter le plugin ? »
+Stabilise les invariants tôt ; garde les schémas internes provisoires jusqu’aux premières preuves. Distingue deux axes : maturité expérimentale/stable et visibilité interne/publique. Une API interne peut être stable ; une API publique peut être expérimentale.
 
-mais :
+Définis le changement d’un contrat stable : impact, compatibilité, migration éventuelle, tests, décision responsable et mise à jour cohérente des consommateurs. Une évolution additive compatible ne doit pas déclencher le même processus qu’une rupture de format persistant.
 
-**« Quelle méthode de développement devons-nous suivre pour transformer cette spécification très ambitieuse en un plugin Godot réellement fonctionnel sans dérive architecturale, sans explosion de complexité et sans dépendre aveuglément de code généré par IA ? »**
+## 5. Dépendances et contrats prioritaires
 
----
+Construis une matrice de dépendances vérifiable. Le core peut utiliser les types fondamentaux Godot, mais pas les widgets, services éditeur ou instances vivantes du jeu. Les règles runtime → editor et modèle → interface sont interdites. Un petit contrat partagé suffit au runtime ; il ne doit pas importer tout l’analyseur.
 
-# 1. PRINCIPE FONDAMENTAL
+Choisis une vérification adaptée au langage et à la taille du projet : revue ciblée, contrôle des références/imports et tests de chargement. Explique les limites d’un contrôle textuel.
 
-La spécification complète du projet doit être considérée comme une :
+Priorise les contrats qui traversent la première tranche :
 
-**CONSTITUTION DU PROJET**
+1. identités des définitions, instances, occurrences et sessions ;
+2. ancrages source et révision du programme ;
+3. modèle minimal, provenance et références non résolues ;
+4. événement runtime et enveloppe de transport ;
+5. ingestion, stockage borné et requête utilisée par la vue ;
+6. persistance minimale nécessaire à la démonstration.
 
-ou :
+Pour Runtime ↔ Editor, prévois versions/capacités, séquences par producteur, horloges, corrélations, lots, limites, saturation, lacunes, incompatibilité et arrêt/reconnexion. Les types non représentables sans perte doivent être encodés explicitement. Les objets vivants ne traversent pas le protocole.
 
-`SPEC.md`
+La validation de l’ordre reçu ne suffit pas à prouver l’ordre causal. Le changement de code pendant une session doit invalider ou qualifier le rattachement des événements selon une règle explicite.
 
-Elle décrit :
+## 6. Prototypes techniques et première tranche verticale
 
-- ce que le produit doit devenir ;
-- les objectifs ;
-- les principes ;
-- les concepts ;
-- les contraintes ;
-- la vision long terme.
+Prévois des prototypes courts, isolés et limités par une question et une durée d’effort. Pour chacun : incertitude, expérience, fixture, mesure attendue, critère de succès/échec et décision KEEP/REWRITE/DISCARD. Sans exécution réelle, le résultat reste « à vérifier ».
 
-Elle ne doit PAS être utilisée directement comme prompt :
+Risques à tester tôt :
 
-« Génère tout le plugin ».
+- message runtime réellement reçu par un plugin debugger, puis arrêt/redémarrage ;
+- métadonnées et relations statiques réellement accessibles sur la version ciblée ;
+- rendu et navigation sur le nombre d’éléments visibles prévu ;
+- surcharge, saturation et visibilité des pertes de capture.
 
-Il faut concevoir une méthodologie permettant de transformer progressivement cette constitution en :
+Ces prototypes ne doivent pas tous devenir une phase longue préalable. Enchaîne-les avec la plus petite démonstration complète utile.
 
-architecture ;
+Propose une première tranche alignée sur le plan directeur : petit graphe déclaré, deux instances, décision attack/chase instrumentée, transport réel, Event Store, sélection d’instance, affichage du chemin observé et ouverture du code source. Un journal sélectionnable peut précéder une timeline élaborée.
 
-contrats ;
+Chaque tranche suivante ajoute une capacité utilisateur vérifiable et les seuls contrats nécessaires. La première acquisition statique limitée arrive avant de revendiquer un explorateur de projet ; l’analyse statique exhaustive n’est pas un préalable au POC runtime.
 
-tests ;
+Réutilise le mini-roguelike comme fixture d’intégration progressive : héros, cinq ennemis, navigation, attaque, collision, dégâts, UI, audio, loot et fin de niveau. N’attends pas son achèvement pour vérifier la première branche.
 
-vertical slices ;
+## 7. Tâches, contexte et autonomie de l’IA
 
-tâches atomiques ;
+Une tâche possède un objectif vérifiable, un périmètre réversible et un risque principal. Le nombre de fichiers ne suffit pas à définir sa taille. Préfère une petite modification cohérente à une découpe artificielle produisant des états intermédiaires inutilisables.
 
-micro-prompts ;
+Fiche de tâche : ID, capacité et invariants liés, objectif, prérequis, révision de départ, entrées, fichiers autorisés/interdits, contrats, critères d’acceptation, vérifications, risques, niveau d’autonomie et résultat attendu. Distingue les chemins réellement présents des fichiers proposés à créer.
 
-code validé.
+Les context packs contiennent uniquement : tâche, extraits normatifs pertinents, contrats/ADR applicables, fichiers concernés et résultats utiles. Ils indiquent leurs révisions ; un résumé de conversation ou PROJECT_STATE ne remplace pas une lecture de l’état réel lorsqu’elle est possible.
 
----
+Prévois trois degrés proportionnés :
 
-# 2. STRUCTURE DOCUMENTAIRE À CONCEVOIR
+- A0 — exploration ou proposition sur une zone inconnue ;
+- A1 — modification réversible dans des contrats établis avec vérifications adaptées ;
+- A2 — capacité traversant plusieurs modules lorsque interfaces et preuves sont suffisamment solides.
 
-Propose une architecture documentaire permettant au projet de conserver une source de vérité stable.
+L’autonomie dépend du risque, des preuves et du mandat reçu. Une autorisation déjà donnée couvre les actions qui respectent son périmètre. Réserve une nouvelle décision humaine aux changements de périmètre, ruptures incompatibles, migrations destructrices ou nouveaux engagements non autorisés. Ne réclame pas une approbation après chaque étape mécanique.
 
-Étudier au minimum la nécessité des documents suivants :
+Si plusieurs IA travaillent, utilise des tâches distinctes, des frontières d’écriture claires, une révision commune des contrats et une responsabilité d’intégration. La parallélisation n’est pas requise pour appliquer cette méthode.
 
-`SPEC.md`
+## 8. Boucle de travail proportionnée
 
-Vision produit complète.
+Propose une boucle courte :
 
-`ARCHITECTURE.md`
+1. Lire la tâche, l’état réel et les contraintes pertinentes.
+2. Vérifier les APIs inconnues et les contrats touchés ; signaler les écarts.
+3. Définir la preuve de réussite et un plan bref pour les changements non triviaux.
+4. Implémenter seulement le périmètre autorisé.
+5. Exécuter les vérifications nécessaires ; corriger les erreurs observées.
+6. Relire le changement contre les invariants et les critères d’acceptation.
+7. Mettre à jour les références affectées et produire le rapport de tâche.
 
-Architecture globale et responsabilités des modules.
+Développe le plan et les contrats lorsque le risque le justifie. Une correction locale ne nécessite pas neuf passes formelles. Une interface n’est pas gelée automatiquement après chaque micro-tâche.
 
-`DATA_MODEL.md`
+Le code livré doit être fonctionnel pour le périmètre accepté. Un patch complet et ciblé convient ; il n’est pas nécessaire de réimprimer des fichiers inchangés. Interdis les fonctions factices cachées et les omissions qui font passer une capacité inachevée pour terminée. Autorise les limites explicites et TODO suivis hors du périmètre accepté.
 
-Définition des objets centraux du modèle.
+En cas d’échec, conserver l’erreur exacte, le scénario, la version, le diff et le contrat attendu. Corriger au plus près de la cause ; une refonte exige un impact expliqué. Si les corrections n’avancent plus, produire un diagnostic et réévaluer l’hypothèse au lieu de boucler sans preuve.
 
-`API_CONTRACTS.md`
+## 9. Tests et preuves de fonctionnement
 
-Interfaces publiques, événements, protocoles et formats.
+Choisis les tests selon le comportement et le risque. Ne crée pas des tests qui recopient l’implémentation ou des tests sans valeur pour une retouche documentaire. En revanche, les pertes de traces, identités et compatibilités nécessitent des vérifications de contrat.
 
-`RUNTIME_PROTOCOL.md`
+Propose une stratégie POC/MVP/V1 distinguant : tests unitaires utiles, contrats/sérialisation, intégration runtime-editor, régression, fixtures de référence, tests UI manuels ciblés et mesures de performance.
 
-Contrat précis Runtime ↔ Editor.
+| Risque | Preuve attendue |
+| --- | --- |
+| Mauvais rattachement | Deux instances d’une même définition restent distinguées ; nouvelle session ne réutilise pas l’ancienne identité logique |
+| Fausse conclusion | Un événement non capturé ou perdu reste inconnu, sans diagnostic de non-exécution |
+| Transport incomplet | Capture réelle, arrêt/redémarrage, debugger absent, lot invalide et version incompatible |
+| Buffer saturé | Mémoire bornée, politique d’abandon appliquée, pertes comptées et affichées |
+| Source obsolète | Modification/renommage ne laisse pas un lien historique présenté comme actuel |
+| Temporalité incorrecte | Branche, boucle, attente, bloc interrompu et occurrence incomplète restent distingués |
+| Analyse trompeuse | Appel dynamique non résolu et fichier invalide ne produisent pas une relation certaine |
+| Plugin fragile | Activer, désactiver et réactiver nettoie ses connexions et panneaux ; runtime sans éditeur se comporte comme prévu |
 
-`GRAPH_MODEL.md`
+Toutes ces preuves n’ont pas à être automatisées au POC. Attribue chacune à une phase, un niveau de test et un environnement. Justifie le choix d’un runner de tests après vérification de sa compatibilité et de sa maintenance, sans imposer une dépendance de mémoire.
 
-Structure logique du graphe.
+Les fixtures doivent rester petites : appel simple, branche, signal, instances, temporalité, trace tronquée/perdue et source modifiée. Une golden fixture ne doit pas être régénérée automatiquement pour masquer une régression.
 
-`TEMPORAL_MODEL.md`
+Sépare les vérifications headless de celles nécessitant une vraie session d’éditeur. Un import sans erreur ne prouve pas le bon fonctionnement de tous les scripts ; un test headless ne valide pas à lui seul l’interface. Documente les commandes réellement utilisables et le moyen de détecter un échec ; laisse les commandes non vérifiées clairement identifiées.
 
-Game Flow et temporalité imbriquée.
+Rapporte « exécuté/réussi », « exécuté/échoué », « non exécuté » ou « non applicable ». Une revue IA est complémentaire ; elle ne prouve pas qu’un test passe.
 
-`TEST_PLAN.md`
+## 10. Performance et budgets
 
-Stratégie globale de tests.
+Définis des objectifs initiaux, à confirmer expérimentalement, pour surcharge runtime, latence, mémoire du buffer et historique, débit stable/rafale, coût de sérialisation et nombre d’éléments visibles. Consigne matériel, version, fixture et configuration.
 
-`ROADMAP.md`
+Mesure capture désactivée puis activée sur le même scénario, avec répétitions adaptées. Distingue mesures runtime et éditeur, médiane/percentiles et coût des événements conservés/perdus. Le profiling introduit lui-même un coût à prendre en compte.
 
-Phases et jalons.
+Instrumente le plugin : débit, pertes, occupation, retard de transport, temps de projection et rendu. Une limite de performance dépassée déclenche une réduction de charge ou une décision d’architecture fondée sur ces mesures.
 
-`CHANGELOG.md`
+Aucun test synthétique unique ne permet de promettre la fluidité sur tous les projets. La capacité mesurée et son contexte accompagnent le résultat.
 
-Évolution du projet.
+## 11. Versionnage, migrations et maintenance
 
-`ADR/`
+Fixe la version Godot et les outils dans un manifeste/document vérifiable et en CI. Prévois une procédure distincte de mise à jour du moteur : inventaire des APIs touchées, essais, compatibilité et décision. Une blacklist de syntaxe legacy est un filet secondaire, pas une preuve de validité.
 
-Architecture Decision Records.
+Définis le typage GDScript : types explicites aux frontières, valeurs d’événements stables, conversion validée des payloads flexibles. Justifie RefCounted/Resource/Dictionary selon ownership, sérialisation et usage dans l’éditeur, sans règle dogmatique.
 
-`TASKS/`
+Distingue version du plugin, version de protocole, version des formats persistés et révision du programme analysé. Avant de supporter plusieurs versions de données, préciser les conversions acceptées, le refus des versions inconnues et la conservation des originaux. Ne construis pas une infrastructure générale de migration sans format réellement distribué à maintenir.
 
-Unités de travail.
+Utilise des branches courtes, des commits cohérents et des PR par capacité. Donne les preuves de validation et les limites dans la PR. Contrats, tests et code d’un changement doivent pouvoir être compris ensemble. La CI échoue sur les erreurs pertinentes ; les vérifications UI impossibles à automatiser sont explicitement suivies.
 
-Tu peux améliorer cette structure si nécessaire.
+Planifie séparément les refactorisations substantielles. Une dette technique contient raison, impact, risque, contournement, déclencheur de réexamen et lien de suivi. Les petites améliorations internes nécessaires à une tâche restent possibles lorsqu’elles ne changent pas son périmètre.
 
----
+Prévois installation, mise à jour, désactivation et retrait du plugin ; nettoyage des ressources éditeur et maîtrise des hooks runtime. Les exports IA restent locaux et sélectionnables avant tout partage.
 
-# 3. HIÉRARCHIE DES SOURCES DE VÉRITÉ
+## 12. Definition of Done et critères de passage
 
-Définis explicitement l’ordre d’autorité entre documents.
+Une tâche est terminée lorsque sa capacité est démontrée, les contrats respectés, les vérifications pertinentes exécutées ou leur absence justifiée, et les documents affectés mis à jour. Les limites et dettes résiduelles sont explicites. Une fonctionnalité factice ne remplit pas ces critères.
 
-Exemple possible :
+Chaque phase indique : objectif utilisateur, capacités, dépendances, critères d’entrée, preuves de sortie, risques, artefacts et exclusions. Les critères portent sur des résultats observables, pas sur le seul nombre de fichiers ou tests créés.
 
-1. SPEC
-2. ADR validés
-3. Architecture
-4. Data Model
-5. API Contracts
-6. Tests
-7. Implémentation
+Recommande une progression par dépendances : cadrage court et inconnues critiques ; tranche déclarative + runtime réelle ; robustesse minimale ; acquisition statique limitée ; enrichissement du Game Flow et des données ; diagnostics ; fonctions avancées selon leurs preuves.
 
-Déterminer ce qui se passe lorsqu’une implémentation entre en contradiction avec un contrat ou un ADR.
+Ne reporte pas systématiquement les instances après la timeline si elles sont indispensables à la démonstration. Ne développe pas un modèle universel avant le premier parcours utilisateur. Les jalons d’acceptation restent ordonnés ; certaines tâches indépendantes peuvent progresser sans attendre la clôture de toute une phase.
 
-Le code ne doit jamais devenir implicitement la seule source de vérité.
+## 13. Gabarits à fournir
 
----
+Fournis des modèles courts et directement utilisables pour :
 
-# 4. ARCHITECTURE DECISION RECORDS
+1. ADR ;
+2. contrat de module ou de données ;
+3. tâche atomique ;
+4. micro-prompt d’implémentation ;
+5. changement incompatible et migration ;
+6. rapport de tâche et mise à jour d’état.
 
-Intégrer une vraie méthodologie ADR.
+Le micro-prompt contient : objectif unique, références et révisions, état vérifié, contrats, invariants, fichiers autorisés, APIs vérifiées, critères d’acceptation, commandes de validation disponibles, autonomie et résultat attendu. Une donnée absente doit être marquée comme à fournir, jamais inventée.
 
-Exemples de décisions qui pourraient nécessiter un ADR :
+Ajoute trois micro-prompts illustratifs : implémenter un contrat d’événement validé ; ajouter une preuve runtime-editor ; corriger une régression à partir d’un échec fourni. Ce sont des exemples conditionnels, pas des tâches prétendument exécutables sur un dépôt inconnu.
 
-ADR-001  
-Le Flow Model est indépendant de l’interface.
+Le rapport de tâche indique : objectif atteint ou non, révision/diff, fichiers modifiés, contrats affectés, vérifications exactes et résultats, limites, dette, décisions nécessaires et prochaine dépendance. N’utilise jamais « tests passés » pour des tests seulement proposés.
 
-ADR-002  
-Static Definition et Runtime Instance sont deux objets distincts.
+## 14. Forme du livrable
 
-ADR-003  
-Les événements runtime passent d’abord par un buffer local.
+Rends un document autonome intitulé « Méthodologie de construction — Godot Visual Program & Execution Explorer », comprenant :
 
-ADR-004  
-Game Flow utilise des Temporal Blocks imbriqués.
+1. Hypothèses, entrées réelles et mode d’emploi de la méthode.
+2. Sources de vérité et documentation minimale puis cible.
+3. Gouvernance des invariants, décisions, contrats et dépendances.
+4. Première tranche, prototypes et roadmap par capacités.
+5. Tâches, context packs, autonomie et boucle de travail.
+6. Tests, fixtures, CI, budgets et preuves de passage.
+7. Versionnage, évolutions, migrations et maintenance.
+8. Gabarits prêts à adapter et trois exemples de micro-prompts.
+9. Les vingt premières tâches proposées et leur ordre de dépendance.
+10. Contrôle de cohérence et décisions réellement nécessaires au démarrage.
 
-ADR-005  
-GraphEdit ne porte pas seul la timeline.
+Pour les vingt tâches, utilise un tableau compact : ID, capacité/objectif, pourquoi maintenant, dépendances, preuve de réussite et risque. Détaille les cinq premières prêtes à préciser avec la fiche complète ; les suivantes restent conditionnelles aux résultats des prototypes. Ne présente pas une liste prospective comme un engagement irrévocable.
 
-ADR-006  
-Expected Flow et Runtime Flow sont distincts.
+Relie chaque tâche aux CAP-xx, INV-xx, contrats et fixtures pertinents. Les chemins proposés sont marqués « à créer ». Évite de répéter tout le plan directeur et de créer un chapitre pour chaque terme de méthode.
 
-ADR-007  
-Complete Model et Current View sont distincts.
-
-ADR-008  
-Les modules runtime ne dépendent jamais des modules editor.
-
-Pour chaque ADR proposer un format contenant par exemple :
-
-Context
-
-Decision
-
-Alternatives
-
-Consequences
-
-Status
-
-Date
-
-Impacted modules.
-
----
-
-# 5. DÉVELOPPEMENT CONTRACT-FIRST
-
-La méthodologie doit imposer :
-
-**contrats avant implémentation.**
-
-Avant de créer un fichier comme :
-
-`flow_tracer.gd`
-
-il faut avoir défini :
-
-- sa responsabilité ;
-- ses entrées ;
-- ses sorties ;
-- ses dépendances autorisées ;
-- ses dépendances interdites ;
-- son API publique ;
-- ses erreurs ;
-- ses invariants ;
-- ses tests.
-
-Exemple :
-
-FlowTracer
-
-Responsabilité :
-
-collecter des événements runtime.
-
-Input :
-
-trace_function_enter(...)
-
-Output :
-
-FlowEvent.
-
-Dépendances autorisées :
-
-core/flow_event
-
-EngineDebugger.
-
-Dépendances interdites :
-
-Graph UI
-
-EditorPlugin
-
-FlowGraphWidget.
-
-Le plan doit définir exactement comment écrire ces contrats.
-
----
-
-# 6. CONTRATS DE DONNÉES
-
-Le modèle de données central doit être stabilisé très tôt.
-
-Avant de multiplier les fichiers, figer progressivement les structures fondamentales.
-
-Exemple :
-
-FlowEvent
-
-- protocol_version
-- event_type
-- timestamp_usec
-- instance_id
-- flow_node_id
-- execution_lane
-- payload
-
-Mais ne considère pas cet exemple comme définitif.
-
-Ta méthodologie doit déterminer :
-
-- quelles structures doivent être définies en premier ;
-- lesquelles doivent rester flexibles ;
-- lesquelles constituent une API publique stable.
-
----
-
-# 7. CONTRAT RUNTIME ↔ EDITOR
-
-Cette interface doit être traitée comme un protocole.
-
-Définir une méthode permettant de spécifier :
-
-channel ;
-
-version du protocole ;
-
-types d’événements ;
-
-payload ;
-
-gestion des erreurs ;
-
-compatibilité ;
-
-batching ;
-
-compression éventuelle ;
-
-ordre des événements ;
-
-timestamps ;
-
-instance IDs.
-
-Le protocole doit pouvoir évoluer sans casser toutes les couches.
-
-Proposer une stratégie de versionnage.
-
----
-
-# 8. RÈGLES DE DÉPENDANCES
-
-Créer une matrice stricte de dépendances.
-
-Exemple conceptuel :
-
-core/
-
-ne dépend de rien.
-
-static_analysis/
-
-dépend de core/.
-
-runtime/
-
-dépend de core/.
-
-debugger/
-
-dépend de core/.
-
-graph/
-
-dépend de core/.
-
-editor/
-
-dépend de graph/, debugger/, static_analysis/.
-
-Interdire explicitement des relations comme :
-
-core → graph
-
-runtime → editor
-
-runtime → GraphNode
-
-FlowModel → UI widget.
-
-La méthodologie doit expliquer comment vérifier et maintenir ces règles.
-
----
-
-# 9. VERTICAL SLICES
-
-Le développement ne doit PAS uniquement procéder horizontalement module après module.
-
-Il faut utiliser des **vertical slices**.
-
-Un Vertical Slice doit traverser plusieurs couches du système et produire un résultat visible et testable.
-
-Premier exemple possible :
-
-LEVEL 01
-
-↓
-
-Encounter
-
-↓
-
-EnemySpawner.spawn()
-
-↓
-
-EnemyAI.choose_action()
-
-↓
-
-distance < range ?
-
-↓
-
-attack / chase.
-
-Et implémenter seulement ce qui est nécessaire pour traverser :
-
-Static Model
-
-↓
-
-JSON
-
-↓
-
-Graph
-
-↓
-
-Runtime Event
-
-↓
-
-Debugger Bridge
-
-↓
-
-Node Glow
-
-↓
-
-Instance
-
-↓
-
-Project Tree.
-
-Le but est de valider l’architecture complète très tôt.
-
-La méthodologie doit proposer plusieurs Vertical Slices successifs.
-
----
-
-# 10. PLANIFICATION PAR CAPABILITÉS
-
-Ne pas planifier uniquement :
-
-« écrire fichier X »
-
-mais également :
-
-« capacité utilisateur démontrée ».
-
-Exemple :
-
-CAPABILITY 001
-
-Afficher un script et ses fonctions.
-
-CAPABILITY 002
-
-Visualiser un appel entre deux fonctions.
-
-CAPABILITY 003
-
-Visualiser un signal entre deux scripts.
-
-CAPABILITY 004
-
-Afficher une branche TRUE/FALSE.
-
-CAPABILITY 005
-
-Illuminer le chemin runtime.
-
-CAPABILITY 006
-
-Sélectionner Goblin #17.
-
-CAPABILITY 007
-
-Afficher Game → Level → Encounter.
-
-Chaque capability doit avoir :
-
-objectif ;
-
-dépendances ;
-
-tests ;
-
-critères d’acceptation.
-
----
-
-# 11. DÉCOMPOSITION EN TÂCHES ATOMIQUES
-
-Définir une taille maximale de tâche adaptée au développement assisté par IA.
-
-Une tâche ne doit pas être :
-
-« crée tout le Runtime System ».
-
-Elle doit ressembler à :
-
-« implémenter FlowEvent avec sérialisation et tests ».
-
-Ou :
-
-« implémenter l’ajout d’un FlowNode dans FlowModel ».
-
-Chaque tâche doit préciser :
-
-Objective
-
-Files allowed to modify
-
-Files forbidden to modify
-
-Inputs
-
-Outputs
-
-API Contract
-
-Dependencies
-
-Tests
-
-Acceptance Criteria.
-
----
-
-# 12. MICRO-PROMPTS
-
-Concevoir un template standard de micro-prompt.
-
-Chaque micro-prompt doit donner à l’IA uniquement le contexte nécessaire.
-
-Structure recommandée à améliorer :
-
-### RÔLE
-
-Senior Godot tooling engineer.
-
-### PROJET
-
-Godot Visual Program & Execution Explorer.
-
-### SOURCE DE VÉRITÉ
-
-SPEC version X.
-
-Architecture version X.
-
-API contracts version X.
-
-ADR concernés.
-
-### ÉTAT ACTUEL DU PROJET
-
-Fichiers existants pertinents.
-
-APIs publiques pertinentes.
-
-Décisions gelées.
-
-### OBJECTIF
-
-Une seule tâche.
-
-### FICHIERS AUTORISÉS
-
-Liste.
-
-### FICHIERS INTERDITS
-
-Liste.
-
-### API PUBLIQUE
-
-Signatures imposées.
-
-### DÉPENDANCES AUTORISÉES
-
-Liste.
-
-### DÉPENDANCES INTERDITES
-
-Liste.
-
-### INVARIANTS
-
-Liste.
-
-### TESTS
-
-Liste.
-
-### CONTRAINTES GODOT
-
-Godot 4.x ciblé.
-
-GDScript moderne.
-
-Pas de syntaxe legacy.
-
-### SORTIE ATTENDUE
-
-Dépend de l’étape méthodologique.
-
----
-
-# 13. PLAN D’ABORD, CODE ENSUITE
-
-Le développement assisté par IA doit se faire en plusieurs passes.
-
-Ne jamais demander directement le code final d’un composant non trivial.
-
-Concevoir une procédure du type :
-
-## PASS A — Contract Review
-
-L’IA reformule :
-
-responsabilités ;
-
-inputs ;
-
-outputs ;
-
-invariants ;
-
-risques.
-
-Aucun code.
-
-## PASS B — Interface Design
-
-L’IA propose :
-
-classes ;
-
-méthodes ;
-
-signaux ;
-
-types.
-
-Aucun corps complexe.
-
-## PASS C — Test Design
-
-L’IA définit les tests.
-
-## PASS D — Implementation Plan
-
-Algorithmes et flux internes.
-
-## PASS E — Code
-
-Implémentation complète.
-
-## PASS F — Review
-
-Analyse statique du code produit.
-
-## PASS G — Compile / Test
-
-Exécution dans Godot.
-
-## PASS H — Correction
-
-Corriger seulement les erreurs constatées.
-
-## PASS I — Freeze Public API
-
-Geler les contrats validés.
-
-Ta méthodologie doit améliorer ce pipeline.
-
----
-
-# 14. CODE COMPLET UNIQUEMENT
-
-Lorsque le code est demandé :
-
-interdire :
-
-`# TODO`
-
-placeholders ;
-
-pseudo-code caché ;
-
-fonctions vides non justifiées ;
-
-« reste du code identique » ;
-
-« implémentez ceci vous-même ».
-
-Un fichier généré doit être complet pour la tâche demandée.
-
----
-
-# 15. GODOT VERSION CONTROL
-
-Chaque phase doit cibler explicitement une version Godot.
-
-Exemple :
-
-Godot 4.x minimum décidé par le projet.
-
-Éviter les syntaxes Godot 3.
-
-Vérifier :
-
-signals ;
-
-await ;
-
-PackedArrays ;
-
-EditorPlugin APIs ;
-
-EditorDebuggerPlugin ;
-
-GraphEdit ;
-
-EngineDebugger.
-
-Ne pas se contenter de suppositions provenant de mémoire modèle.
-
-Prévoir une procédure de vérification des APIs lorsque nécessaire.
-
----
-
-# 16. TYPAGE STATIQUE
-
-Définir une politique de typage GDScript.
-
-Exemple :
-
-variables typées ;
-
-paramètres typés ;
-
-retours typés ;
-
-Enums pour événements ;
-
-StringName lorsque pertinent ;
-
-Resources ou RefCounted pour modèles stables.
-
-Mais analyser les cas où un Dictionary flexible est préférable, notamment pour les payloads runtime.
-
-Ne pas appliquer le typage dogmatiquement.
-
----
-
-# 17. TEST-FIRST OU TEST-CONTRACT-FIRST
-
-Pour chaque composant, définir d’abord les comportements testables.
-
-Exemple FlowTracer :
-
-Debugger inactive
-
-→ aucun envoi.
-
-Debugger active
-
-→ événement bufferisé.
-
-Buffer plein
-
-→ comportement défini.
-
-Filtre Instance #17
-
-→ Instance #18 ignorée.
-
-Le code n’est généré qu’après définition de ces tests.
-
----
-
-# 18. TYPES DE TESTS
-
-Construire une stratégie comprenant :
-
-unit tests ;
-
-contract tests ;
-
-integration tests ;
-
-protocol tests ;
-
-serialization tests ;
-
-performance tests ;
-
-editor integration tests ;
-
-runtime/editor tests ;
-
-regression tests ;
-
-golden-data tests.
-
-Préciser lesquels sont indispensables au MVP.
-
----
-
-# 19. TESTS DE CONTRAT
-
-Les interactions entre modules doivent posséder des tests spécifiques.
-
-Exemple :
-
-Runtime produit FlowEvent v1.
-
-Debugger Bridge doit pouvoir le décoder.
-
-Event Store doit pouvoir le conserver.
-
-Graph Controller doit pouvoir le consommer.
-
-Tester le contrat indépendamment de l’UI.
-
----
-
-# 20. GOLDEN FIXTURES
-
-Créer des mini-projets et datasets de référence.
-
-Exemples :
-
-`fixtures/simple_call`
-
-A → B.
-
-`fixtures/branch`
-
-A → condition → B/C.
-
-`fixtures/signal`
-
-A emits → B receives.
-
-`fixtures/runtime_instances`
-
-5 Goblins.
-
-`fixtures/game_flow`
-
-Menu → Level → Pause → Resume → Complete.
-
-Ces fixtures doivent servir :
-
-- aux tests ;
-- aux démos ;
-- aux validations de régression ;
-- aux prompts IA.
-
----
-
-# 21. PROJET ROGUELIKE DE RÉFÉRENCE
-
-Maintenir un mini-projet Godot volontairement simple utilisé comme laboratoire.
-
-Il contient :
-
-Hero
-
-EnemySpawner
-
-5 Goblins
-
-EnemyAI
-
-Navigation
-
-Attack
-
-Collision
-
-Damage
-
-UI
-
-Audio
-
-Loot
-
-Level Complete.
-
-Chaque nouvelle capability importante doit être démontrée dessus.
-
----
-
-# 22. DEFINITION OF DONE
-
-Chaque tâche doit posséder une Definition of Done stricte.
-
-Exemple :
-
-Code compile.
-
-Tests passent.
-
-Aucun warning nouveau critique.
-
-API conforme au contrat.
-
-Documentation mise à jour.
-
-Aucune dépendance interdite.
-
-Fixture validée.
-
-Pas de TODO.
-
-ADR créé si décision architecturale nouvelle.
-
----
-
-# 23. CRITÈRES DE PASSAGE DE PHASE
-
-Une nouvelle phase ne démarre pas simplement parce que la précédente « semble terminée ».
-
-Définir des gates.
-
-Exemple :
-
-Phase Static Model terminée si :
-
-- FlowNode stable ;
-- FlowEdge stable ;
-- FlowModel sait créer/charger/sauvegarder ;
-- fixtures simples passent ;
-- API documentée.
-
-Phase Runtime terminée si :
-
-- événement envoyé ;
-- reçu ;
-- stocké ;
-- visualisé ;
-- sans chute de performance excessive.
-
----
-
-# 24. CHANGE REQUEST PROTOCOL
-
-Après stabilisation d’une API, toute modification structurante passe par une Change Request.
-
-Format :
-
-CHANGE REQUEST
-
-Requested change
-
-Reason
-
-Impacted modules
-
-Impacted APIs
-
-Impacted persisted formats
-
-Migration required?
-
-Tests impacted
-
-Backward compatibility
-
-ADR required?
-
-Avant tout code :
-
-l’IA doit analyser l’impact.
-
----
-
-# 25. MIGRATIONS
-
-Le modèle et les formats JSON évolueront.
-
-Prévoir une stratégie :
-
-schema_version ;
-
-migration functions ;
-
-compatibilité ascendante éventuelle ;
-
-messages clairs lorsque format obsolète.
-
-Ne pas attendre V1 pour réfléchir au versionnage.
-
----
-
-# 26. REVUE D’IMPACT
-
-Avant toute modification importante, l’IA doit répondre :
-
-Quels fichiers sont impactés ?
-
-Quels contrats ?
-
-Quels tests ?
-
-Quels formats de données ?
-
-Quels ADR ?
-
-Quelles fixtures ?
-
-Puis seulement proposer la modification.
-
----
-
-# 27. REVUE DE CODE IA
-
-Le code généré par IA ne doit jamais être supposé correct.
-
-Prévoir un deuxième passage distinct :
-
-« Review this code against contract X ».
-
-Chercher notamment :
-
-API inventée ;
-
-mauvaise version Godot ;
-
-dépendance interdite ;
-
-complexité excessive ;
-
-oubli de cas d’erreur ;
-
-allocation excessive ;
-
-problème runtime/editor ;
-
-mauvais type.
-
----
-
-# 28. BOUCLE DE CORRECTION BASÉE SUR LES ERREURS RÉELLES
-
-Lorsqu’une compilation échoue :
-
-ne pas demander :
-
-« Réécris tout le fichier ».
-
-Donner :
-
-code actuel ;
-
-erreur exacte Godot ;
-
-ligne ;
-
-contrat attendu.
-
-Demander une correction minimale.
-
-Le modèle ne doit pas réinventer l’architecture à chaque bug.
-
----
-
-# 29. ÉTAT ACTUEL DU PROJET
-
-Maintenir un résumé machine-readable de l’état.
-
-Exemple :
-
-`PROJECT_STATE.md`
-
-ou JSON équivalent.
-
-Contient :
-
-version ;
-
-fichiers existants ;
-
-APIs publiques ;
-
-modules terminés ;
-
-modules expérimentaux ;
-
-ADR actifs ;
-
-tests connus ;
-
-limitations connues.
-
-Chaque nouvelle session IA reçoit cet état pertinent.
-
----
-
-# 30. CONTEXT PACKS
-
-Ne jamais transmettre toute la SPEC à chaque micro-prompt.
-
-Créer des packs de contexte.
-
-Exemple :
-
-CORE PACK
-
-- FlowNode
-- FlowEdge
-- FlowModel
-- ADR core.
-
-RUNTIME PACK
-
-- FlowEvent
-- Runtime Protocol
-- FlowTracer contract
-- relevant ADR.
-
-GRAPH PACK
-
-- FlowModel API
-- rendering architecture
-- relevant ADR.
-
-Cela limite le bruit contextuel.
-
----
-
-# 31. PRINCIPE « MINIMUM CONTEXT SUFFICIENT »
-
-Donner à l’IA :
-
-assez de contexte pour respecter l’architecture ;
-
-mais pas 50 pages inutiles à la tâche.
-
-Définir une méthode de sélection du contexte.
-
----
-
-# 32. CONTEXT CHECKSUM HUMAIN
-
-Chaque micro-prompt peut commencer par une courte section :
-
-NON-NEGOTIABLE RULES
-
-Par exemple :
-
-FlowModel indépendant UI.
-
-Runtime ne dépend jamais Editor.
-
-Static Definition ≠ Runtime Instance.
-
-Complete Model ≠ Current View.
-
-No Godot 3 syntax.
-
-Cela sert de rappel des invariants les plus importants.
-
----
-
-# 33. NE PAS ABUSER DE LA RÉPÉTITION
-
-La répétition des contraintes critiques est utile.
-
-Mais éviter de copier toute la constitution dans chaque prompt.
-
-Définir :
-
-règles globales ;
-
-règles du module ;
-
-règles de la tâche.
-
----
-
-# 34. ROADMAP MÉTHODOLOGIQUE
-
-Construire une roadmap de développement assisté par IA.
-
-Une stratégie possible à challenger :
-
-## Phase 0 — Constitution
-
-SPEC
-
-Glossary
-
-Scope.
-
-## Phase 1 — Core concepts
-
-FlowNode
-
-FlowEdge
-
-FlowModel
-
-TemporalBlock.
-
-## Phase 2 — Contracts
-
-Runtime protocol
-
-Persistence
-
-Module interfaces.
-
-## Phase 3 — Static vertical slice
-
-JSON → Model → Graph.
-
-## Phase 4 — Runtime vertical slice
-
-Game event → Buffer → Debugger → Graph glow.
-
-## Phase 5 — Code understanding
-
-Calls
-
-Signals
-
-Functions.
-
-## Phase 6 — Game Flow
-
-Game → Level → Encounter.
-
-## Phase 7 — Runtime Instances
-
-Goblin #17.
-
-## Phase 8 — Timeline
-
-History / replay.
-
-## Phase 9 — Diagnostics
-
-Expected / Actual.
-
-## Phase 10 — Explain / Tune.
-
-## Phase 11 — Performance.
-
-## Phase 12 — Static analysis automation.
-
-## Phase 13 — AI Snapshot.
-
-Tu dois analyser et éventuellement réorganiser cette roadmap.
-
----
-
-# 35. PRIORITÉ À LA PREUVE DE VALEUR
-
-Le projet étant ambitieux, identifier le plus tôt possible les fonctionnalités qui prouvent sa valeur.
-
-Exemple de premier succès :
-
-voir :
-
-EnemySpawner.spawn()
-
-↓
-
-EnemyAI.choose_action()
-
-↓
-
-condition
-
-↓
-
-chase()
-
-sur un graphe ;
-
-puis lancer le jeu ;
-
-voir Goblin #17 emprunter réellement la branche chase.
-
-Ce résultat doit être obtenu très tôt.
-
----
-
-# 36. SPIKES TECHNIQUES
-
-Pour les sujets risqués, ne pas les intégrer directement dans l’architecture principale.
-
-Créer des spikes isolés.
-
-Exemples :
-
-Spike GraphEdit limitations.
-
-Spike EditorDebugger communication.
-
-Spike GDScript static analysis.
-
-Spike custom timeline drawing.
-
-Spike 10k nodes performance.
-
-Spike 10k runtime events/sec.
-
-Chaque spike doit répondre à une question précise.
-
----
-
-# 37. PROTOTYPES JETABLES
-
-Autoriser explicitement des prototypes jetables.
-
-Un spike n’est pas automatiquement du code de production.
-
-Prévoir la décision :
-
-KEEP
-
-REWRITE
-
-DISCARD.
-
----
-
-# 38. BUDGETS DE PERFORMANCE
-
-Définir tôt des budgets.
-
-Exemples à déterminer :
-
-maximum overhead runtime tracing ;
-
-maximum UI refresh rate ;
-
-maximum visible nodes ;
-
-maximum events retained ;
-
-maximum memory for trace buffer ;
-
-maximum acceptable serialization time.
-
-Ne pas attendre que l’application soit lente pour réfléchir aux limites.
-
----
-
-# 39. OBSERVABILITÉ DU PLUGIN
-
-Le plugin doit pouvoir mesurer ses propres coûts.
-
-Par exemple :
-
-events received/sec ;
-
-events dropped ;
-
-buffer occupancy ;
-
-graph nodes visible ;
-
-graph render time ;
-
-memory ;
-
-latency runtime → editor.
-
-Intégrer ces métriques au développement.
-
----
-
-# 40. NIVEAUX DE STABILITÉ
-
-Marquer les composants :
-
-EXPERIMENTAL
-
-INTERNAL
-
-STABLE
-
-PUBLIC.
-
-Une API Experimental peut évoluer rapidement.
-
-Une API Stable nécessite Change Request + migration.
-
----
-
-# 41. BRANCHING ET VERSION CONTROL
-
-Proposer une stratégie Git adaptée.
-
-Exemple :
-
-main stable ;
-
-feature branches ;
-
-small commits ;
-
-one capability per PR ;
-
-ADR et tests dans le même changement.
-
-Définir ce que l’IA peut modifier dans une tâche.
-
----
-
-# 42. COMMIT HYGIENE
-
-Chaque étape validée doit être isolable.
-
-Exemple :
-
-feat(core): add FlowEdge model
-
-test(core): add FlowEdge serialization tests
-
-docs(adr): define static/runtime separation.
-
-Cela facilite rollback et comparaison.
-
----
-
-# 43. STRATÉGIE DE REFACTORING
-
-Le projet évoluera.
-
-Définir quand refactorer.
-
-Ne pas refactorer pendant chaque micro-tâche.
-
-Créer des tâches dédiées.
-
-Toute refactorisation doit préserver :
-
-tests ;
-
-contrats ;
-
-fixtures.
-
----
-
-# 44. GESTION DE LA DETTE TECHNIQUE
-
-Créer éventuellement :
-
-`TECH_DEBT.md`.
-
-Pour chaque dette :
-
-reason ;
-
-impact ;
-
-temporary workaround ;
-
-planned phase.
-
-Ne pas masquer une dette sous un TODO silencieux.
-
----
-
-# 45. GESTION DES INCONNUES
-
-Lorsque l’IA ne connaît pas avec certitude une API Godot :
-
-ne pas inventer.
-
-Elle doit :
-
-signaler l’incertitude ;
-
-demander une vérification documentaire ou la réaliser si elle dispose d’un accès documentation ;
-
-proposer éventuellement une abstraction temporaire.
-
----
-
-# 46. ANTI-HALLUCINATION
-
-La méthodologie doit inclure explicitement :
-
-ne pas inventer d’API ;
-
-ne pas inventer de fichiers existants ;
-
-ne pas modifier silencieusement les contrats ;
-
-ne pas changer de version Godot ;
-
-ne pas remplacer une décision architecturale sans ADR ;
-
-ne pas prétendre qu’un test a réussi sans l’avoir exécuté ;
-
-ne pas considérer une hypothèse comme un fait.
-
----
-
-# 47. GODOT LEGACY BLACKLIST
-
-Définir si nécessaire une liste de patterns legacy interdits correspondant à la version Godot retenue.
-
-Mais cette liste doit être maintenue et vérifiée, pas copiée aveuglément.
-
-L’objectif est :
-
-pas de syntaxe Godot 3 accidentelle ;
-
-pas d’API obsolète ;
-
-pas de patterns incompatibles avec la version ciblée.
-
----
-
-# 48. RELECTURE HUMAINE
-
-Identifier les endroits où une validation humaine est obligatoire.
-
-Exemples :
-
-ADR majeur ;
-
-changement Data Model ;
-
-modification protocol ;
-
-migration schema ;
-
-nouvelle dépendance ;
-
-changement public API ;
-
-suppression de fonctionnalité.
-
-L’IA peut proposer.
-
-Elle ne doit pas décider automatiquement tous les changements structurants.
-
----
-
-# 49. AUTONOMIE PROGRESSIVE DE L’IA
-
-Au début :
-
-validation humaine fréquente.
-
-Lorsque contrats et tests sont stables :
-
-l’IA peut exécuter des tâches plus autonomes.
-
-Définir différents niveaux :
-
-LEVEL 0 — analysis only
-
-LEVEL 1 — design proposal
-
-LEVEL 2 — single file implementation
-
-LEVEL 3 — small multi-file change
-
-LEVEL 4 — feature implementation under stable contracts.
-
-Ne jamais donner automatiquement LEVEL 4 sur une zone expérimentale.
-
----
-
-# 50. CHECKLIST AVANT CHAQUE PROMPT DE CODE
-
-Construire une checklist.
-
-Exemple :
-
-La responsabilité est-elle claire ?
-
-Le contrat existe-t-il ?
-
-Les dépendances sont-elles connues ?
-
-Les tests sont-ils définis ?
-
-La version Godot est-elle fixée ?
-
-Les fichiers autorisés sont-ils connus ?
-
-Les ADR pertinents sont-ils fournis ?
-
-La tâche est-elle assez petite ?
-
-Si non :
-
-ne pas coder.
-
----
-
-# 51. CHECKLIST APRÈS GÉNÉRATION
-
-Vérifier :
-
-compile ?
-
-tests ?
-
-contrat respecté ?
-
-dépendances ?
-
-syntaxe Godot ?
-
-TODO ?
-
-API inventée ?
-
-performance ?
-
-documentation ?
-
-fixtures ?
-
-ADR nécessaire ?
-
----
-
-# 52. RAPPORT DE FIN DE TÂCHE
-
-Chaque micro-tâche doit produire un mini rapport :
-
-Files changed
-
-Public APIs added
-
-Public APIs changed
-
-Tests added
-
-Tests passed
-
-Known limitations
-
-New debt
-
-ADR required?
-
-Next dependency.
-
-Cela maintient la continuité entre sessions IA.
-
----
-
-# 53. GESTION DU CONTEXTE ENTRE CONVERSATIONS
-
-Le projet peut durer plusieurs mois.
-
-Ne jamais dépendre uniquement de la mémoire d’une conversation IA.
-
-Toutes les décisions importantes doivent être matérialisées dans :
-
-SPEC
-
-Architecture
-
-ADR
-
-Contracts
-
-Tests
-
-Project State.
-
-Les conversations ne sont pas la source de vérité.
-
----
-
-# 54. MÉTHODE DE DÉVELOPPEMENT RECOMMANDÉE
-
-À partir de tout ce contexte, propose une méthode globale ressemblant éventuellement à :
-
-SPEC
-
-↓
-
-ARCHITECTURE
-
-↓
-
-ADR
-
-↓
-
-CORE MODEL
-
-↓
-
-CONTRACTS
-
-↓
-
-TESTS
-
-↓
-
-VERTICAL SLICE
-
-↓
-
-VALIDATION
-
-↓
-
-FREEZE
-
-↓
-
-NEXT CAPABILITY.
-
-Mais construis toi-même la meilleure version.
-
----
-
-# 55. LIVRABLE ATTENDU
-
-À partir de toutes ces contraintes, produis un document intitulé :
-
-**Méthodologie de construction du Godot Visual Program & Execution Explorer**
-
-Il doit contenir au minimum :
-
-1. Philosophie de développement.
-
-2. Constitution du projet.
-
-3. Sources de vérité.
-
-4. Structure documentaire.
-
-5. ADR.
-
-6. Modèle de contrats.
-
-7. Dependency rules.
-
-8. Data contracts.
-
-9. Runtime protocol governance.
-
-10. Vertical slices.
-
-11. Capabilities.
-
-12. Atomic tasks.
-
-13. Micro-prompts.
-
-14. Plan-before-code workflow.
-
-15. Test strategy.
-
-16. Fixtures.
-
-17. Definition of Done.
-
-18. Phase gates.
-
-19. Change Request protocol.
-
-20. Impact analysis.
-
-21. Migration strategy.
-
-22. AI code review.
-
-23. Compile/test/correct loop.
-
-24. Project State.
-
-25. Context Packs.
-
-26. Anti-hallucination rules.
-
-27. Godot version discipline.
-
-28. Performance budgets.
-
-29. Technical spikes.
-
-30. Git strategy.
-
-31. Refactoring strategy.
-
-32. Technical debt.
-
-33. Human validation gates.
-
-34. AI autonomy levels.
-
-35. Pre-code checklist.
-
-36. Post-code checklist.
-
-37. Task completion report.
-
-38. Recommended roadmap.
-
-39. First Vertical Slice.
-
-40. Recommended first 20 development tasks.
-
----
-
-# 56. POUR LES 20 PREMIÈRES TÂCHES
-
-Pour chacune fournir :
-
-Task ID
-
-Title
-
-Objective
-
-Why now?
-
-Dependencies
-
-Documents required
-
-Files expected
-
-Contracts required
-
-Tests required
-
-Acceptance criteria
-
-Risk
-
-AI autonomy level
-
-Expected output.
-
-Les tâches doivent être suffisamment petites pour être exécutées par une IA sans perdre le contexte global.
-
----
-
-# 57. POUR CHAQUE PHASE
-
-Indiquer :
-
-Goal
-
-Capabilities delivered
-
-Technical work
-
-Tests
-
-Risks
-
-Entry criteria
-
-Exit criteria
-
-Artifacts produced
-
-What remains intentionally unsupported.
-
----
-
-# 58. CRITÈRE FONDAMENTAL
-
-La méthodologie doit empêcher trois problèmes majeurs :
-
-### DÉRIVE ARCHITECTURALE
-
-Le projet ne doit pas devenir un assemblage incohérent de fichiers générés indépendamment.
-
-### HALLUCINATION API
-
-Aucune API Godot ou API interne ne doit être inventée silencieusement.
-
-### BIG BANG DEVELOPMENT
-
-Ne jamais essayer de générer l’intégralité du système avant d’avoir validé plusieurs vertical slices.
-
----
-
-# 59. NE PAS SUR-ENGINEER
-
-La méthodologie doit être rigoureuse mais rester adaptée à un projet réel.
-
-Ne crée pas 40 processus bureaucratiques inutiles.
-
-Pour chaque mécanisme proposé, demande :
-
-« Quel risque concret ce mécanisme évite-t-il ? »
-
-Si la réponse n’est pas claire, simplifie.
-
----
-
-# 60. OBJECTIF FINAL
-
-À la fin de ton travail, je dois disposer non pas d’un plan du plugin lui-même, mais d’un :
-
-**système de construction du plugin.**
-
-Ce système doit me permettre de prendre la SPEC fonctionnelle du Godot Visual Program & Execution Explorer et de la transformer progressivement en logiciel fonctionnel avec l’aide d’une ou plusieurs IA.
-
-La méthode doit garantir autant que possible :
-
-cohérence ;
-
-testabilité ;
-
-traçabilité ;
-
-progressivité ;
-
-réversibilité ;
-
-maintenabilité ;
-
-contrôle humain ;
-
-stabilité des interfaces ;
-
-limitation des hallucinations ;
-
-validation permanente par des résultats concrets.
-
-Construis maintenant cette méthodologie complète.
+Termine par deux checklists courtes, avant/après une tâche, et une vérification de cohérence : aucune tâche sans preuve, aucun contrat critique sans responsable, aucune API incertaine présentée comme vérifiée, aucun processus sans risque identifié. Les approbations portent sur des changements concrets et sur les décisions non déjà couvertes par le mandat.

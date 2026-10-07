@@ -1,2043 +1,250 @@
-Tu es un architecte logiciel senior spécialisé dans Godot Engine, tooling développeur, debugging, visualisation nodale, analyse statique, runtime tracing, UX d’outils techniques, profiling, architecture logicielle, systèmes événementiels et outils d’aide à la compréhension de code.
+# Prompt de conception — Godot Visual Program & Execution Explorer
 
-Ta mission n’est PAS de coder immédiatement le plugin.
+Version révisée 2.0 — 7 octobre 2026
 
-Ta mission est de **concevoir le plan complet, réaliste, progressif et techniquement crédible d’un projet de plugin Godot**, en structurant correctement les objectifs, les couches fonctionnelles, les modèles de données, les vues, les contraintes techniques, les priorités et la feuille de route.
+## 1. Mission et résultat attendu
 
-Le projet doit être pensé comme un véritable outil de développement destiné à comprendre un projet Godot dans sa globalité.
+Agis comme un architecte logiciel spécialisé dans les outils de développement Godot, l’analyse de code et l’observation de l’exécution.
 
----
+Produis le plan directeur d’un plugin permettant de comprendre un projet Godot par une carte navigable de son architecture, de sa logique, de ses données et de ses exécutions. Cette carte relie les scènes, scripts, fonctions, ressources, événements et instances au code correspondant.
 
-# 1. INTENTION CENTRALE DU PROJET
+La mission actuelle est la conception : ne code pas le plugin. Des exemples courts de schémas, de contrats ou de données sont autorisés lorsqu’ils lèvent une ambiguïté. Distingue explicitement tes propositions des décisions déjà validées.
 
-Je veux créer un outil permettant de construire et explorer une **carte visuelle complète d’un programme Godot**.
+Le résultat doit permettre de décider quoi construire, comment en démontrer la valeur et quelles inconnues lever avant d’investir dans les fonctionnalités avancées. Il servira ensuite d’entrée au prompt de méthodologie.
 
-Cette carte doit relier :
+## 2. Contexte à établir
 
-- l’architecture du projet ;
-- les scènes ;
-- les scripts ;
-- les classes ;
-- les fonctions ;
-- les appels entre fonctions ;
-- les appels entre scripts ;
-- les signaux ;
-- les ressources ;
-- les paramètres ;
-- les états ;
-- les décisions ;
-- les embranchements logiques ;
-- les événements ;
-- la temporalité ;
-- les threads ou execution lanes ;
-- les instances runtime ;
-- les performances ;
-- les événements réellement exécutés.
+Commence par un tableau : information connue, hypothèse de travail, conséquence, vérification nécessaire.
 
-Le plugin ne doit PAS être un remplacement du code par de la programmation visuelle.
+Recherche dans les éléments fournis : version exacte de Godot et édition standard/.NET, langages du projet, plateformes visées, taille représentative du projet, équipe et disponibilité, politique de dépendances, accès aux sources et possibilités d’instrumentation.
 
-Ce n’est PAS un clone de Blueprints.
+À défaut d’information, utilise ces hypothèses révisables :
 
-Ce n’est PAS un système permettant de programmer entièrement le jeu avec des nodes.
+- un développeur assisté par IA ;
+- plugin local pour l’éditeur Godot 4, projet GDScript et exécution desktop de développement ;
+- instrumentation explicite acceptée sur un mini-projet de démonstration ;
+- un processus de jeu et une session active pour la première preuve ;
+- APIs publiques du moteur ; aucune modification du moteur ni dépendance native obligatoire au MVP ;
+- service IA distant facultatif et hors du chemin critique.
 
-C’est un **outil de cartographie, compréhension, inspection, traçage, debugging et analyse du code existant**.
+Ne transforme pas « Godot 4.x » en garantie de compatibilité. Si aucune version exacte n’est fournie, indique « version cible à fixer avant le premier prototype exécutable ». Tu peux poursuivre la conception sous cette réserve. Ne choisis pas une prétendue dernière version de mémoire.
 
-L’objectif principal est :
+Ne pose une question bloquante que si aucune hypothèse réversible ne permet de poursuivre. Regroupe les autres décisions à confirmer à la fin.
 
-**comprendre comment le jeu fonctionne, étape par étape, depuis la structure globale du programme jusqu’aux fonctions et décisions internes qui produisent le comportement réel du jeu.**
+## 3. Vision et invariants
 
----
+La question directrice est : « Comment ce jeu fonctionne-t-il, qu’a-t-on réellement observé et où intervenir pour modifier son comportement ? »
 
-# 2. PRINCIPE ARCHITECTURAL CENTRAL
+Le produit analyse le code existant ; la programmation visuelle n’entre pas dans son périmètre.
 
-Le projet doit être pensé autour d’une idée fondamentale :
+Respecte les invariants suivants, identifiés pour être réutilisés par la méthodologie :
 
-**le modèle complet du programme existe indépendamment de la vue affichée.**
+- INV-01 — Le modèle du programme existe indépendamment des widgets et de la vue affichée.
+- INV-02 — Une définition statique, une instance runtime et une occurrence d’exécution sont distinctes.
+- INV-03 — Les informations extraites, déclarées, observées et inférées conservent leur provenance.
+- INV-04 — Une information non observée n’est pas une preuve de non-exécution.
+- INV-05 — Ordre chronologique, relation causale et intention attendue sont distincts.
+- INV-06 — Le runtime ne dépend pas de l’éditeur ni de son interface.
+- INV-07 — La collecte, le stockage et l’affichage ont des limites explicites ; les pertes sont visibles.
+- INV-08 — Toute trace et tout lien source indiquent la révision du programme à laquelle ils se rapportent.
 
-Il faut donc distinguer :
+« Complete Program Model » désigne le modèle global disponible, potentiellement partiel et chargé progressivement. Ce terme ne promet ni une connaissance exhaustive du programme ni son chargement intégral en mémoire. La couverture et les inconnues sont consultables.
 
-COMPLETE PROGRAM MODEL
+## 4. Dimensions à relier sans les confondre
 
-et
+Définis cinq dimensions, partageant des identifiants et des références :
 
-CURRENT VISUAL VIEW.
+| Dimension | Question | Contenu principal |
+| --- | --- | --- |
+| Architecture | Qu’est-ce qui existe ? | Systèmes, scènes, scripts, classes, fonctions, signaux, ressources, autoloads |
+| Logique | Quels comportements sont possibles ? | Appels, retours, conditions, branches, boucles, états, signaux, attente |
+| Données | D’où vient une valeur et où est-elle utilisée ? | Paramètres, lectures, écritures, dépendances, valeurs et portée |
+| Game Flow | Quels épisodes de jeu se déroulent ? | Jeu, niveau, quête, rencontre, vague, interruptions et transitions |
+| Exécution | Qu’a-t-on observé pendant une session ? | Instances, événements, occurrences temporelles, mesures et lacunes |
 
-Le modèle peut contenir :
+La hiérarchie des fichiers et fonctions n’est pas la hiérarchie temporelle du jeu. Un système peut participer à plusieurs encounters ; un encounter peut mobiliser plusieurs systèmes. Prévois ces relations sans imposer un arbre universel Game → Level → System → Script.
 
-- des centaines de scripts ;
-- des milliers de fonctions ;
-- des milliers de relations.
+## 5. Capacités produit à couvrir
 
-Mais l’interface ne doit afficher que le niveau de détail nécessaire selon le zoom, le système sélectionné, le contexte ou le mode d’analyse.
+Conserve toutes les capacités suivantes dans la vision, puis classe-les en POC, MVP, V1, ADVANCED ou EXPERIMENTAL. POC = preuve technique et utilisateur ; MVP = premier outil utile sur un petit projet réel ; V1 = version consolidée et documentée.
 
-Analogie :
+| Famille | Capacités attendues |
+| --- | --- |
+| Carte | Groupes fonctionnels repliables, filtres, recherche, zoom par niveau de détail, scènes/scripts/fonctions, relations typées |
+| Navigation | Appelants/appelés, signaux, dépendances de données, expansion bornée des chemins, ouverture du fichier et de la zone source |
+| Logique | Conditions if/else/match, branches alternatives, transitions d’état, appels entre scripts |
+| Temporalité | Game Flow déclaré, blocs imbriqués, pauses, reprises, échecs, abandons, boucles, occurrences concurrentes |
+| Runtime | Sélection d’instance, surbrillance des événements et relations attestées, historique borné, filtres et relecture de trace |
+| Données | Origine et usages d’un paramètre, valeur définie/effective/observée, dernière écriture connue, ressources partagées |
+| Diagnostic | Expected vs Actual, comparaison d’instances, divergence observée, preuves disponibles et investigations suivantes |
+| Compréhension | Explain Mode, descriptions techniques et fonctionnelles, documentation/commentaires/annotations, hypothèses IA identifiées |
+| Intervention | Tune Mode et InterventionPoints : fichier, fonction, paramètre, portée et dépendances potentiellement affectées |
+| Performance | Mesures disponibles de frame/CPU/GPU/mémoire/physique/scripts, appels, métriques gameplay, corrélation temporelle |
+| Export | Modèle déclaratif, traces, baselines, annotations, layouts, contexte IA JSON et représentation PNG |
 
-une carte géographique possède toutes les informations d’un territoire, mais n’affiche pas chaque rue lorsque l’utilisateur regarde le pays entier.
+Map, Game Flow, Logic, Data Flow, Runtime, Debug, Explain, Tune, Performance et AI Context sont des projections ou parcours utilisateur. Ils ne nécessitent pas dix sous-systèmes indépendants dès le MVP.
 
-Le plugin doit fonctionner selon le même principe.
+Pour chaque capacité : bénéfice utilisateur, priorité, acquisition des données, couverture, dépendances, difficulté qualitative, risque principal et critère observable de réussite. Une alternative manuelle ou instrumentée est acceptable si son coût est explicite.
 
----
+## 6. Acquisition et niveau de preuve
 
-# 3. LES QUATRE DIMENSIONS FONDAMENTALES DU MODÈLE
+Construis une matrice de faisabilité avec les colonnes suivantes : capacité, données nécessaires, mécanisme réel, version/API ou outil à vérifier, couverture, cas non résolus, repli, prototype de validation.
 
-Le plan du projet doit distinguer explicitement au minimum quatre grandes couches.
+Distingue :
 
-## A. ARCHITECTURE
+1. inventaire des fichiers, scènes, ressources et métadonnées de scripts ;
+2. extraction syntaxique des déclarations et de relations simples ;
+3. résolution sémantique des types, appels et références ;
+4. annotations et Game Flow explicitement déclarés ;
+5. instrumentation explicite, puis assistée ;
+6. inférence heuristique ou IA, toujours identifiable et révocable.
 
-Répond à :
+Vérifie les APIs publiques dans la documentation de la version retenue. Fournis le symbole exact, la source officielle et ce qu’elle permet réellement. Sans accès documentaire, marque « non vérifié » et propose une vérification ; n’invente pas de signature.
 
-« Qu’est-ce qui existe dans le projet ? »
+Les métadonnées de Script, l’accès au texte source, un AST, un graphe de contrôle et un graphe d’appels sont des résultats différents. Ne suppose pas qu’une API de réflexion fournit les autres. Les regex ne constituent pas un analyseur sémantique général.
 
-Exemples :
+Traite explicitement l’héritage, les scènes instanciées/héritées, les overrides, les autoloads, les Callables, groupes, chemins calculés, connexions dynamiques et objets créés à l’exécution. Déclare C#, GDExtension et les sources absentes comme périmètres distincts.
 
-- systèmes ;
-- scènes ;
-- scripts ;
-- classes ;
-- fonctions ;
-- ressources ;
-- autoloads ;
-- paramètres ;
-- états.
+Prévois les fichiers invalides ou en cours d’édition, l’annulation de l’indexation et un résultat partiel exploitable. Évalue les effets de chargement et d’initialisation des scripts, notamment @tool ; n’instancie pas arbitrairement le projet pour l’indexer.
 
----
+Une relation peut avoir plusieurs preuves. Stocke séparément sa provenance, sa résolution (résolue/partielle/non résolue), sa fraîcheur et, si utile, un niveau de confiance qualitatif justifié. Une observation confirme un cas d’exécution, pas tous les cas possibles.
 
-## B. LOGIC FLOW
+## 7. Modèle de données et identités
 
-Répond à :
+Propose le plus petit modèle extensible couvrant les invariants. Évalue notamment : ProgramSnapshot, Definition, Relation, SourceAnchor, Evidence, RuntimeSession, RuntimeInstance, TraceEvent, Span, TemporalBlockDefinition, TemporalBlockOccurrence, ExecutionLane, Metric, ExpectedFlow, Issue, Annotation et InterventionPoint.
 
-« Comment le programme peut-il fonctionner ? »
+Ces noms désignent des concepts candidats du plugin, pas des classes Godot existantes. Justifie les abstractions retenues ; n’impose pas une classe à chaque nom produit.
 
-Exemples :
+Pour les entités du POC/MVP : responsabilité, champs requis/optionnels, identifiants, cardinalités, propriétaire des données, invariants et un exemple cohérent. Décris les extensions ultérieures sans figer leurs détails.
 
-- fonction A appelle fonction B ;
-- script A déclenche script B ;
-- signal A est émis ;
-- fonction B reçoit ce signal ;
-- condition TRUE ;
-- condition FALSE ;
-- transition d’état ;
-- instanciation d’une scène ;
-- lecture d’un paramètre ;
-- écriture dans une variable ;
-- await ;
-- fork ;
-- join.
+Décisions indispensables :
 
----
+- identifiant de définition distinct du chemin et de la ligne ; comportement documenté lors des renommages et déplacements ;
+- ancrage source avec révision/empreinte et plage si disponible ; lien périmé explicitement signalé ;
+- identité runtime bornée par session et processus ; ID d’objet et NodePath utilisés comme informations contextuelles, sans promesse de stabilité intersessions ;
+- identité d’une occurrence et corrélations de type span/parent/cause quand elles sont observables ;
+- références non résolues conservées sans inventer leur cible ;
+- séparation des informations générées, annotations humaines et suggestions IA ; politique de conflit lors d’une réindexation ;
+- cycles autorisés dans les appels et transitions ; règles distinctes pour les hiérarchies de containment ;
+- session liée à un instantané du code ; politique explicite après modification ou rechargement pendant une capture.
 
-## C. GAME FLOW
+Les relations sont typées : appel/retour, émission/réception de signal, instanciation, lecture/écriture, branche, changement d’état, ressource, dépendance de données, attente, fork/join, succession/interruption/reprise. Ne transforme pas une simple proximité temporelle en arête causale.
 
-Répond à :
+## 8. Temporalité, instances et lanes
 
-« Comment le jeu se déroule dans le temps ? »
+Sépare :
 
-Le jeu doit être modélisé comme une succession et une hiérarchie d’événements temporels.
+- le déroulement déclaré d’un niveau et ses occurrences pendant des sessions réelles ;
+- le temps monotone du processus, les frames/ticks de physique et le temps de simulation ;
+- la durée écoulée, la durée active et le temps CPU lorsque celui-ci est effectivement mesuré ;
+- thread OS, tâche asynchrone, phase du moteur et lane logique.
 
-Exemples :
+Un await ne prouve pas la création d’un thread. N’affiche pas des threads internes audio/physique/GPU comme observés sans mécanisme vérifié.
 
-GAME
+Définis le cycle de vie des blocs : non démarré, actif, suspendu, terminé, échoué, abandonné ; ajoute « incomplet/inconnu » lorsque la trace manque. Traite reprise, retry, réentrance, boucles, chevauchement, annulation et arrêt avant réception d’un événement de fin. Un bloc parent ne suffit pas à représenter toutes les relations causales.
 
-→ Main Menu
+Une vue logique utilise des positions sémantiques ; une timeline métrique utilise un temps mesuré et une unité indiquée. Le zoom peut changer la projection et l’agrégation ; il ne doit pas faire passer un ordre narratif pour une durée proportionnelle.
 
-→ Level 1
+« Replay » signifie d’abord relecture du journal et reconstruction de ses vues. Le rejeu déterministe du jeu ou le retour arrière de son état demanderaient une conception séparée et restent hors MVP.
 
-→ Level 2
+## 9. Runtime, transport et Event Store
 
-→ Level 3
+Étudie une chaîne découplée : instrumentation → collecte bornée → transport → validation → Event Store → projections → interface. Le modèle n’émet pas directement d’actions sur des GraphNode.
 
-→ Final Boss
+Événements envisagés : entrée/sortie de fonction, décision avec résultat, émission/réception de signal, changement d’état ou paramètre, création/destruction d’instance, collision, chargement de ressource, début/fin d’activité asynchrone, événement personnalisé et mesure.
 
-→ Victory
+Pour chacun, indique qui le produit. Le transport de messages du debugger ne constitue pas à lui seul une instrumentation automatique de toutes les fonctions et variables.
 
-→ Credits
+Définis un contrat initial minimal : version de protocole, capacités négociées, session/processus, révision du programme, producteur, numéro de séquence, horodatage et domaine d’horloge, type, références de définition/instance, corrélations optionnelles, charge utile bornée. Les identifiants ou compteurs exposés à une perte de précision JSON doivent avoir une représentation sûre et testable.
 
-Mais un niveau lui-même est un bloc temporel.
+Précise :
 
-Exemple :
+- démarrage, arrêt, connexion tardive, reconnexion et incompatibilité ;
+- absence de debugger, capture désactivée et configuration d’export ;
+- filtrage avant les coûts évitables, taille du buffer, taille/fréquence des lots ;
+- politique de saturation : échantillonnage, agrégation, priorités, abandon et compteurs de pertes ;
+- événements de contrôle et marqueurs de lacune, y compris si leur propre transport est retardé ;
+- ordre par producteur, limites de l’ordre global, doublons et références reçues tardivement ;
+- collecte multi-thread éventuelle, synchronisation et point d’envoi vérifié ;
+- validation des types, tailles, versions et profondeur ; aucune sérialisation d’objets vivants arbitraires ;
+- historique borné, indexation, arrêt incomplet et export de trace exploitable.
 
-LEVEL 1
+Ne promets pas zéro perte avec une mémoire finie et un débit illimité. Une priorité élevée réduit un risque de perte ; elle ne l’annule pas. Préserve la distinction entre événement absent, filtré, échantillonné, perdu et capture non active.
 
-→ initialization
+## 10. Diagnostic, paramètres et explications
 
-→ exploration
+Expected Flow peut provenir d’une déclaration, d’un fichier .flow.json, d’une machine à états ou d’une baseline choisie. Une suggestion IA n’a pas la même autorité. Toute comparaison mentionne la version du code, la configuration, le scénario, la fenêtre observée et la couverture de capture.
 
-→ encounter 01
+Une comparaison d’instances aligne des étapes sémantiques et des contextes pertinents, pas seulement leurs timestamps. Affiche les preuves, la première divergence connue, les inconnues et les vérifications proposées. N’annonce pas automatiquement une cause racine.
 
-→ encounter 02
+Pour une valeur, distingue défaut du script, configuration de ressource/scène, override d’instance et observation runtime. « Dernière écriture connue » doit indiquer son instant et son périmètre d’observation. Une dépendance statique décrit un impact potentiel ; elle ne prouve pas l’effet de toutes les modifications.
 
-→ boss
+Tune Mode localise d’abord les points d’intervention. L’édition directe est une capacité ultérieure distincte : portée, prévisualisation, annulation et persistance doivent alors être spécifiées. Les explications fonctionnelles renvoient à leurs sources et n’inventent pas l’intention du développeur.
 
-→ level complete
+## 11. Architecture et interface
 
-Et un encounter est lui-même un bloc temporel.
+Décris les responsabilités et dépendances de : core/model, acquisition statique, annotations, runtime, adaptateur debugger, Event Store, requêtes/projections, visualisation, intégration éditeur, persistance/export et diagnostics.
 
-Exemple :
+Un core GDScript peut utiliser les types fondamentaux de Godot. Son indépendance signifie absence de dépendance aux widgets, services éditeur et objets vivants du jeu. Isole le petit contrat partagé nécessaire au runtime, sans embarquer tout le modèle d’analyse.
 
-Encounter
+Compare GraphEdit, dessin personnalisé et approche hybride sur le périmètre réellement visible. Prévois un prototype comparatif avant une infrastructure graphique complexe. Considère coût des widgets, densité des arêtes, picking, mise en page, agrégation et navigation clavier.
 
-→ player enters zone
+Prévois recherche, fil d’Ariane, historique de navigation, filtres de relations, limites d’expansion et niveaux de détail. Les états ne doivent pas dépendre uniquement de la couleur ou d’un glow éphémère.
 
-→ doors close
+La sélection du graphe et l’arborescence res:// doivent pouvoir se rejoindre ; le POC peut commencer par l’ouverture d’une référence source. L’intégration profonde aux panneaux de l’éditeur reste soumise aux APIs disponibles.
 
-→ enemies spawn
+Traite activation/désactivation du plugin, nettoyage des connexions et docks, séparation editor/runtime, installation et retrait de l’instrumentation. Donne une arborescence proposée, explicitement distincte d’un dépôt existant.
 
-→ combat
+## 12. Performance, persistance et exports
 
-→ enemies defeated
+Propose des budgets initiaux à mesurer sur une machine et une fixture nommées : entités/arêtes indexées, éléments visibles, débit d’événements, mémoire, latence de visualisation et surcoût de capture. Présente les nombres comme des objectifs à valider, jamais comme des résultats acquis.
 
-→ loot
+Compare les mêmes scénarios avec collecte désactivée puis activée. Distingue charge stable et rafale, coûts runtime et éditeur, temps total et percentiles. Expose les coûts propres du plugin : événements collectés/reçus/perdus, occupation du buffer, retard, coût de projection et rendu.
 
-→ doors open
+Considère indexation incrémentale, invalidation, caches, requêtes bornées, chargement progressif, batching et rafraîchissement UI découplé du débit. Les traitements de fond respectent les contraintes de thread de chaque API Godot.
 
-Et une attaque ennemie est elle-même un flux temporel.
+Sépare formats déclaratifs versionnés, caches régénérables, layouts/annotations et traces volumineuses. Prévois schema_version, sauvegarde atomique, validation d’import, migrations nécessaires et refus explicite des versions incompatibles. Ne versionne pas par défaut tous les événements runtime avec Git.
 
-Exemple :
+AI Snapshot exporte un sous-graphe pertinent, sa provenance, la couverture de trace, le contexte de session, les références source et les lacunes. Le JSON est la source structurée ; le PNG l’accompagne. Prévois sélection des champs, exclusion des données sensibles, aperçu avant partage et export local sans envoi automatique à un service IA.
 
-TargetDetection
+## 13. Première preuve de valeur et progression
 
-→ Decision
+Conserve le roguelike comme scénario de référence à terme : héros, cinq ennemis, détection, poursuite/attaque, collision, dégâts, UI, audio, mort, loot et fin de niveau.
 
-→ Chase
+Pour le POC, recommande une tranche plus petite :
 
-→ Attack
+- un mini-projet GDScript et un graphe déclaré d’environ six à douze éléments ;
+- un spawn, une décision attack/chase et un résultat de condition instrumenté ;
+- deux instances permettant de vérifier le filtrage et l’identité ;
+- chemin réellement observé affiché, événement sélectionnable, ouverture du code ;
+- Game/Level/Encounter sous forme d’annotations simples si nécessaire ;
+- arrêt/redémarrage de session et comportement documenté sans debugger.
 
-→ Animation
+Le POC est réussi si un développeur peut expliquer, preuves à l’appui, quelle instance a pris quelle branche dans cette démonstration. Un graphe JSON seul ne valide pas encore la collecte runtime ; une animation simulée ne doit pas être présentée comme une capture réelle.
 
-→ Hitbox
+Le MVP ajoute une acquisition statique bornée sur un petit projet réel, l’historique nécessaire, la persistance, des filtres utiles, la visibilité des pertes et une installation fiable. Justifie les ajouts ; n’y inclus pas automatiquement toutes les vues.
 
-→ Collision
+Reporte selon les preuves obtenues : parsing étendu, automatisation d’instrumentation, visualisation massive, diagnostics avancés, profiling détaillé, comparaison multi-session, multi-processus, IA et édition de paramètres.
 
-→ Damage
+Ordonne la roadmap par capacités visibles traversant plusieurs couches. Place les prototypes d’acquisition, communication et rendu assez tôt pour pouvoir changer d’option à faible coût. Pour chaque phase : entrée, capacité livrée, dépendances, travail nécessaire, sortie démontrable, risques et exclusions.
 
-Le projet doit donc gérer des **blocs temporels imbriqués**.
+## 14. Forme du livrable
 
----
+Rends un document autonome intitulé « Plan directeur — Godot Visual Program & Execution Explorer », organisé ainsi :
 
-## D. RUNTIME EXECUTION
+1. Synthèse décisionnelle : valeur, hypothèses, POC, MVP et principales inconnues.
+2. Vision, scénarios utilisateurs et glossaire des distinctions structurantes.
+3. Matrice des capacités, priorités, acquisition et faisabilité.
+4. Architecture, frontières de modules et dépendances.
+5. Modèle minimal, identités et exemples de données cohérents.
+6. Runtime, protocole, temporalité, limites de preuve et diagnostic.
+7. Parcours de navigation, projections et stratégie de rendu.
+8. Performance, persistance, cycle de vie et exports.
+9. POC, MVP, roadmap, critères de passage et risques ordonnés.
+10. Dossier de passage vers la méthodologie et décisions à confirmer.
 
-Répond à :
+Utilise des tableaux pour les comparaisons et, si utile, quelques diagrammes compacts. Évite de redécrire la même fonctionnalité dans plusieurs chapitres. Justifie un choix recommandé et réserve les alternatives aux arbitrages qui changent réellement le coût ou la faisabilité.
 
-« Qu’est-ce qui s’est réellement produit pendant cette exécution ? »
+Le dossier de passage contient : identifiant/révision du plan, statut proposé/validé, paramètres Godot, invariants INV-xx, capacités CAP-xx, périmètres POC/MVP/V1, contrats candidats, inconnues SPIKE-xx et critères d’acceptation. Toute décision non approuvée conserve le statut de proposition.
 
-Exemples :
-
-- telle fonction a réellement été appelée ;
-- telle branche a été empruntée ;
-- telle condition a retourné FALSE ;
-- telle instance a exécuté telle fonction ;
-- telle valeur runtime était 5.4 ;
-- telle fonction a duré 350 µs ;
-- tel thread était actif ;
-- tel événement a eu lieu à tel moment.
-
-Le runtime doit être superposé à la carte structurelle existante.
-
----
-
-# 4. VISION TEMPORELLE DU JEU
-
-La temporalité est une composante fondamentale du projet.
-
-Un niveau n’est pas seulement une scène.
-
-C’est un événement ou bloc temporel qui :
-
-- possède un début ;
-- possède une durée ;
-- contient d’autres événements ;
-- se situe après certains événements ;
-- se situe avant d’autres événements ;
-- peut être interrompu ;
-- peut être terminé ;
-- peut échouer ;
-- peut être abandonné.
-
-Exemple :
-
-GAME START
-
-→ MENU
-
-→ LEVEL 1
-
-→ LEVEL 2
-
-→ BOSS
-
-→ VICTORY
-
-Mais LEVEL 1 peut être interrompu par :
-
-PAUSE
-
-→ RESUME
-
-ou :
-
-QUIT
-
-→ GAME END
-
-ou :
-
-DEATH
-
-→ RETRY
-
-ou :
-
-LEVEL COMPLETE
-
-→ LEVEL 2.
-
-Prévoir donc un lifecycle temporel pouvant contenir des états comme :
-
-NOT_STARTED
-
-ACTIVE
-
-PAUSED
-
-COMPLETED
-
-FAILED
-
-ABORTED.
-
----
-
-# 5. HIÉRARCHIE TEMPORELLE
-
-La carte doit permettre de zoomer depuis la vision du jeu entier jusqu’à la logique d’une fonction.
-
-Exemple :
-
-GAME
-
-↓
-
-LEVEL
-
-↓
-
-ENCOUNTER
-
-↓
-
-BEHAVIOR
-
-↓
-
-SYSTEM
-
-↓
-
-SCRIPT
-
-↓
-
-FUNCTION
-
-↓
-
-DECISION
-
-↓
-
-PARAMETER.
-
-L’utilisateur doit pouvoir naviguer dans les deux sens.
-
----
-
-# 6. GRANULARITÉ TEMPORELLE VARIABLE
-
-L’axe horizontal représente la temporalité.
-
-Mais l’unité temporelle change selon le niveau de zoom.
-
-Vue GAME :
-
-Menu | Level 1 | Level 2 | Boss | Victory
-
-Vue LEVEL :
-
-Init | Exploration | Encounter | Boss | Complete
-
-Vue ENCOUNTER :
-
-Trigger | Spawn | Detect | Fight | Loot
-
-Vue BEHAVIOR :
-
-Detect | Decide | Chase | Attack | Damage
-
-Vue RUNTIME :
-
-12.40 ms | 12.45 ms | 12.50 ms...
-
-Le plan doit définir comment gérer cette granularité.
-
----
-
-# 7. THREADS ET EXECUTION LANES
-
-L’axe vertical doit pouvoir représenter les threads ou execution lanes.
-
-Exemple :
-
-Main
-
-Worker_AI
-
-AsyncLoader
-
-Physics-related
-
-Audio
-
-Profiler.
-
-Ne pas obligatoirement prétendre que chaque lane correspond à un thread OS exact.
-
-Le modèle doit pouvoir utiliser une notion plus générale :
-
-ExecutionLane.
-
-Les relations entre lanes peuvent représenter :
-
-FORK
-
-JOIN
-
-AWAIT
-
-THREAD_START
-
-THREAD_END
-
-SIGNAL
-
-ASYNC_CALL.
-
----
-
-# 8. GROUPES FONCTIONNELS
-
-Le graphe doit être structuré visuellement en groupes.
-
-Exemple pour un roguelike :
-
-ROUGE : ENEMIES
-
-BLEU : HERO
-
-JAUNE : UI
-
-VERT : BONUS / LOOT
-
-VIOLET : AUDIO
-
-ORANGE / GRIS : PERFORMANCE.
-
-Exemple pour ENEMIES :
-
-EnemySpawner
-
-EnemyFactory
-
-EnemyAI
-
-EnemyNavigation
-
-EnemyMovement
-
-EnemyStateMachine
-
-EnemyAnimation
-
-EnemyHitbox
-
-EnemyHurtbox
-
-EnemyDamage
-
-EnemyDeath
-
-EnemyLoot.
-
-Ces groupes doivent être :
-
-- visuels ;
-- repliables ;
-- filtrables ;
-- sélectionnables ;
-- navigables.
-
----
-
-# 9. MODÈLE HIÉRARCHIQUE DU CODE
-
-Ne jamais considérer :
-
-1 script = 1 simple node.
-
-Le modèle doit permettre au minimum :
-
-GROUP
-
-↓
-
-SCRIPT
-
-↓
-
-FUNCTION
-
-↓
-
-ACTION / DECISION / SIGNAL / STATE / PARAMETER / RESOURCE.
-
-Exemple :
-
-EnemyAI.gd
-
-→ _physics_process()
-
-→ update_target()
-
-→ choose_action()
-
-→ distance < attack_range ?
-
-TRUE → attack()
-
-FALSE → chase().
-
-Le script doit être un conteneur.
-
----
-
-# 10. NIVEAUX DE ZOOM
-
-Le plan doit proposer un système clair de niveaux de détails.
-
-Exemple :
-
-## Zoom 1 — Projet
-
-ENEMIES
-
-HERO
-
-UI
-
-AUDIO
-
-WORLD
-
-SAVE SYSTEM.
-
-## Zoom 2 — Systèmes
-
-AI
-
-Movement
-
-Combat
-
-Damage
-
-Loot.
-
-## Zoom 3 — Scripts
-
-enemy_ai.gd
-
-enemy_navigation.gd
-
-enemy_damage.gd.
-
-## Zoom 4 — Fonctions
-
-choose_action()
-
-chase()
-
-attack()
-
-flee().
-
-## Zoom 5 — Logique interne
-
-if health < threshold
-
-→ flee().
-
-Le système doit maintenir la carte complète tout en adaptant automatiquement ce qui est visible.
-
----
-
-# 11. RELATIONS ENTRE ÉLÉMENTS
-
-Le modèle doit traiter les relations comme des objets de première classe.
-
-Créer une abstraction FlowEdge ou équivalente.
-
-Types à prévoir :
-
-CALL
-
-RETURN
-
-SIGNAL
-
-SIGNAL_RECEIVE
-
-INSTANTIATE
-
-READ
-
-WRITE
-
-TRUE
-
-FALSE
-
-STATE_CHANGE
-
-RESOURCE_USE
-
-DATA_FLOW
-
-AWAIT
-
-FORK
-
-JOIN
-
-EVENT
-
-PARAMETER_INFLUENCE
-
-TEMPORAL_NEXT
-
-TEMPORAL_INTERRUPT
-
-TEMPORAL_RESUME.
-
-Toutes les connexions ne doivent pas être considérées comme équivalentes.
-
----
-
-# 12. APPELS ENTRE SCRIPTS
-
-L’outil doit permettre de comprendre visuellement :
-
-quel script appelle quel autre script.
-
-Exemple :
-
-EnemyAI.gd
-
-attack()
-
-↓
-
-EnemyAnimation.gd
-
-play_attack()
-
-↓
-
-EnemyHitbox.gd
-
-enable_damage()
-
-↓
-
-HeroHealth.gd
-
-take_damage()
-
-↓
-
-HUD.gd
-
-update_health()
-
-↓
-
-AudioManager.gd
-
-play_hit_sound().
-
-Cette vue est fondamentale.
-
----
-
-# 13. NAVIGATION CALLERS / CALLEES
-
-Pour une fonction sélectionnée, prévoir des actions comme :
-
-WHO CALLS THIS?
-
-WHAT DOES THIS CALL?
-
-EXPAND CALLERS
-
-EXPAND CALLEES
-
-EXPAND FULL EXECUTION PATH
-
-EXPAND DATA DEPENDENCIES
-
-EXPAND SIGNAL CONNECTIONS.
-
-Exemple :
-
-HeroHealth.take_damage()
-
-WHO CALLS THIS?
-
-→ EnemyHitbox
-
-→ Projectile
-
-→ Trap
-
-→ Poison
-
-→ FallDamage.
-
----
-
-# 14. FLOW CHART DÉCISIONNEL
-
-Les IF / ELSE / MATCH / STATE TRANSITIONS doivent apparaître visuellement.
-
-Exemple :
-
-distance <= attack_range ?
-
-TRUE → attack()
-
-FALSE → chase().
-
-Les branches doivent exister même sans runtime.
-
-Pendant le runtime, la branche réellement empruntée doit s’illuminer.
-
----
-
-# 15. COMPRÉHENSION DU CODE
-
-L’objectif du projet est aussi de comprendre le code sans commencer par lire chaque fichier.
-
-Chaque script / fonction / système doit pouvoir expliquer :
-
-WHAT DOES THIS DO?
-
-WHY DOES IT EXIST?
-
-WHAT CALLS IT?
-
-WHAT DOES IT CALL?
-
-WHAT DATA DOES IT READ?
-
-WHAT DATA DOES IT MODIFY?
-
-WHAT RESOURCES DOES IT USE?
-
-WHAT STATES CAN IT ENTER?
-
-WHERE IS IT USED?
-
-WHERE IS IT DEFINED?
-
-L’interface doit conserver un lien permanent vers :
-
-script_path
-
-function
-
-source line ou source range lorsque possible.
-
----
-
-# 16. DESCRIPTION SÉMANTIQUE
-
-Le plugin doit distinguer :
-
-DESCRIPTION TECHNIQUE
-
-et
-
-DESCRIPTION FONCTIONNELLE.
-
-Exemple technique :
-
-Checks distance against attack_range.
-
-Exemple fonctionnel :
-
-Décide si l’ennemi doit arrêter sa poursuite et commencer une attaque.
-
-Ces descriptions peuvent être créées à partir de :
-
-- documentation ;
-- commentaires ;
-- analyse statique ;
-- IA ;
-- saisie manuelle.
-
----
-
-# 17. PARAMÈTRES ET DATA FLOW
-
-Le plugin doit permettre de suivre l’origine et l’utilisation des paramètres.
-
-Exemple :
-
-GoblinStats.attack_range
-
-↓
-
-EnemyAI.attack_range
-
-↓
-
-should_attack()
-
-↓
-
-distance comparison
-
-↓
-
-ATTACK state.
-
-Actions attendues :
-
-WHERE DOES THIS COME FROM?
-
-WHERE IS THIS USED?
-
-WHAT DOES THIS AFFECT?
-
-WHO MODIFIES THIS?
-
----
-
-# 18. VALEUR DÉFINIE VS VALEUR RUNTIME
-
-Prévoir explicitement la distinction entre :
-
-DEFINED VALUE
-
-RUNTIME VALUE
-
-LAST MODIFIED BY.
-
-Exemple :
-
-move_speed
-
-Defined value = 120
-
-Runtime value = 165
-
-Modified by = SpeedBuff.
-
-Cette notion est importante pour le debugging et le tuning.
-
----
-
-# 19. DEFINITION VS RUNTIME INSTANCES
-
-Un même script peut être exécuté par de nombreuses instances.
-
-Exemple :
-
-EnemyAI.gd
-
-utilisé par :
-
-Goblin #12
-
-Goblin #13
-
-Goblin #14
-
-Goblin #15
-
-Goblin #16.
-
-Le graphe ne doit pas dupliquer systématiquement tout le programme.
-
-Il faut distinguer :
-
-DEFINITION
-
-et
-
-RUNTIME INSTANCE.
-
-Le runtime doit permettre de sélectionner une instance précise.
-
----
-
-# 20. RUNTIME TRACE
-
-La carte statique complète doit pouvoir recevoir une couche runtime.
-
-Types d’événements à prévoir :
-
-FUNCTION_ENTER
-
-FUNCTION_EXIT
-
-SIGNAL_EMIT
-
-SIGNAL_RECEIVED
-
-CONDITION_TRUE
-
-CONDITION_FALSE
-
-STATE_CHANGE
-
-RESOURCE_LOAD_START
-
-RESOURCE_LOAD_END
-
-NODE_CREATED
-
-NODE_DESTROYED
-
-COLLISION
-
-THREAD_START
-
-THREAD_END
-
-ASYNC_START
-
-ASYNC_END
-
-PARAMETER_CHANGE
-
-CUSTOM_EVENT
-
-PERFORMANCE_SAMPLE.
-
----
-
-# 21. ILLUMINATION RUNTIME
-
-Lorsque le jeu tourne :
-
-- les nodes exécutés s’illuminent ;
-- les connexions réellement utilisées s’illuminent ;
-- les branches non empruntées restent visibles mais atténuées ;
-- les instances peuvent être distinguées ;
-- la fréquence d’exécution peut être représentée ;
-- les performances peuvent être superposées.
-
-Le glow peut fonctionner comme :
-
-IDLE
-
-→ ACTIVE
-
-→ RECENT
-
-→ IDLE.
-
----
-
-# 22. LOCAL TRACE BUFFER
-
-Ne pas envoyer tous les événements runtime directement à l’éditeur.
-
-Prévoir côté jeu :
-
-LOCAL TRACE BUFFER
-
-↓
-
-FILTERING
-
-↓
-
-SAMPLING
-
-↓
-
-AGGREGATION
-
-↓
-
-DEDUPLICATION
-
-↓
-
-DEBUGGER BRIDGE.
-
-Le plan doit prévoir :
-
-- ring buffer ;
-- profiling sélectif ;
-- trace focus ;
-- échantillonnage ;
-- limites de fréquence ;
-- conservation complète des événements rares importants ;
-- réduction des événements continus.
-
-Exemple :
-
-les changements d’état peuvent être conservés à 100 % ;
-
-la vélocité peut être échantillonnée à 10 Hz.
-
----
-
-# 23. EXPECTED PATH VS ACTUAL PATH
-
-Le plugin doit pouvoir comparer :
-
-ce qui devait se produire
-
-et
-
-ce qui s’est réellement produit.
-
-Mais ne jamais supposer que l’outil connaît automatiquement l’intention du développeur.
-
-Prévoir plusieurs sources d’Expected Flow.
-
-## Source 1
-
-Expected Flow déclaré manuellement.
-
-## Source 2
-
-Flow provenant d’un fichier .flow.json.
-
-## Source 3
-
-Baseline enregistrée lors d’une exécution correcte.
-
-## Source 4
-
-Machine à états ou flow explicite.
-
-## Source 5
-
-Inférence IA clairement marquée comme hypothèse.
-
-Ne jamais confondre :
-
-expected déclaré
-
-et
-
-expected inféré.
-
----
-
-# 24. INSTANCE COMPARISON
-
-Prévoir une fonction permettant de comparer plusieurs instances utilisant le même comportement.
-
-Exemple :
-
-                #12 #13 #14 #15 #17
-
-Spawn            ✓   ✓   ✓   ✓   ✓
-
-Target           ✓   ✓   ✓   ✓   ✓
-
-CHASE            ✓   ✓   ✓   ✓   ✓
-
-NavPath          ✓   ✓   ✓   ✓   ✕
-
-Velocity         ✓   ✓   ✓   ✓   —
-
-Movement         ✓   ✓   ✓   ✓   —.
-
-Cette fonction doit permettre de répondre rapidement à :
-
-« Pourquoi CE monstre ne fonctionne pas alors que les autres fonctionnent ? »
-
----
-
-# 25. DIAGNOSTIC MODE
-
-Créer un mode de focus pour les bugs.
-
-Exemple :
-
-Goblin #17 ne bouge pas.
-
-Afficher uniquement :
-
-Spawner
-
-→ EnemyController
-
-→ EnemyAI
-
-→ State
-
-→ Navigation
-
-→ Movement
-
-→ Physics.
-
-Le Diagnostic Mode est une projection de la carte complète.
-
-Il ne remplace pas la carte complète.
-
----
-
-# 26. EXPLAIN MODE
-
-Créer un mode permettant de comprendre :
-
-- rôle du système ;
-- fonctions importantes ;
-- paramètres ;
-- entrées ;
-- sorties ;
-- scripts associés ;
-- scènes associées ;
-- utilisateurs du système ;
-- dépendances.
-
-Exemple :
-
-EnemyAI
-
-Responsabilités :
-
-- détecter ;
-- choisir une cible ;
-- changer d’état ;
-- poursuivre ;
-- attaquer ;
-- fuir.
-
----
-
-# 27. TUNE MODE
-
-Créer un mode permettant de savoir :
-
-« Où dois-je intervenir pour modifier ce comportement ? »
-
-Exemple :
-
-Goblin attaque trop vite.
-
-Afficher :
-
-attack_cooldown
-
-Defined in : GoblinStats.tres
-
-Read by : EnemyAI.should_attack()
-
-Affects : ATTACK frequency
-
-Scope : all Goblins.
-
-Le système doit prévenir lorsque la modification affecte plusieurs systèmes ou instances.
-
----
-
-# 28. INTERVENTION POINTS
-
-Créer un concept d’InterventionPoint.
-
-Exemples :
-
-Target Selection
-
-Aggression Rules
-
-Movement Strategy
-
-Attack Decision
-
-Damage Reaction
-
-State Transition.
-
-Pour chaque InterventionPoint afficher :
-
-- fichier ;
-- fonction ;
-- paramètre ;
-- portée ;
-- éléments affectés ;
-- risques d’impact ;
-- dépendances.
-
----
-
-# 29. PROJECT TREE SYNCHRONISÉ
-
-Prévoir un panneau affichant l’arborescence res://.
-
-Synchronisation bidirectionnelle :
-
-GRAPH → FILE TREE
-
-FILE TREE → GRAPH.
-
-Exemple :
-
-clic sur EnemyAI
-
-→ ouvre :
-
-res://actors/enemies/enemy_ai.gd.
-
-Et :
-
-clic sur enemy_ai.gd
-
-→ centre le graphe sur EnemyAI.
-
-Prévoir également :
-
-source line focus
-
-et
-
-bug auto-focus.
-
----
-
-# 30. GAME FLOW COMPLET
-
-Le plan doit traiter explicitement la carte de déroulement global du jeu.
-
-Exemple :
-
-BOOT
-
-→ MAIN MENU
-
-→ NEW GAME
-
-→ LEVEL 1
-
-→ LEVEL 2
-
-→ BOSS
-
-→ VICTORY
-
-→ CREDITS.
-
-Avec branches :
-
-MAIN MENU
-
-→ QUIT
-
-LEVEL
-
-→ PAUSE
-
-→ RESUME
-
-LEVEL
-
-→ DEATH
-
-→ RETRY
-
-LEVEL
-
-→ QUIT TO MENU.
-
-Chaque bloc doit être relié à son code réel.
-
-Exemple :
-
-LEVEL COMPLETE
-
-Triggered by :
-
-LevelManager.check_completion()
-
-Condition :
-
-remaining_enemies == 0
-
-Then :
-
-emit_signal("level_completed")
-
-Loads :
-
-level_02.tscn.
-
----
-
-# 31. BLOCS TEMPORELS IMBRIQUÉS
-
-Prévoir des objets du type :
-
-FlowTemporalBlock
-
-ou équivalent.
-
-Peuvent représenter :
-
-Game
-
-Chapter
-
-Level
-
-Quest
-
-Encounter
-
-Wave
-
-Cutscene
-
-Boss fight
-
-Tutorial
-
-Combat sequence.
-
-Ils doivent pouvoir contenir :
-
-d’autres FlowTemporalBlocks
-
-et
-
-FlowEvents.
-
----
-
-# 32. PERFORMANCE
-
-Prévoir une couche performance intégrée à la même carte.
-
-Exemples :
-
-Frame time
-
-CPU
-
-GPU
-
-Memory
-
-Physics time
-
-Script time
-
-Call count
-
-Thread activity
-
-Node count
-
-Custom gameplay metrics.
-
-Exemple :
-
-5 enemies spawn
-
-↓
-
-AI activity increases
-
-↓
-
-frame time increases from 16ms to 29ms.
-
-Le profiling doit être corrélé aux événements temporels du graphe.
-
----
-
-# 33. AI SNAPSHOT
-
-Prévoir une fonction permettant de générer un contexte compact pour une IA.
-
-Sorties possibles :
-
-snapshot.png
-
-snapshot.json.
-
-Le PNG montre :
-
-la structure visuelle pertinente.
-
-Le JSON contient :
-
-- focus ;
-- instance ;
-- chemin exécuté ;
-- chemin alternatif ;
-- valeurs runtime ;
-- paramètres ;
-- fichiers concernés ;
-- fonctions ;
-- lignes ;
-- performances ;
-- point de divergence.
-
-L’objectif est qu’une IA puisse rapidement comprendre :
-
-ce qui existe ;
-
-ce qui devait se produire ;
-
-ce qui s’est produit ;
-
-où regarder dans le code.
-
----
-
-# 34. VUES DU PRODUIT
-
-Le plan doit distinguer plusieurs projections du même modèle.
-
-MAP MODE
-
-Comment le projet est organisé ?
-
-GAME FLOW MODE
-
-Comment le jeu se déroule ?
-
-LOGIC MODE
-
-Comment le code fonctionne ?
-
-DATA FLOW MODE
-
-D’où viennent les valeurs et où vont-elles ?
-
-RUNTIME MODE
-
-Qu’est-ce qui s’exécute maintenant ?
-
-DEBUG MODE
-
-Pourquoi cela ne fonctionne pas ?
-
-EXPLAIN MODE
-
-Que fait ce code ?
-
-TUNE MODE
-
-Où modifier le comportement ?
-
-PERFORMANCE MODE
-
-Qu’est-ce qui coûte du temps ?
-
-AI CONTEXT MODE
-
-Quel contexte transmettre à une IA ?
-
----
-
-# 35. MODÈLE DE DONNÉES CENTRAL
-
-Le plan doit proposer un modèle autour d’entités telles que :
-
-FlowProject
-
-FlowSystem
-
-FlowGroup
-
-FlowScene
-
-FlowScript
-
-FlowClass
-
-FlowFunction
-
-FlowDecision
-
-FlowState
-
-FlowSignal
-
-FlowParameter
-
-FlowResource
-
-FlowInstance
-
-FlowEdge
-
-FlowEvent
-
-FlowTemporalBlock
-
-FlowExecutionLane
-
-FlowSession
-
-FlowMetric
-
-FlowIssue
-
-FlowExpectedEvent
-
-FlowInterventionPoint.
-
-Tu peux proposer de meilleures abstractions si nécessaire.
-
----
-
-# 36. ARCHITECTURE TECHNIQUE
-
-Le plan doit proposer une architecture découplée proche de :
-
-SOURCE CODE
-
-↓
-
-STATIC ANALYZER
-
-↓
-
-COMPLETE PROGRAM MODEL
-
-↓
-
-ARCHITECTURE MODEL
-
-LOGIC FLOW
-
-DATA FLOW
-
-GAME FLOW
-
-↓
-
-VISUALIZATION LAYER.
-
-En parallèle :
-
-GAME RUNTIME
-
-↓
-
-TRACE BUFFER
-
-↓
-
-DEBUGGER BRIDGE
-
-↓
-
-EVENT STORE
-
-↓
-
-RUNTIME MODEL
-
-↓
-
-EXECUTION HISTORY.
-
-Puis :
-
-STATIC MODEL
-
-+
-
-RUNTIME MODEL
-
-↓
-
-DIAGNOSTIC / EXPLAIN / TUNE / AI CONTEXT.
-
-Ne jamais coupler directement :
-
-runtime events
-
-et
-
-GraphNode widgets.
-
-Le modèle doit rester indépendant de l’UI.
-
----
-
-# 37. GRAPH RENDERING
-
-Ne pas supposer que GraphEdit suffit à tout.
-
-Étudier une architecture utilisant par exemple :
-
-FlowCanvas
-
-├── Background Timeline Layer
-
-├── Swimlane Layer
-
-├── Graph Nodes Layer
-
-└── Overlay Layer.
-
-Le fond temporel et les lanes peuvent être dessinés avec un Control custom.
-
-GraphEdit peut rester utile pour les nodes et connexions.
-
-Le plan doit analyser les limites de cette approche.
-
----
-
-# 38. STATIC ANALYSIS
-
-Le plan doit distinguer ce qui peut être extrait automatiquement avec une bonne fiabilité et ce qui est difficile.
-
-À détecter automatiquement autant que possible :
-
-- scripts ;
-- classes ;
-- fonctions ;
-- scènes ;
-- ressources ;
-- signaux ;
-- héritages ;
-- dépendances simples.
-
-Être prudent sur :
-
-- appels dynamiques ;
-- Callables ;
-- groupes ;
-- signaux connectés dynamiquement ;
-- reflection ;
-- décisions complexes ;
-- runtime-generated objects ;
-- parsing complet du GDScript.
-
-Ne jamais faire reposer le MVP sur une analyse statique parfaite.
-
----
-
-# 39. INSTRUMENTATION
-
-Prévoir une progression.
-
-PHASE 1 :
-
-instrumentation explicite.
-
-Exemple :
-
-FlowTracer.function_enter(...)
-
-FlowTracer.condition(...)
-
-FlowTracer.state_change(...).
-
-PHASE 2 :
-
-instrumentation assistée.
-
-PHASE 3 :
-
-instrumentation automatique lorsque techniquement crédible.
-
----
-
-# 40. SCÉNARIO DE RÉFÉRENCE POUR LE MVP
-
-Utiliser un roguelike.
-
-Un héros entre dans une pièce.
-
-Cinq ennemis apparaissent.
-
-Ils détectent le héros.
-
-Ils poursuivent le héros.
-
-Ils attaquent.
-
-Une collision déclenche des dégâts.
-
-L’UI affiche les dégâts.
-
-Un son est joué.
-
-Un ennemi meurt.
-
-Un loot apparaît.
-
-Le niveau se termine lorsqu’un objectif est rempli.
-
-Le système doit permettre de visualiser :
-
-Game Flow
-
-Level Flow
-
-Encounter Flow
-
-Enemy Behavior
-
-Function Calls
-
-Runtime Execution.
-
----
-
-# 41. MVP
-
-Le plan doit définir un MVP réellement réalisable.
-
-Il doit probablement inclure :
-
-- carte statique de scripts ;
-- groupes fonctionnels ;
-- fonctions ;
-- appels simples ;
-- signaux simples ;
-- conditions manuellement décrites ou instrumentées ;
-- nodes repliables ;
-- zoom hiérarchique ;
-- Game Flow simple ;
-- timeline logique ;
-- runtime glow ;
-- une ou plusieurs instances ;
-- Project Tree synchronisé ;
-- historique runtime simple.
-
-Éviter d’inclure trop tôt :
-
-- parsing parfait ;
-- inférence automatique complète ;
-- profiling extrêmement détaillé ;
-- détection automatique de tous les bugs.
-
----
-
-# 42. ROADMAP
-
-Construire une feuille de route par phases.
-
-Exemple à challenger :
-
-Phase 0 — Core Model
-
-Phase 1 — Static Architecture Explorer
-
-Phase 2 — Logic Flow
-
-Phase 3 — Game Flow
-
-Phase 4 — Project Tree Navigation
-
-Phase 5 — Runtime Tracer
-
-Phase 6 — Runtime Instances
-
-Phase 7 — Timeline & Replay
-
-Phase 8 — Diagnostic
-
-Phase 9 — Explain
-
-Phase 10 — Tune
-
-Phase 11 — Performance
-
-Phase 12 — Static Analysis Automation
-
-Phase 13 — AI Snapshot.
-
-Ne pas accepter cet ordre aveuglément.
-
-Le réorganiser si une meilleure stratégie existe.
-
----
-
-# 43. RISQUES TECHNIQUES À ÉVALUER
-
-Analyser explicitement :
-
-- explosion du nombre de nodes ;
-- explosion du nombre d’edges ;
-- graph illisible ;
-- coût mémoire du modèle complet ;
-- coût du runtime tracing ;
-- volume d’événements ;
-- saturation de la communication runtime / editor ;
-- fréquence des mises à jour UI ;
-- limites de GraphEdit ;
-- static analysis incomplète ;
-- signaux dynamiques ;
-- SceneTree dynamique ;
-- paramètres modifiés runtime ;
-- scripts partagés entre instances ;
-- multithreading ;
-- différence entre logical execution lane et vrai thread ;
-- difficulté de reconstruire les appels indirects ;
-- complexité de la temporalité imbriquée ;
-- difficulté de comparer Static Flow et Runtime Flow.
-
-Pour chaque risque :
-
-Impact
-
-Probabilité
-
-Mitigation
-
-Phase concernée.
-
----
-
-# 44. PERFORMANCE DU PLUGIN LUI-MÊME
-
-Le plan doit également prévoir que l’outil ne doit pas devenir lui-même une source de ralentissements.
-
-Analyser notamment :
-
-- virtualisation des nodes ;
-- lazy loading ;
-- progressive rendering ;
-- event batching ;
-- ring buffers ;
-- sampling ;
-- filters ;
-- caching ;
-- indexed graph queries ;
-- background processing ;
-- limite d’historique ;
-- graph level of detail.
-
----
-
-# 45. EXPORT ET PERSISTENCE
-
-Prévoir :
-
-.flow.json
-
-session traces
-
-baseline traces
-
-configuration des groupes
-
-layouts
-
-annotations
-
-expected flows
-
-snapshots IA.
-
-Le format doit pouvoir être :
-
-- versionné avec Git ;
-- lisible ;
-- diffable autant que possible ;
-- généré par IA ;
-- réimporté.
-
----
-
-# 46. OBJECTIF FINAL
-
-Le produit final doit permettre à un développeur de partir d’une question très globale :
-
-« Comment ce jeu fonctionne-t-il ? »
-
-Puis descendre progressivement :
-
-« Comment ce niveau fonctionne-t-il ? »
-
-« Comment cet encounter démarre-t-il ? »
-
-« Comment les ennemis sont-ils instanciés ? »
-
-« Quel script gère l’IA ? »
-
-« Quelle fonction prend la décision ? »
-
-« Quel if choisit cette branche ? »
-
-« Quelle valeur influence cette condition ? »
-
-Puis revenir dans l’autre sens.
-
-Il doit également permettre :
-
-« Pourquoi cette instance ne fait-elle pas ce que les autres font ? »
-
-« Pourquoi cette collision n’est-elle jamais reçue ? »
-
-« Pourquoi ce script n’est-il jamais appelé ? »
-
-« Où dois-je modifier le comportement ? »
-
-« Qui d’autre sera affecté ? »
-
----
-
-# 47. LIVRABLE ATTENDU
-
-À partir de tout ce contexte, construis maintenant **le plan directeur complet du projet**.
-
-Je veux un résultat professionnel, structuré et hiérarchisé.
-
-Le plan doit obligatoirement contenir :
-
-1. Vision produit.
-
-2. Problèmes utilisateurs résolus.
-
-3. Principes fondamentaux.
-
-4. Architecture conceptuelle.
-
-5. Modèle de données.
-
-6. Architecture statique.
-
-7. Architecture logique.
-
-8. Game Flow et temporalité.
-
-9. Runtime tracing.
-
-10. Threads / execution lanes.
-
-11. Gestion des instances.
-
-12. Data Flow et paramètres.
-
-13. Graphe et niveaux de zoom.
-
-14. Project Tree.
-
-15. Modes Map / Game Flow / Logic / Runtime / Debug / Explain / Tune / Performance.
-
-16. Expected vs Actual.
-
-17. Instance Comparison.
-
-18. Diagnostic Engine.
-
-19. Performance architecture.
-
-20. AI Snapshot.
-
-21. Architecture technique du plugin Godot.
-
-22. Proposition d’arborescence des fichiers.
-
-23. Format de données.
-
-24. MVP.
-
-25. Proof of Concept.
-
-26. Feuille de route.
-
-27. Risques techniques.
-
-28. Solutions de mitigation.
-
-29. Critères de validation.
-
-30. Critères de passage de phase.
-
-31. Ce qui doit être repoussé après V1.
-
-32. Estimation qualitative de difficulté par composant.
-
-33. Dépendances entre composants.
-
-34. Ordre recommandé de réalisation.
-
----
-
-# 48. EXIGENCE DE RÉALISME
-
-Ne produis pas un plan théorique irréaliste.
-
-Pour chaque composant important, précise :
-
-FAISABILITÉ
-
-DIFFICULTÉ
-
-RISQUE
-
-DÉPENDANCES
-
-STRATÉGIE DE MVP.
-
-Lorsque quelque chose n’est pas fiable automatiquement dans Godot, le dire explicitement.
-
-Proposer une version semi-automatique ou instrumentée si nécessaire.
-
----
-
-# 49. EXIGENCE DE PRIORISATION
-
-Classer chaque fonctionnalité dans l’une de ces catégories :
-
-MVP
-
-V1
-
-ADVANCED
-
-EXPERIMENTAL.
-
-Le MVP doit démontrer la valeur centrale du produit sans nécessiter de résoudre tous les problèmes de static analysis.
-
----
-
-# 50. EXIGENCE FINALE
-
-Ne réduis jamais le projet à un simple debugger.
-
-Ne réduis jamais le projet à un simple graph viewer.
-
-Ne réduis jamais le projet à une simple timeline.
-
-Ne réduis jamais le projet à un simple outil d’IA.
-
-Le projet est avant tout :
-
-**une représentation navigable et multi-échelle de l’architecture, de la logique, des données, du déroulement temporel et de l’exécution réelle d’un programme Godot.**
-
-Le runtime debugging, le tuning, le profiling et l’assistance IA sont des usages de cette carte intégrale.
-
-La question directrice doit rester :
-
-**Comment représenter suffisamment bien le programme pour permettre de comprendre ce qui existe, comment cela fonctionne, dans quel ordre cela se produit, pourquoi cela se produit et où intervenir pour le modifier ?**
-
-À partir de cette question, construis maintenant le plan directeur du projet.
+Termine par une vérification de cohérence : capacités couvertes ou explicitement reportées, mécanismes non vérifiés, contraintes contradictoires résolues et décisions bloquant réellement le démarrage. Ne prétends pas avoir exécuté les prototypes ou validé les performances pendant cette mission de conception.
