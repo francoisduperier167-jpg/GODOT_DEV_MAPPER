@@ -1,0 +1,213 @@
+# Guide de construction, étape par étape
+
+Révision GC-0.1 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.3, OR-0.3, MC-0.3 et SPIKE-01a
+
+Ce guide décrit chaque étape de la construction du plugin, de l'étape 0 à la V1. Chaque étape a les mêmes six parties :
+- objectif ;
+- obligations ;
+- méthodologie ;
+- points de contrôle ;
+- cheminement d'amélioration ;
+- prompts : un pour qu'une IA réalise le travail, un pour qu'une autre IA le vérifie.
+
+## Ce que « valider à coup sûr » veut dire ici
+
+Aucun prompt ne garantit seul un résultat juste : un modèle peut se tromper tout en croyant réussir. La sûreté vient de quatre verrous, appliqués à chaque tâche.
+
+1. **Des contrôles exécutables.** Chaque critère est une commande dont le résultat attendu est précis : un code de sortie, une ligne présente, une ligne absente. Jamais « le code semble correct ».
+2. **Des contre-épreuves.** Pour chaque contrôle important, on casse volontairement le comportement et on vérifie que le contrôle échoue. Un contrôle qui ne peut pas échouer ne prouve rien. Dans les fiches, ces contrôles portent la marque **(CE)**.
+3. **Un vérificateur indépendant.** Un autre modèle que l'auteur relance les contrôles, applique les contre-épreuves et cherche les contournements. Il ne modifie rien. Les tests de contrat sont écrits par l'auteur du contrat, et l'implémenteur n'a pas le droit d'y toucher.
+4. **Une porte humaine.** À la fin de chaque étape, tu lis le rapport de vérification et tu décides.
+
+## Commandes de contrôle vérifiées
+
+Commandes exécutées le 8 octobre 2026 avec Godot 4.7.2 officiel sous Linux, et gdtoolkit 4.5.0.
+
+| Commande | Comportement constaté |
+| --- | --- |
+| `godot --headless --path . --import` | Importe le projet ; code 0 |
+| `godot --headless --editor --path . --quit-after 300` | Ouvre l'éditeur sans interface, charge les plugins activés, puis quitte |
+| `godot --headless --path . -s res://tests/run_all.gd` | Exécute un script qui étend SceneTree ; `quit(n)` fixe le code de sortie |
+| `godot --headless --path . --check-only -s res://chemin.gd` | Code 1 sur une erreur de syntaxe, 0 sinon |
+| `gdlint <dossiers>` | Code 1 au moindre problème |
+| `gdformat --check <dossiers>` | Code 1 si un fichier serait reformaté |
+| `godot … --remote-debug tcp://127.0.0.1:6007` | Connecte le jeu à un récepteur de débogage : c'est la base du banc de test sans éditeur (SPIKE-01a) |
+
+**Piège de la deuxième commande** : l'éditeur sans interface sort avec le code 0, même quand un script du plugin ne compile pas. Les contrôles comptent donc aussi les lignes qui commencent par `ERROR` ou `SCRIPT ERROR`.
+
+Dans les fiches, `godot` désigne le binaire de la version testée ; la CI le lit dans `versions.json`.
+
+## Fichiers du guide
+
+| Fichier | Contenu |
+| --- | --- |
+| `etape-0.md` | Décisions, squelettes de documents, environnement de Qwen (T00) |
+| `etape-1.md` | Fondations : projet, runner, contrôle de dépendances, CI, banc d'essai (T01 à T04) |
+| `etape-2.md` | Spikes : partie éditeur du canal (T05), frontière de compatibilité (T06) |
+| `etape-3.md` | Contrats C-01 à C-07, schémas et tests de contrat (T07, T08) |
+| `etape-4.md` | Implémentation sous contrat (T09 à T13) |
+| `etape-5.md` | Intégration : réception côté éditeur, instrumentation du banc d'essai (T14, T15) |
+| `etape-6.md` | Interface et robustesse (T16 à T18) |
+| `etape-7.md` | Mesure de valeur et revue de continuation (T19, T20) |
+| `mvp.md` | Phases P4a à P8, avec leur prompt de découpage |
+| `v1.md` | Phases P9 à P16, avec leur prompt de découpage |
+
+Le POC est détaillé tâche par tâche. Le MVP et la V1 sont décrits phase par phase : leur découpage en tâches dépend des résultats du POC, et un prompt dédié le produit au moment voulu.
+
+## Statuts d'une tâche
+
+À faire → En cours → À vérifier → Acceptée, ou Refusée.
+
+Une tâche peut aussi s'arrêter en **QUESTION**, quand un point est ambigu ou qu'un fichier interdit devrait changer. Elle passe en **ESCALADE** après deux échecs au même contrôle. Le statut vit dans `PROJECT_STATE.md`.
+
+## Qui vérifie qui
+
+| Auteur | Vérificateur |
+| --- | --- |
+| Qwen | Opus pour le protocole, les façades et les formats ; Gemini sinon |
+| Sonnet | Gemini |
+| Gemini | Sonnet |
+| Opus | Gemini |
+
+Dans tous les cas, la porte d'étape revient à toi.
+
+## Prompt universel de réalisation
+
+`REGLES_AGENTS.md`, créé à l'étape 0, en reprend les règles : elles sont ainsi chargées par chaque agent. Les prompts des fiches le complètent avec l'objectif, les fichiers et les contrôles de la tâche.
+
+```text
+Tu réalises la tâche {ID} du projet GODOT_DEV_MAPPER, un plugin pour Godot 4.7.2 écrit en GDScript.
+
+À LIRE AVANT TOUT, dans cet ordre :
+1. docs/construction/{fichier d'étape}, section {ID} : objectif, fichiers, contrôles.
+2. Les documents cités dans la ligne « Contexte » de la tâche.
+3. PROJECT_STATE.md.
+
+RÈGLES NON NÉGOCIABLES
+- Tu ne modifies que les fichiers autorisés de la tâche. Si un autre fichier doit changer, tu t'arrêtes avec le statut QUESTION.
+- Tu ne modifies jamais tests/contract/, les fixtures, docs/CONTRACTS.md, contracts/ ni docs/construction/, sauf dans T07 et T08, dont c'est l'objet. Dans tests/pending.json, tu retires seulement les entrées de ta tâche.
+- Tu ne prends aucune décision de conception absente des documents : statut QUESTION.
+- Avant d'utiliser une API Godot dont tu n'es pas certain qu'elle existe en 4.7.2, tu écris un script de trois lignes qui l'appelle et tu l'exécutes. Une API non vérifiée n'entre pas dans le code.
+- Tu n'affaiblis jamais un test ou un contrôle pour le faire passer.
+- Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée ; tu colles sa sortie réelle.
+
+DÉROULÉ
+1. Reformule l'objectif en une phrase. Liste les fichiers que tu vas créer ou modifier, puis les contrôles que tu exécuteras.
+2. Si la tâche a des tests en attente dans tests/pending.json, active-les et montre qu'ils échouent.
+3. Implémente le plus petit changement qui satisfait les contrôles.
+4. Exécute tous les contrôles de la tâche, puis tools/ci/run_all_checks.sh s'il existe.
+5. Si un contrôle échoue, corrige. Après deux tentatives infructueuses sur le même contrôle : statut ESCALADE.
+6. Mets à jour PROJECT_STATE.md : statut, temps passé, écarts.
+
+RAPPORT FINAL, dans ce format exact
+- Statut : TERMINÉ | QUESTION | ESCALADE
+- Fichiers modifiés : liste
+- Contrôles : pour chacun, commande, code de sortie, 10 dernières lignes de sortie
+- Contre-épreuves faites : liste, ou « aucune demandée »
+- Écarts au contrat ou au guide : aucun, ou liste
+- Hypothèses faites : aucune, ou liste
+- Questions : aucune, ou liste
+```
+
+## Prompt universel de vérification
+
+```text
+Tu es vérificateur indépendant pour la tâche {ID} du projet GODOT_DEV_MAPPER. Tu n'as pas écrit ce code. Tu ne modifies aucun fichier suivi par Git ; toute modification temporaire est annulée avant ta réponse.
+
+ENTRÉES : la section {ID} de docs/construction/{fichier d'étape}, le rapport de l'auteur, le dépôt à la révision {commit}, la révision de départ {base}.
+
+1. PÉRIMÈTRE. Exécute git diff --name-only {base}..{commit}. Tout fichier hors de la liste autorisée est un motif de refus.
+2. ÉTAT PROPRE. Supprime .godot/, réimporte le projet, puis exécute chaque contrôle de la tâche et tools/ci/run_all_checks.sh. Note les codes de sortie et les lignes clés.
+3. CONTRE-ÉPREUVES. Pour chaque contrôle marqué (CE), applique le sabotage décrit, vérifie que le contrôle échoue, puis annule avec git checkout -- . et supprime les fichiers que tu as créés. Un contrôle qui ne détecte pas son sabotage est un motif de refus.
+4. CONTOURNEMENTS. Cherche :
+   - test sans assertion, ou toujours vrai ;
+   - test désactivé, renommé ou sorti du runner ;
+   - valeur attendue recopiée depuis la sortie du code ;
+   - entrée retirée de tests/pending.json sans test qui passe ;
+   - API Godot inventée ou non vérifiée ;
+   - dépendance interdite entre modules ;
+   - API sensible hors de la frontière de compatibilité ;
+   - affirmation du rapport sans sortie qui la prouve.
+5. COHÉRENCE. Compare le comportement au contrat cité et aux invariants INV-01 à INV-09 concernés.
+
+VERDICT, dans ce format exact
+- Verdict : ACCEPTÉE | REFUSÉE
+- Contrôles relancés : commande, code, attendu, obtenu
+- Contre-épreuves : sabotage, contrôle, détecté oui ou non
+- Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
+- Doutes non bloquants : liste courte
+```
+
+## Prompt d'escalade
+
+```text
+La tâche {ID} du projet GODOT_DEV_MAPPER a échoué deux fois au contrôle {contrôle}. Tu reçois la section de la tâche, le diff, les sorties des deux tentatives et le rapport de l'auteur.
+1. Diagnostique la cause : erreur d'implémentation, API Godot absente ou différente, contrat ambigu ou faux, contrôle faux, environnement.
+2. Si l'implémentation est en cause, fais la correction minimale et exécute tous les contrôles.
+3. Si le contrat, le contrôle ou le guide est en cause, ne corrige rien : rédige une proposition de modification, avec son impact, pour validation humaine.
+Rapport : cause, preuve, action faite ou proposée, statut.
+```
+
+## Prompt de porte d'étape
+
+```text
+Prépare la porte de sortie de l'étape {N} du projet GODOT_DEV_MAPPER. Entrées : docs/construction/etape-{N}.md, les verdicts de vérification de chaque tâche, PROJECT_STATE.md.
+Exécute toi-même chaque point de contrôle de l'étape et produis une page :
+- tableau : point de contrôle, commande, attendu, obtenu, OK ou KO ;
+- heures humaines et temps agent consommés, contre le budget de l'étape ;
+- problèmes ouverts et risques nouveaux ;
+- recommandation : passer, corriger d'abord, ou revoir le plan.
+Tu ne décides pas : la décision est humaine.
+```
+
+## Cheminement d'amélioration
+
+Après chaque étape, une rétro de dix minutes compare ce qui s'est passé aux signaux ci-dessous.
+
+| Signal | Lecture | Correction |
+| --- | --- | --- |
+| Une tâche demande plus de deux échanges de clarification | Le guide ou le contrat est ambigu | Ajouter un exemple ou une règle à la section concernée |
+| Le vérificateur refuse pour un contournement | Le prompt laisse une porte ouverte | Ajouter l'interdit au prompt universel et à `REGLES_AGENTS.md` |
+| Une contre-épreuve n'est pas détectée | Le contrôle est trop faible | Renforcer le contrôle avant de continuer |
+| Deux escalades sur un même module | Le modèle ou le pack de contexte ne suffit pas | Changer de modèle, ou enrichir le pack |
+| Budget d'étape dépassé de 50 % | Les tâches sont trop grosses | Scinder les tâches suivantes ; revue de continuation |
+| Une API Godot diffère de l'attendu | Connaissance des modèles périmée | Ajouter le fait vérifié au guide et au pack COMPAT |
+| Même erreur répétée deux fois par un agent | Règle manquante | Une ligne de plus dans `REGLES_AGENTS.md` |
+
+```text
+Rétro de l'étape {N} du projet GODOT_DEV_MAPPER. Entrées : verdicts, rapports, PROJECT_STATE.md, temps consommés.
+Produis au plus trois améliorations. Pour chacune : signal observé, cause probable, modification exacte (fichier, section, texte avant, texte après).
+Dis aussi s'il faut garder ou changer le routage des modèles, avec la mesure qui le justifie.
+Ne modifie rien : la décision est humaine.
+```
+
+Chaque amélioration acceptée est appliquée au guide, dont la révision augmente (GC-0.2, GC-0.3…).
+
+## Carte des étapes
+
+| Étape | Tâches | Heures humaines | Possible sans ta machine |
+| --- | --- | --- | --- |
+| 0 Décisions et environnement | Décisions, squelettes, T00 | 2–4 | Squelettes : oui. Décisions : non, elles sont à toi. T00 : non, Qwen est local |
+| 1 Fondations | T01 à T04 | 4–6 | T01 à T03 : oui, sauf l'envoi sur GitHub. T04 : en partie |
+| 2 Spikes | T05, T06 | 4–6 | T06 : oui. T05 : non, il faut l'éditeur avec rendu |
+| 3 Contrats | T07, T08 | 4–6 | Rédaction : oui. Validation : non, elle est à toi |
+| 4 Implémentation | T09 à T13 | 4–7 | Oui, Godot sans interface suffit |
+| 5 Intégration | T14, T15 | 2–4 | T15 et la logique de T14 : oui. Essai dans l'éditeur : non |
+| 6 Interface et robustesse | T16 à T18 | 3–4 | Logique et tests : oui. Vérification visuelle : non |
+| 7 Valeur et revue | T19, T20 | 2–3 | Non : mesure et décision humaines |
+| **POC** | | **25–40** | |
+| MVP | P4a à P8 | 43–74 | Voir `mvp.md` |
+| V1 | P9 à P16 | 75–120 | Voir `v1.md` |
+
+Une grande partie du POC peut donc avancer dans un environnement distant avec Godot sans interface, comme celui de SPIKE-01a, pendant que ta machine est indisponible. Restent à toi : les décisions, les validations, et les essais qui exigent l'éditeur avec rendu.
+
+## Outillage créé au fil des étapes
+
+| Fichier | Créé en | Rôle |
+| --- | --- | --- |
+| `REGLES_AGENTS.md`, `tools/sync_rules.sh` | Étape 0 | Source unique des règles, copiée vers `CLAUDE.md` et `GEMINI.md` |
+| `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/pending.json` | T02 | Runner, assertions, tests écrits mais pas encore activés |
+| `tools/check_deps.py`, `tools/deps_rules.json` | T02 | Règles de dépendance entre modules et API sensibles |
+| `tools/ci/run_all_checks.sh`, `tools/ci/fetch_godot.sh` | T03 | Tous les contrôles en une commande ; binaires officiels |
+| `contracts/schemas/`, `tools/validate_fixtures.py`, `tools/check_contracts.py` | T07, T08 | Schémas JSON et contrôle des contrats |
+| `tools/harness/fake_editor.gd` | T13 | Banc de test du runtime sans éditeur, issu de SPIKE-01a |

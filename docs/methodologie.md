@@ -305,7 +305,7 @@ Mesures : temps, escalades, quota consommé
 
 ## 9. Premières tâches
 
-Voir `docs/orchestration.md` (OR-0.3), de T00 à T20.
+Voir `docs/orchestration.md` (OR-0.3), de T00 à T20, et le guide `docs/construction/` pour l'exécution pas à pas.
 
 ## 10. Cohérence, décisions de démarrage et checklists
 

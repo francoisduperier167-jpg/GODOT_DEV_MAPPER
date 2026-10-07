@@ -2,6 +2,8 @@
 
 Révision OR-0.3 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.3, MC-0.3 et SPIKE-01a · remplace OR-0.2
 
+Le détail d'exécution de chaque tâche (objectif, obligations, méthodologie, contrôles exécutables, prompts de réalisation et de vérification) est dans le guide `docs/construction/`.
+
 **Changements depuis OR-0.2** :
 
 - T00 vérifie l'environnement de Qwen avant T01.
