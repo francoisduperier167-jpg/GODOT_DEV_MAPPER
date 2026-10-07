@@ -11,7 +11,7 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 | `docs/plan-directeur.md` | Plan directeur PD-0.3 : capacités, architecture, protocole de session, modèle de données, POC, MVP, budgets en heures, risques |
 | `docs/methodologie.md` | Méthode de construction MC-0.3 : sources de vérité et leur hiérarchie, contrats, tests, CI, veille de Godot, gabarits |
 | `docs/orchestration.md` | OR-0.3 : déroulé pas à pas, tâches T00 à T20, routage entre quatre modèles |
-| `docs/construction/` | Guide de construction GC-0.1 : pour chaque étape, objectif, obligations, méthodologie, points de contrôle, amélioration et prompts de réalisation et de vérification |
+| `docs/construction/` | Guide de construction GC-0.2 et sa carte interactive `carte.html` : pour chaque étape, objectif, obligations, méthodologie, points de contrôle, amélioration et prompts de réalisation et de vérification |
 | `docs/spikes/SPIKE-01.md` | Rapport de SPIKE-01a : canal du débogueur, partie jeu, mesuré sur 4.7.2 et 4.8-dev7 |
 | `spikes/` | Prototypes jetables des spikes |
 | `docs/estimation.md` | Historique : pertinence, faisabilité et raisonnement de charge initial, en sessions |
@@ -25,7 +25,7 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 ## Démarrer
 
 1. Relire `docs/plan-directeur.md` et trancher les décisions bloquantes D-01, D-02, D-05 et D-07 (§10).
-2. Suivre le guide `docs/construction/README.md` à partir de l'étape 0. Il donne, pour chaque tâche, le prompt de réalisation, les contrôles exécutables et le prompt de vérification.
+2. Ouvrir la carte interactive `docs/construction/carte.html` : elle affiche la prochaine action, le modèle à lancer et le prompt à copier. Le guide `docs/construction/README.md` en est la référence détaillée. Il donne, pour chaque tâche, le prompt de réalisation, les contrôles exécutables et le prompt de vérification.
 3. La prochaine preuve qui exige ta machine est SPIKE-01b, la partie éditeur du canal (tâche T05). Beaucoup d'autres tâches peuvent avancer sans elle : le guide le précise étape par étape.
 
 ## Compatibilité avec les versions de Godot

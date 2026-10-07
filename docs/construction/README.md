@@ -1,6 +1,8 @@
 # Guide de construction, étape par étape
 
-Révision GC-0.1 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.3, OR-0.3, MC-0.3 et SPIKE-01a
+Révision GC-0.2 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.3, OR-0.3, MC-0.3 et SPIKE-01a
+
+**Pour savoir quoi faire maintenant**, ouvre la carte interactive `carte.html` : elle affiche une seule action à la fois, le modèle à lancer, le prompt à copier, et ce qui se passe selon le résultat. Ce guide en est la référence détaillée.
 
 Ce guide décrit chaque étape de la construction du plugin, de l'étape 0 à la V1. Chaque étape a les mêmes six parties :
 - objectif ;
@@ -190,16 +192,16 @@ Chaque amélioration acceptée est appliquée au guide, dont la révision augmen
 | 0 Décisions et environnement | Décisions, squelettes, T00 | 2–4 | Squelettes : oui. Décisions : non, elles sont à toi. T00 : non, Qwen est local |
 | 1 Fondations | T01 à T04 | 4–6 | T01 à T03 : oui, sauf l'envoi sur GitHub. T04 : en partie |
 | 2 Spikes | T05, T06 | 4–6 | T06 : oui. T05 : non, il faut l'éditeur avec rendu |
-| 3 Contrats | T07, T08 | 4–6 | Rédaction : oui. Validation : non, elle est à toi |
-| 4 Implémentation | T09 à T13 | 4–7 | Oui, Godot sans interface suffit |
-| 5 Intégration | T14, T15 | 2–4 | T15 et la logique de T14 : oui. Essai dans l'éditeur : non |
-| 6 Interface et robustesse | T16 à T18 | 3–4 | Logique et tests : oui. Vérification visuelle : non |
+| 3 Contrats | T07, T08 | 4–6 | T07 : oui. T08 : non, il attend SPIKE-01b (T05). La validation reste à toi |
+| 4 Implémentation | T09 à T13 | 4–7 | Godot sans interface suffit, mais tout dépend de T08, donc de T05 |
+| 5 Intégration | T14, T15 | 2–4 | Après T08 : T15 et la logique de T14. Essai dans l'éditeur : non |
+| 6 Interface et robustesse | T16 à T18 | 3–4 | Après T08 : logique et tests. Vérification visuelle : non |
 | 7 Valeur et revue | T19, T20 | 2–3 | Non : mesure et décision humaines |
 | **POC** | | **25–40** | |
 | MVP | P4a à P8 | 43–74 | Voir `mvp.md` |
 | V1 | P9 à P16 | 75–120 | Voir `v1.md` |
 
-Une grande partie du POC peut donc avancer dans un environnement distant avec Godot sans interface, comme celui de SPIKE-01a, pendant que ta machine est indisponible. Restent à toi : les décisions, les validations, et les essais qui exigent l'éditeur avec rendu.
+Sans ta machine, le projet avance jusqu'à T07 : décisions, squelettes, T01 à T04, T06 et T07. T08 attend SPIKE-01b (T05), qui exige l'éditeur avec rendu ; tout le reste du POC dépend de T08. La carte interactive applique ces dépendances d'elle-même.
 
 ## Outillage créé au fil des étapes
 

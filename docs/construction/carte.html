@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carte de construction de GODOT_DEV_MAPPER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #e9eef5; --surface: #ffffff; --raised: #f3f6fa; --line: #c8d2e0;
+  --text: #18202c; --muted: #536176; --wire: #9fb0c6;
+  --godot: #478cbf; --focus: #2b6797;
+  --toi: #e9a93f; --opus: #9d7ff0; --sonnet: #4fb57a; --gemini: #4aa3dd; --qwen: #ea6f5a;
+  --ok: #2f8f57; --warn: #a66d0c; --bad: #bf4631;
+  --sans: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1d232c; --surface: #272e39; --raised: #2f3845; --line: #435064;
+    --text: #e8edf5; --muted: #a3afc1; --wire: #5a6a81; --focus: #8cc0ec;
+    --ok: #5cc489; --warn: #e3a640; --bad: #ef7f68; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1d232c; --surface: #272e39; --raised: #2f3845; --line: #435064;
+  --text: #e8edf5; --muted: #a3afc1; --wire: #5a6a81; --focus: #8cc0ec;
+  --ok: #5cc489; --warn: #e3a640; --bad: #ef7f68; color-scheme: dark;
+}
+html { background: var(--bg); scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 17px; line-height: 1.55; }
+code { font-family: var(--mono); font-size: .86em; background: var(--raised); border: 1px solid var(--line); border-radius: 4px; padding: .05em .3em; overflow-wrap: anywhere; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.offscreen { position: fixed; left: -9999px; top: 0; opacity: 0; }
+
+/* En-tête */
+.top { max-width: 1120px; margin: 0 auto; padding: 1.4rem clamp(1rem, 4vw, 2.5rem) .9rem; display: grid; grid-template-columns: 1fr auto; gap: .6rem 1.5rem; align-items: end; }
+.top h1 { margin: 0; font-size: clamp(1.7rem, 4.2vw, 2.35rem); line-height: 1.05; letter-spacing: -.015em; }
+.top .sub { margin: .35rem 0 0; color: var(--muted); max-width: 46ch; }
+.controls { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; justify-content: flex-end; }
+.switch { display: inline-flex; align-items: center; gap: .55rem; cursor: pointer; font-weight: 700; padding: .45rem .75rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.switch input { width: 1.15rem; height: 1.15rem; accent-color: var(--godot); margin: 0; }
+.ghost { background: none; border: 1px solid var(--line); border-radius: 8px; padding: .45rem .8rem; cursor: pointer; }
+.ghost:hover { background: var(--surface); }
+.ghost:disabled { opacity: .45; cursor: default; }
+.progress { grid-column: 1 / -1; margin: 0; color: var(--muted); }
+.progress strong { color: var(--text); }
+
+/* Onglets */
+.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.tabs-inner { max-width: 1120px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 2.5rem); display: flex; gap: .2rem; overflow-x: auto; }
+.tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: .75rem .9rem .65rem; color: var(--muted); font-weight: 700; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--godot); }
+main { max-width: 1120px; margin: 0 auto; padding: 1.4rem clamp(1rem, 4vw, 2.5rem) 3rem; }
+[hidden] { display: none !important; }
+
+/* Notes */
+.note { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: .6rem .9rem; margin: 0 0 .7rem; max-width: 62rem; }
+.note.info { border-style: solid; }
+.linkish { background: none; border: 0; padding: 0 0 0 .5rem; color: var(--godot); font-weight: 700; text-decoration: underline; cursor: pointer; }
+.crumb { color: var(--muted); margin: .2rem 0 1rem; }
+.crumb strong { color: var(--text); }
+
+/* Disposition « maintenant » : rail des tâches + nœud courant */
+.now-grid { display: grid; grid-template-columns: 13.5rem minmax(0, 1fr); gap: 0 2.2rem; align-items: start; }
+.rail { list-style: none; margin: 0; padding: .3rem 0 0 1.4rem; position: relative; }
+.rail::before { content: ""; position: absolute; left: .42rem; top: .9rem; bottom: .9rem; width: 2px; background: var(--wire); }
+.rail li { position: relative; margin: 0 0 .35rem; }
+.rail li::before { content: ""; position: absolute; left: -1.27rem; top: .62rem; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--wire); }
+.rail li.done::before { background: var(--ok); border-color: var(--ok); }
+.rail li.parked::before { border-style: dashed; }
+.rail li.current::before { background: var(--godot); border-color: var(--godot); box-shadow: 0 0 0 4px color-mix(in srgb, var(--godot) 28%, transparent); }
+.rail li.current::after { content: ""; position: absolute; left: calc(100% + .2rem); top: .98rem; width: 2rem; height: 2px; background: var(--godot); }
+.rail li.gate::before { border-radius: 2px; transform: rotate(45deg); }
+.rail button { display: flex; flex-direction: column; align-items: flex-start; width: 100%; text-align: left; background: none; border: 0; padding: .3rem .4rem; border-radius: 6px; cursor: pointer; }
+.rail button:hover { background: var(--surface); }
+.rail .rid { font-weight: 700; display: inline-flex; gap: .4rem; align-items: center; }
+.rail .rstate { color: var(--muted); font-size: .84rem; }
+.rail-title { font-size: .9rem; color: var(--muted); margin: 0 0 .4rem; }
+
+/* Le nœud : carte d'action courante */
+.node { --a: var(--wire); position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; max-width: 50rem; }
+.node[data-actor="toi"] { --a: var(--toi); }
+.node[data-actor="opus"] { --a: var(--opus); }
+.node[data-actor="sonnet"] { --a: var(--sonnet); }
+.node[data-actor="gemini"] { --a: var(--gemini); }
+.node[data-actor="qwen"] { --a: var(--qwen); }
+.node::before { content: ""; position: absolute; left: -8px; top: 1.15rem; width: 14px; height: 14px; border-radius: 50%; background: var(--a); border: 3px solid var(--bg); }
+.node-title { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .9rem; padding: .8rem 1.1rem .75rem 1.3rem; background: color-mix(in srgb, var(--a) 26%, var(--surface)); border-bottom: 1px solid var(--line); border-radius: 12px 12px 0 0; font-size: 1.28rem; line-height: 1.25; }
+.node-title:focus { outline: none; }
+.node-title:focus-visible { outline: 3px solid var(--focus); }
+.who { display: inline-flex; align-items: center; gap: .45rem; font-size: .95rem; font-weight: 700; padding: .12rem .6rem .12rem .5rem; border-radius: 999px; background: var(--surface); border: 1px solid color-mix(in srgb, var(--a) 60%, var(--line)); }
+.node-body { padding: .9rem 1.3rem .4rem; }
+.node-body p { margin: 0 0 .8rem; max-width: 70ch; }
+.where { color: var(--muted); }
+.warn { background: color-mix(in srgb, var(--warn) 14%, var(--surface)); border-left: 4px solid var(--warn); padding: .5rem .75rem; border-radius: 6px; }
+.expect { border-top: 1px dashed var(--line); padding-top: .7rem; }
+
+.snippet { border: 1px solid var(--line); border-radius: 8px; background: var(--raised); margin: 0 0 .9rem; }
+.snippet-head { display: flex; justify-content: space-between; align-items: center; gap: .8rem; padding: .35rem .4rem .35rem .8rem; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+.copy { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: .3rem .7rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.copy:hover { border-color: var(--godot); }
+.snippet pre { margin: 0; padding: .75rem .85rem; font-family: var(--mono); font-size: .84rem; line-height: 1.55; overflow-x: auto; }
+.snippet pre.prompt { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 22rem; overflow-y: auto; }
+
+.ports { display: grid; gap: .5rem; padding: .4rem 1.1rem 1.1rem 1.3rem; justify-items: end; }
+.ports-label { justify-self: start; color: var(--muted); font-size: .9rem; margin: 0; }
+.port { --pc: var(--godot); display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-width: min(100%, 21rem); padding: .62rem .8rem .62rem 1rem; background: var(--raised); border: 1px solid var(--line); border-radius: 8px; font-weight: 700; cursor: pointer; text-align: left; position: relative; }
+.port::after { content: ""; flex: none; width: 13px; height: 13px; border-radius: 50%; background: var(--pc); box-shadow: 0 0 0 2px var(--raised), 0 0 0 3.5px var(--pc); }
+.port.ok { --pc: var(--ok); }
+.port.warn { --pc: var(--warn); }
+.port.bad { --pc: var(--bad); }
+.port:hover { border-color: var(--pc); background: color-mix(in srgb, var(--pc) 9%, var(--raised)); }
+
+/* Glyphes des acteurs : couleur + forme */
+.glyph { display: inline-block; width: 12px; height: 12px; flex: none; background: var(--g); }
+.g-toi { --g: var(--toi); border-radius: 50%; }
+.g-opus { --g: var(--opus); border-radius: 2px; }
+.g-sonnet { --g: var(--sonnet); transform: rotate(45deg) scale(.8); }
+.g-gemini { --g: var(--gemini); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.g-qwen { --g: var(--qwen); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+.legend { display: flex; flex-wrap: wrap; gap: .4rem .9rem; margin: 1.6rem 0 0; padding: 0; list-style: none; color: var(--muted); font-size: .9rem; }
+.legend li { display: inline-flex; align-items: center; gap: .4rem; }
+
+/* La carte */
+.group { font-size: 1.2rem; margin: 2rem 0 .3rem; }
+.group:first-child { margin-top: .2rem; }
+.group-sub { color: var(--muted); margin: 0 0 .9rem; }
+.stations { list-style: none; margin: 0; padding: 0 0 0 1.8rem; position: relative; }
+.stations::before { content: ""; position: absolute; left: .5rem; top: .7rem; bottom: .7rem; width: 2px; background: var(--wire); }
+.station { position: relative; padding: .15rem 0 1.15rem; }
+.station::before { content: ""; position: absolute; left: -1.58rem; top: .5rem; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 2px solid var(--wire); }
+.station.closed::before { background: var(--ok); border-color: var(--ok); }
+.station.provisional::before { background: var(--warn); border-color: var(--warn); }
+.station.current::before { background: var(--godot); border-color: var(--godot); box-shadow: 0 0 0 4px color-mix(in srgb, var(--godot) 28%, transparent); }
+.st-head { display: flex; flex-wrap: wrap; gap: .1rem .8rem; align-items: baseline; }
+.st-head h3 { margin: 0; font-size: 1.05rem; }
+.st-meta { color: var(--muted); font-size: .9rem; }
+.st-tasks { list-style: none; margin: .5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem; }
+.chip { display: inline-flex; align-items: center; gap: .4rem; padding: .28rem .65rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .88rem; cursor: pointer; }
+.chip.done { background: color-mix(in srgb, var(--ok) 13%, var(--surface)); }
+.chip.parked { border-style: dashed; }
+.chip.current { border-color: var(--godot); box-shadow: 0 0 0 2px color-mix(in srgb, var(--godot) 32%, transparent); }
+.chip .mark { color: var(--muted); }
+.map-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: 0 0 1rem; }
+
+/* Les règles */
+.prose { max-width: 48rem; }
+.prose h2 { font-size: 1.3rem; margin: 2.2rem 0 .6rem; }
+.prose h2:first-child { margin-top: .2rem; }
+.prose h3 { font-size: 1.08rem; margin: 1.5rem 0 .4rem; }
+.prose p, .prose li { max-width: 70ch; }
+.prose li { margin: .25rem 0; }
+.tablewrap { overflow-x: auto; margin: .8rem 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 36rem; font-size: .93rem; }
+th, td { text-align: left; vertical-align: top; padding: .55rem .75rem; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { background: var(--raised); }
+td .who { font-size: .9rem; }
+.flowwrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: .8rem; margin: .8rem 0 .4rem; }
+.caption { color: var(--muted); font-size: .92rem; margin: 0 0 1rem; }
+svg.flow { display: block; width: 100%; min-width: 640px; height: auto; font-family: var(--sans); }
+svg.flow text { fill: var(--text); font-size: 14.5px; }
+svg.flow text.m { fill: var(--muted); font-size: 13px; }
+svg.flow .b { font-weight: 700; }
+svg.flow rect.box { fill: var(--raised); stroke: var(--line); }
+svg.flow rect.pill { fill: var(--bg); stroke: var(--wire); }
+svg.flow rect.bar { stroke: none; fill: var(--wire); }
+svg.flow .toi rect.bar { fill: var(--toi); }
+svg.flow .opus rect.bar { fill: var(--opus); }
+svg.flow polygon.dia { fill: var(--surface); stroke: var(--wire); stroke-width: 1.6; }
+svg.flow .w { stroke: var(--wire); stroke-width: 2; fill: none; }
+svg.flow .ah { fill: var(--wire); }
+svg.flow text.lab { fill: var(--muted); font-size: 12.5px; font-weight: 700; }
+
+/* Boucle libre */
+.freeform { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .8rem 1rem; max-width: 50rem; margin: 0 0 1.2rem; }
+.freeform label { display: grid; gap: .25rem; font-weight: 700; font-size: .93rem; }
+.freeform input, .freeform select { font: inherit; font-weight: 400; padding: .5rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text); }
+.primary { background: var(--godot); color: #fff; border: 0; border-radius: 8px; padding: .6rem 1rem; font-weight: 700; cursor: pointer; }
+.formerr { color: var(--bad); font-weight: 700; margin: 0 0 1rem; }
+
+footer { max-width: 1120px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 2.5rem) 2.5rem; display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center; justify-content: space-between; color: var(--muted); font-size: .9rem; }
+footer p { margin: 0; }
+.danger:hover { border-color: var(--bad); color: var(--bad); }
+
+@media (max-width: 820px) {
+  .top { grid-template-columns: 1fr; }
+  .controls { justify-content: flex-start; }
+  .now-grid { grid-template-columns: 1fr; }
+  .rail-wrap { order: 2; margin-top: 1.4rem; }
+  .rail li.current::after { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .node { animation: arrive .22s ease-out; }
+  .node.leaving { transition: opacity .17s ease, transform .17s ease; opacity: 0; transform: translateY(8px); }
+  @keyframes arrive { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Carte de construction</h1>
+    <p class="sub">GODOT_DEV_MAPPER, de l'étape 0 à la V1. Fais seulement l'action affichée, puis dis ce qui s'est passé.</p>
+  </div>
+  <div class="controls">
+    <label class="switch"><input type="checkbox" id="machine"> <span>Ma machine est disponible</span></label>
+    <button type="button" class="ghost" id="undo">Annuler la dernière action</button>
+  </div>
+  <p class="progress" id="progress"></p>
+</header>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="tabs-inner" role="tablist">
+    <button type="button" class="tab" role="tab" id="t-now" aria-controls="p-now" aria-selected="true">Maintenant</button>
+    <button type="button" class="tab" role="tab" id="t-map" aria-controls="p-map" aria-selected="false">La carte</button>
+    <button type="button" class="tab" role="tab" id="t-rules" aria-controls="p-rules" aria-selected="false">Les règles</button>
+    <button type="button" class="tab" role="tab" id="t-free" aria-controls="p-free" aria-selected="false">Boucle libre</button>
+  </div>
+</nav>
+
+<main>
+  <section id="p-now" role="tabpanel" aria-labelledby="t-now">
+    <div id="notice"></div>
+    <p class="crumb" id="crumb"></p>
+    <div class="now-grid">
+      <div class="rail-wrap">
+        <p class="rail-title" id="rail-title"></p>
+        <ol class="rail" id="rail"></ol>
+      </div>
+      <div id="card" aria-live="polite"></div>
+    </div>
+    <ul class="legend" aria-label="Légende des acteurs">
+      <li><span class="glyph g-toi"></span>Toi</li>
+      <li><span class="glyph g-opus"></span>Opus</li>
+      <li><span class="glyph g-sonnet"></span>Sonnet</li>
+      <li><span class="glyph g-gemini"></span>Gemini</li>
+      <li><span class="glyph g-qwen"></span>Qwen</li>
+    </ul>
+  </section>
+
+  <section id="p-map" role="tabpanel" aria-labelledby="t-map" hidden>
+    <div class="map-actions" id="map-actions"></div>
+    <div id="mapview"></div>
+  </section>
+
+  <section id="p-rules" role="tabpanel" aria-labelledby="t-rules" class="prose" hidden>
+    <h2>Tes trois questions</h2>
+
+    <h3>Quand est-ce que je lance une étape ?</h3>
+    <p>Quand la précédente est close. Une étape est close quand sa porte est passée, que tu as décidé « Passer », que la rétro est faite et que l'étape est marquée « Acceptée » dans <code>PROJECT_STATE.md</code>. L'onglet Maintenant t'amène alors tout seul à la première tâche de l'étape suivante. L'étape 0 commence tout de suite.</p>
+
+    <h3>Quand est-ce que je lance Gemini, Qwen, Opus ou Sonnet ?</h3>
+    <p>Jamais de ta propre initiative : la carte te le dit à chaque action. Chaque tâche a un auteur et un vérificateur.</p>
+    <ul>
+      <li>L'auteur se lance au début de la tâche.</li>
+      <li>Le vérificateur se lance quand le rapport de l'auteur dit TERMINÉ, dans une autre conversation.</li>
+      <li>Un modèle plus fort se lance quand le rapport dit ESCALADE, ou après deux refus du vérificateur.</li>
+      <li>Opus se lance aussi à chaque fin d'étape : d'abord la porte, puis la rétro.</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Qui</th><th>Il réalise</th><th>Il vérifie</th><th>Il intervient aussi</th></tr></thead>
+        <tbody>
+          <tr><td><span class="who"><span class="glyph g-qwen"></span>Qwen</span></td><td>T01 à T03, la préparation de T04, T09 à T13, T15, T17, T18</td><td>Rien</td><td>Seulement une fois T00 réussi</td></tr>
+          <tr><td><span class="who"><span class="glyph g-sonnet"></span>Sonnet</span></td><td>T14 et T16 ; les tâches de Qwen tant que Qwen n'est pas prêt</td><td>Rien</td><td>Quand Qwen escalade</td></tr>
+          <tr><td><span class="who"><span class="glyph g-gemini"></span>Gemini</span></td><td>Le choix du jeu de test, l'injection des bugs de T19</td><td>Presque tout le code, les squelettes, les contrats, les spikes</td><td>Recalcule les chiffres de la revue T20</td></tr>
+          <tr><td><span class="who"><span class="glyph g-opus"></span>Opus</span></td><td>Décisions, squelettes, spikes, contrats, revue T20</td><td>T03, T12, T13, T18</td><td>Portes, rétros, découpages, escalades de Sonnet et de Gemini</td></tr>
+          <tr><td><span class="who"><span class="glyph g-toi"></span>Toi</span></td><td>Les décisions, les essais sur ta machine, la mesure de valeur</td><td>T00 et T04</td><td>Lire chaque verdict, fusionner, décider à chaque porte</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Quand une étape est-elle finalisée ?</h3>
+    <p>Quand ces quatre choses sont faites, dans l'ordre :</p>
+    <ol>
+      <li>toutes ses tâches sont acceptées et fusionnées dans <code>main</code> ;</li>
+      <li>Opus a exécuté la porte d'étape, et chaque point de contrôle est OK ;</li>
+      <li>tu as décidé « Passer » ;</li>
+      <li>la rétro est faite, et l'étape est marquée « Acceptée » dans <code>PROJECT_STATE.md</code>.</li>
+    </ol>
+
+    <h2>La boucle d'une tâche</h2>
+    <div class="flowwrap">
+      <svg class="flow" viewBox="0 0 720 596" role="img" aria-labelledby="f1t f1d">
+        <title id="f1t">La boucle d'une tâche</title>
+        <desc id="f1d">Toi crées la branche ; l'auteur réalise et rend un rapport ; selon le statut, tu réponds à une question, tu escalades, ou tu lances le vérificateur ; selon le verdict, l'auteur corrige ou tu fusionnes ; puis tâche suivante.</desc>
+        <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+        <g class="toi"><rect class="box" x="40" y="16" width="320" height="52" rx="8"/><rect class="bar" x="40" y="16" width="6" height="52" rx="3"/><text x="60" y="38"><tspan class="b">Toi</tspan> : crée la branche</text><text class="m" x="60" y="58">git switch -c tache/ID</text></g>
+        <g><rect class="box" x="40" y="96" width="320" height="52" rx="8"/><rect class="bar" x="40" y="96" width="6" height="52" rx="3"/><text x="60" y="118"><tspan class="b">L'auteur</tspan> : réalise la tâche</text><text class="m" x="60" y="138">prompt de réalisation, puis rapport</text></g>
+        <polygon class="dia" points="200,172 300,206 200,240 100,206"/><text x="200" y="211" text-anchor="middle">Statut du rapport ?</text>
+        <g><rect class="box" x="40" y="290" width="320" height="52" rx="8"/><rect class="bar" x="40" y="290" width="6" height="52" rx="3"/><text x="60" y="312"><tspan class="b">Le vérificateur</tspan> : contrôle</text><text class="m" x="60" y="332">autre modèle, autre conversation</text></g>
+        <polygon class="dia" points="200,366 300,400 200,434 100,400"/><text x="200" y="405" text-anchor="middle">Verdict ?</text>
+        <g class="toi"><rect class="box" x="40" y="484" width="320" height="52" rx="8"/><rect class="bar" x="40" y="484" width="6" height="52" rx="3"/><text x="60" y="506"><tspan class="b">Toi</tspan> : fusionne dans main</text><text class="m" x="60" y="526">et note « Acceptée »</text></g>
+        <rect class="pill" x="110" y="556" width="180" height="32" rx="16"/><text x="200" y="577" text-anchor="middle">Tâche suivante</text>
+        <g><rect class="box" x="430" y="150" width="270" height="52" rx="8"/><text x="446" y="172"><tspan class="b">QUESTION</tspan> : tu réponds</text><text class="m" x="446" y="192">même conversation, puis ↺</text></g>
+        <g><rect class="box" x="430" y="214" width="270" height="52" rx="8"/><text x="446" y="236"><tspan class="b">ESCALADE</tspan> : modèle plus fort</text><text class="m" x="446" y="256">prompt d'escalade, puis ↺</text></g>
+        <g><rect class="box" x="430" y="374" width="270" height="52" rx="8"/><text x="446" y="396"><tspan class="b">REFUSÉE</tspan> : l'auteur corrige, ↺</text><text class="m" x="446" y="416">au 2e refus : escalade</text></g>
+        <line class="w" x1="200" y1="68" x2="200" y2="94" marker-end="url(#ah1)"/>
+        <line class="w" x1="200" y1="148" x2="200" y2="170" marker-end="url(#ah1)"/>
+        <line class="w" x1="200" y1="240" x2="200" y2="288" marker-end="url(#ah1)"/><text class="lab" x="210" y="270">TERMINÉ</text>
+        <line class="w" x1="200" y1="342" x2="200" y2="364" marker-end="url(#ah1)"/>
+        <line class="w" x1="200" y1="434" x2="200" y2="482" marker-end="url(#ah1)"/><text class="lab" x="210" y="464">ACCEPTÉE</text>
+        <line class="w" x1="200" y1="536" x2="200" y2="554" marker-end="url(#ah1)"/>
+        <path class="w" d="M300,206 H362 V176 H428" marker-end="url(#ah1)"/>
+        <path class="w" d="M362,206 V240 H428" marker-end="url(#ah1)"/>
+        <path class="w" d="M300,400 H428" marker-end="url(#ah1)"/>
+      </svg>
+    </div>
+    <p class="caption">↺ : avec le nouveau rapport, tu relis son statut. Chaque modèle travaille dans une conversation neuve.</p>
+
+    <h2>La fin d'une étape</h2>
+    <div class="flowwrap">
+      <svg class="flow" viewBox="0 0 720 540" role="img" aria-labelledby="f2t f2d">
+        <title id="f2t">La fin d'une étape</title>
+        <desc id="f2d">Quand toutes les tâches sont acceptées, Opus exécute la porte d'étape ; tu décides de passer, de corriger d'abord ou de revoir le plan ; si tu passes, Opus fait la rétro, tu appliques les améliorations retenues, tu marques l'étape Acceptée, puis l'étape suivante commence.</desc>
+        <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+        <rect class="pill" x="40" y="16" width="320" height="32" rx="16"/><text x="200" y="37" text-anchor="middle">Toutes les tâches sont acceptées</text>
+        <g class="opus"><rect class="box" x="40" y="80" width="320" height="52" rx="8"/><rect class="bar" x="40" y="80" width="6" height="52" rx="3"/><text x="60" y="102"><tspan class="b">Opus</tspan> : porte d'étape</text><text class="m" x="60" y="122">chaque point de contrôle OK ou KO</text></g>
+        <polygon class="dia" points="200,156 300,190 200,224 100,190"/><text x="200" y="195" text-anchor="middle">Ta décision ?</text>
+        <g class="opus"><rect class="box" x="40" y="274" width="320" height="52" rx="8"/><rect class="bar" x="40" y="274" width="6" height="52" rx="3"/><text x="60" y="296"><tspan class="b">Opus</tspan> : rétro</text><text class="m" x="60" y="316">trois améliorations au plus</text></g>
+        <g class="toi"><rect class="box" x="40" y="354" width="320" height="52" rx="8"/><rect class="bar" x="40" y="354" width="6" height="52" rx="3"/><text x="60" y="376"><tspan class="b">Toi</tspan> : applique ce que tu retiens</text><text class="m" x="60" y="396">puis fusionne</text></g>
+        <g class="toi"><rect class="box" x="40" y="434" width="320" height="52" rx="8"/><rect class="bar" x="40" y="434" width="6" height="52" rx="3"/><text x="60" y="456"><tspan class="b">Toi</tspan> : étape « Acceptée »</text><text class="m" x="60" y="476">dans PROJECT_STATE.md, commit</text></g>
+        <rect class="pill" x="70" y="500" width="260" height="32" rx="16"/><text x="200" y="521" text-anchor="middle">L'étape suivante commence</text>
+        <g><rect class="box" x="430" y="130" width="270" height="52" rx="8"/><text x="446" y="152"><tspan class="b">Corriger d'abord</tspan></text><text class="m" x="446" y="172">boucle sur la tâche en cause, ↺</text></g>
+        <g><rect class="box" x="430" y="194" width="270" height="52" rx="8"/><text x="446" y="216"><tspan class="b">Revoir le plan</tspan></text><text class="m" x="446" y="236">Opus propose, tu valides, ↺</text></g>
+        <line class="w" x1="200" y1="48" x2="200" y2="78" marker-end="url(#ah2)"/>
+        <line class="w" x1="200" y1="132" x2="200" y2="154" marker-end="url(#ah2)"/>
+        <line class="w" x1="200" y1="224" x2="200" y2="272" marker-end="url(#ah2)"/><text class="lab" x="210" y="254">PASSER</text>
+        <line class="w" x1="200" y1="326" x2="200" y2="352" marker-end="url(#ah2)"/>
+        <line class="w" x1="200" y1="406" x2="200" y2="432" marker-end="url(#ah2)"/>
+        <line class="w" x1="200" y1="486" x2="200" y2="498" marker-end="url(#ah2)"/>
+        <path class="w" d="M300,190 H362 V156 H428" marker-end="url(#ah2)"/>
+        <path class="w" d="M362,190 V220 H428" marker-end="url(#ah2)"/>
+      </svg>
+    </div>
+    <p class="caption">↺ : après la correction ou l'amendement, Opus relance la porte.</p>
+
+    <h2>Cinq règles pour ne pas te perdre</h2>
+    <ol>
+      <li>Une conversation neuve pour chaque tâche et chaque rôle. Le vérificateur ne voit jamais la conversation de l'auteur.</li>
+      <li>Jamais le même modèle pour réaliser et vérifier une tâche.</li>
+      <li>Un verdict sans contrôles relancés ne compte pas : traite-le comme un refus.</li>
+      <li>Deux échecs, on escalade. On n'insiste pas une troisième fois avec le même modèle.</li>
+      <li>Chaque tâche vit sur sa branche <code>tache/ID</code>. La branche <code>main</code> ne reçoit que du travail accepté.</li>
+    </ol>
+
+    <h2>Avant la toute première action</h2>
+    <ol>
+      <li>Décompresse <code>GODOT_DEV_MAPPER.zip</code> avec <code>unzip</code>, puis place-toi dans le dossier.</li>
+      <li>Ouvre ce dossier dans Claude Code, dans ton outil Gemini et, plus tard, dans le harnais de Qwen.</li>
+      <li>Chaque prompt de cette carte renvoie à un fichier de <code>docs/construction/</code> : les agents le lisent eux-mêmes dans le dépôt.</li>
+    </ol>
+  </section>
+
+  <section id="p-free" role="tabpanel" aria-labelledby="t-free" class="prose" hidden>
+    <h2>Boucle libre</h2>
+    <p>Pour les tâches du MVP et de la V1, ou pour une correction demandée par une porte. Saisis la tâche, puis suis la même boucle qu'au POC.</p>
+    <div class="freeform">
+      <label>Identifiant de la tâche<input id="f-id" autocomplete="off" placeholder="P4a-01"></label>
+      <label>Fichier du guide<input id="f-file" autocomplete="off" placeholder="docs/construction/mvp-P4a.md"></label>
+      <label>Auteur<select id="f-author"><option value="qwen">Qwen</option><option value="sonnet">Sonnet</option><option value="opus">Opus</option><option value="gemini">Gemini</option></select></label>
+      <label>Vérificateur<select id="f-verifier"><option value="gemini">Gemini</option><option value="opus">Opus</option><option value="sonnet">Sonnet</option><option value="toi">Toi</option></select></label>
+    </div>
+    <p class="formerr" id="f-err" hidden></p>
+    <p><button type="button" class="primary" id="f-start">Commencer cette tâche</button></p>
+    <div id="freecard"></div>
+  </section>
+</main>
+
+<footer>
+  <p id="store-status">Progression : chargement…</p>
+  <button type="button" class="ghost danger" id="reset">Recommencer à zéro</button>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- Acteurs ---------------- */
+  var ACTORS = {
+    toi:    { name: "Toi",    where: "toi-même : terminal à la racine du dépôt, éditeur Godot, fichiers." },
+    opus:   { name: "Opus",   where: "Claude Code avec le modèle Opus 5.5, ouvert dans le dossier du dépôt. Nouvelle conversation (/clear) pour cette action." },
+    sonnet: { name: "Sonnet", where: "Claude Code avec le modèle Sonnet, ouvert dans le dossier du dépôt. Nouvelle conversation (/clear) pour cette action." },
+    gemini: { name: "Gemini", where: "ton outil Gemini, ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." },
+    qwen:   { name: "Qwen",   where: "ton harnais local (celui de T00), ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." }
+  };
+  var ESCALATE_TO = { qwen: "sonnet", sonnet: "opus", gemini: "opus", opus: "toi", toi: "toi" };
+
+  /* ---------------- Étapes et phases ---------------- */
+  var STATIONS = [
+    { id: "E0", group: "POC", num: "0", label: "Étape 0", the: "l'étape 0", de: "de l'étape 0", title: "Décisions et environnement", file: "etape-0.md", budget: "2–4 h", tasks: ["0.A", "0.B", "T00"] },
+    { id: "E1", group: "POC", num: "1", label: "Étape 1", the: "l'étape 1", de: "de l'étape 1", title: "Fondations", file: "etape-1.md", budget: "4–6 h", tasks: ["T01", "T02", "T03", "T04"] },
+    { id: "E2", group: "POC", num: "2", label: "Étape 2", the: "l'étape 2", de: "de l'étape 2", title: "Spikes", file: "etape-2.md", budget: "4–6 h", tasks: ["T05", "T06"] },
+    { id: "E3", group: "POC", num: "3", label: "Étape 3", the: "l'étape 3", de: "de l'étape 3", title: "Contrats", file: "etape-3.md", budget: "4–6 h", tasks: ["T07", "T08"] },
+    { id: "E4", group: "POC", num: "4", label: "Étape 4", the: "l'étape 4", de: "de l'étape 4", title: "Implémentation sous contrat", file: "etape-4.md", budget: "4–7 h", tasks: ["T09", "T10", "T11", "T12", "T13"] },
+    { id: "E5", group: "POC", num: "5", label: "Étape 5", the: "l'étape 5", de: "de l'étape 5", title: "Intégration", file: "etape-5.md", budget: "2–4 h", tasks: ["T14", "T15", "V5"] },
+    { id: "E6", group: "POC", num: "6", label: "Étape 6", the: "l'étape 6", de: "de l'étape 6", title: "Interface et robustesse", file: "etape-6.md", budget: "3–4 h", tasks: ["T16", "T17", "T18", "V6"] },
+    { id: "E7", group: "POC", num: "7", label: "Étape 7", the: "l'étape 7", de: "de l'étape 7", title: "Valeur et revue", file: "etape-7.md", budget: "2–3 h", tasks: ["T19", "T20"] }
+  ];
+  var PHASES = [
+    ["P4a", "MVP", "Évaluations : rendu et backend statique", "6–12 h", "SPIKE-03 et SPIKE-04"],
+    ["P4b", "MVP", "Backend statique et inventaire", "8–14 h", "CAP-08 et CAP-09"],
+    ["P5", "MVP", "Navigation et arborescence res://", "8–13 h", "CAP-10"],
+    ["P6", "MVP", "Historique, persistance, protocole MVP", "10–16 h", "CAP-11 et CAP-07 complet"],
+    ["P7", "MVP", "Logique et Game Flow annoté", "5–9 h", "CAP-12 annoté"],
+    ["P8", "MVP", "Compatibilité MVP et stabilisation", "6–10 h", "CAP-13 ; sa porte est la porte du MVP"],
+    ["P9", "V1", "Timeline du Game Flow", "8–12 h", "CAP-12 complet"],
+    ["P10", "V1", "Instances et comparaison", "8–12 h", "préparation de CAP-15"],
+    ["P11", "V1", "Data Flow", "12–20 h", "CAP-14"],
+    ["P12", "V1", "Attendu contre observé", "10–16 h", "CAP-15"],
+    ["P13", "V1", "Diagnostic, Explain, Tune", "14–22 h", "CAP-16"],
+    ["P14", "V1", "Performance corrélée", "6–10 h", "CAP-17"],
+    ["P15", "V1", "AI Snapshot", "5–8 h", "CAP-18"],
+    ["P16", "V1", "Durcissement et documentation", "12–20 h", "deux versions stables, matrice, documentation ; sa porte est la porte de la V1"]
+  ];
+  PHASES.forEach(function (p) {
+    STATIONS.push({ id: p[0], group: p[1], num: p[0], label: "Phase " + p[0], the: "la phase " + p[0], de: "de la phase " + p[0], title: p[2], file: p[1] === "MVP" ? "mvp.md" : "v1.md", budget: p[3], caps: p[4], tasks: [p[0]] });
+  });
+
+  /* ---------------- Tâches ---------------- */
+  var TASKS = {
+    "0.A": { title: "Dossier de décisions", flow: "decisions", author: "opus", verifier: null, deps: [] },
+    "0.B": { title: "Squelettes et règles des agents", author: "opus", verifier: "gemini", deps: ["0.A"], vp: "relecture0B" },
+    "T00": { title: "Environnement de Qwen", flow: "t00", author: "qwen", verifier: "toi", deps: ["0.B"], machine: true },
+    "T01": { title: "Squelette du dépôt et plugin activable", author: "qwen", verifier: "gemini", deps: ["0.B"] },
+    "T02": { title: "Runner de tests et contrôle de dépendances", author: "qwen", verifier: "gemini", deps: ["T01"] },
+    "T03": { title: "Contrôle unique, lint et CI", author: "qwen", verifier: "opus", deps: ["T02"] },
+    "T04": { title: "Banc d'essai", flow: "t04", author: "qwen", verifier: "toi", deps: ["0.A"] },
+    "T05": { title: "SPIKE-01b : partie éditeur du canal", author: "opus", verifier: "gemini", deps: ["T01"], machine: true, vp: "spike01b" },
+    "T06": { title: "SPIKE-02 : frontière de compatibilité", author: "opus", verifier: "gemini", deps: ["T03"] },
+    "T07": { title: "Contrats C-01, C-02, C-05", author: "opus", verifier: "gemini", deps: ["T06"], vp: "contrat" },
+    "T08": { title: "Contrats C-03, C-04, C-06, C-07", author: "opus", verifier: "gemini", deps: ["T05", "T06", "T07"], vp: "contrat", freeze: true },
+    "T09": { title: "Codec de l'enveloppe", author: "qwen", verifier: "gemini", deps: ["T08"] },
+    "T10": { title: "Modèle, graphe déclaré, clés de sonde", author: "qwen", verifier: "gemini", deps: ["T07", "T09"] },
+    "T11": { title: "Event Store minimal", author: "qwen", verifier: "gemini", deps: ["T08", "T10"] },
+    "T12": { title: "Façades et profil moteur", author: "qwen", verifier: "opus", deps: ["T06", "T08"] },
+    "T13": { title: "FlowTrace, banc sans éditeur, SPIKE-05", author: "qwen", verifier: "opus", deps: ["T08", "T09", "T12"] },
+    "T14": { title: "Réception côté éditeur", author: "sonnet", verifier: "gemini", deps: ["T09", "T11", "T12", "T13"] },
+    "T15": { title: "Instrumentation du banc d'essai", author: "qwen", verifier: "gemini", deps: ["T04", "T13"] },
+    "V5":  { title: "Essai dans l'éditeur réel", flow: "manual", author: "toi", deps: ["T14", "T15"], machine: true, fixId: "T14", fixAuthor: "sonnet",
+             manual: "Sur ta machine : ouvre l'éditeur avec le plugin, lance le banc d'essai instrumenté et démarre une collecte. Suis la procédure écrite dans le rapport de T14, puis compare les compteurs du store à ceux du banc de test (point de contrôle PC5.6)." },
+    "T16": { title: "Panneau du POC", author: "sonnet", verifier: "gemini", deps: ["T10", "T14"] },
+    "T17": { title: "Chemin observé et ouverture du code", author: "qwen", verifier: "gemini", deps: ["T15", "T16"] },
+    "T18": { title: "Robustesse et cycle de vie", author: "qwen", verifier: "opus", deps: ["T13", "T14"] },
+    "V6":  { title: "Démonstration visuelle", flow: "manual", author: "toi", deps: ["T16", "T17", "T18"], machine: true, fixId: "T16", fixAuthor: "sonnet",
+             manual: "Sur ta machine, en suivant les procédures des rapports de T16 à T18 : captures d'écran du panneau avec deux instances distinguées, chemin observé dans ses trois états, ouverture du code au bon endroit, latence mesurée sous 200 ms, plugin désactivé pendant une collecte sans erreur dans le jeu (point de contrôle PC6.7)." },
+    "T19": { title: "Mesure de valeur", flow: "t19", author: "gemini", deps: ["V6"], machine: true },
+    "T20": { title: "Revue de continuation", flow: "t20", author: "opus", deps: ["T19"] }
+  };
+  var prevPhase = "T20";
+  PHASES.forEach(function (p) {
+    TASKS[p[0]] = { title: p[2], flow: "phase", author: "opus", deps: [prevPhase] };
+    prevPhase = p[0];
+  });
+  var TASK_STATION = {};
+  var ORDER = {};
+  var orderIndex = 0;
+  STATIONS.forEach(function (st, si) {
+    st.tasks.forEach(function (tid) {
+      var t = TASKS[tid];
+      t.id = tid;
+      if (!t.file) t.file = st.file;
+      if (!t.flow) t.flow = "standard";
+      TASK_STATION[tid] = si;
+      ORDER[tid] = orderIndex++;
+    });
+  });
+  var POC_TASKS = Object.keys(TASKS).filter(function (k) { return STATIONS[TASK_STATION[k]].group === "POC"; });
+
+  /* ---------------- État ---------------- */
+  function defaultState() {
+    return { v: 1, machine: false, qwenOk: null, done: {}, parked: {}, refusals: {}, esc: {}, gates: {}, provisional: {},
+             mvp: false, reduced: false, stopped: false, cursor: null,
+             free: { id: "", file: "", author: "qwen", verifier: "gemini", node: "run", refusals: 0, esc: 0, active: false, last: "" },
+             updatedAt: 0 };
+  }
+  var state = defaultState();
+  var history = [];
+  var LS_KEY = "gdm-carte-v1";
+  var localOk = (function () { try { localStorage.setItem(LS_KEY + "-t", "1"); localStorage.removeItem(LS_KEY + "-t"); return true; } catch (e) { return false; } })();
+  var remote = null;
+
+  function depsDone(t) { return (t.deps || []).every(function (d) { return state.done[d]; }); }
+  function orderCmp(a, b) { return ORDER[a] - ORDER[b]; }
+  function chain(a, n) { for (var i = 0; i < n; i++) a = ESCALATE_TO[a] || "opus"; return a; }
+  function authorOf(t) {
+    if (t.free) return t.author;
+    if (t.id === "T00") return "qwen";
+    if (t.author === "qwen" && state.qwenOk !== true) return "sonnet";
+    return t.author;
+  }
+  function verifierOf(t, current) {
+    var v = t.verifier;
+    if (!v) return null;
+    if (v === current) v = current === "gemini" ? "sonnet" : "gemini";
+    return v;
+  }
+  function list(ids) {
+    if (ids.length < 2) return ids.join("");
+    return ids.slice(0, -1).join(", ") + " et " + ids[ids.length - 1];
+  }
+  function reasonText(r) { return r === "machine" ? "attend ta machine" : "attend " + list(r.slice(4).split(",")); }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function scan() {
+    for (var si = 0; si < STATIONS.length; si++) {
+      var st = STATIONS[si];
+      if (st.group !== "POC" && !state.mvp) break;
+      var doneCount = 0;
+      for (var k = 0; k < st.tasks.length; k++) {
+        var tid = st.tasks[k], t = TASKS[tid];
+        if (state.done[tid]) { doneCount++; continue; }
+        var p = state.parked[tid];
+        if (p) {
+          if (p === "machine" && state.machine) delete state.parked[tid];
+          else if (p.indexOf("dep:") === 0 && depsDone(t) && (!t.machine || state.machine)) delete state.parked[tid];
+          else continue;
+        }
+        if (t.machine && !state.machine) { state.parked[tid] = "machine"; continue; }
+        var missing = (t.deps || []).filter(function (d) { return !state.done[d]; });
+        if (missing.length) {
+          var parkedDeps = missing.filter(function (d) { return state.parked[d]; });
+          if (parkedDeps.length) { state.parked[tid] = "dep:" + parkedDeps.join(","); continue; }
+          return { kind: "blocked", s: si, task: tid, missing: missing };
+        }
+        return { kind: "task", s: si, task: tid, node: firstNode(t) };
+      }
+      if (!state.gates[st.id]) {
+        if (doneCount === 0) continue;
+        return { kind: "gate", s: si, node: "gate" };
+      }
+    }
+    if (state.stopped) return { kind: "end", reason: "stop" };
+    if (Object.keys(state.parked).length) return { kind: "idle" };
+    if (state.mvp && STATIONS.every(function (s) { return state.gates[s.id]; })) return { kind: "end", reason: "v1" };
+    return { kind: "idle" };
+  }
+  function firstNode(t) {
+    return { t00: "install", t04: "select", manual: "manual", t19: "inject", t20: "prepare", phase: "split" }[t.flow] || "run";
+  }
+  function completeTask(id) {
+    state.done[id] = true;
+    delete state.parked[id];
+    var st = STATIONS[TASK_STATION[id]];
+    if (state.provisional[st.id] && st.tasks.every(function (x) { return state.done[x]; })) state.gates[st.id] = false;
+    state.cursor = scan();
+  }
+  function closeStation(si) {
+    var st = STATIONS[si];
+    state.gates[st.id] = true;
+    if (st.tasks.some(function (x) { return !state.done[x]; })) state.provisional[st.id] = true;
+    else delete state.provisional[st.id];
+    state.cursor = scan();
+  }
+
+  /* ---------------- Historique, sauvegarde ---------------- */
+  function commit(mutator) {
+    history.push(JSON.stringify(state));
+    if (history.length > 40) history.shift();
+    mutator();
+    state.updatedAt = Date.now();
+    save();
+    renderAll(true);
+  }
+  function save() {
+    if (localOk) {
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(state));
+        localStorage.setItem(LS_KEY + "-h", JSON.stringify(history.slice(-20)));
+      } catch (e) { /* stockage plein ou refusé : on continue en mémoire */ }
+    }
+    if (remote) { clearTimeout(save.timer); save.timer = setTimeout(flush, 600); }
+  }
+  var writing = false, pendingWrite = false;
+  function flush() {
+    if (!remote) return;
+    if (writing) { pendingWrite = true; return; }
+    writing = true;
+    var payload = { state: JSON.stringify(state), updatedAt: state.updatedAt };
+    remote.ref.set(payload).then(function () {
+      setStatus("Progression enregistrée sur ton compte : tu la retrouves sur tes autres appareils.");
+    }, function () {
+      setStatus(localOk ? "Enregistrement sur ton compte impossible pour l'instant ; la progression reste dans ce navigateur." : "Enregistrement impossible pour l'instant.");
+    }).then(function () {
+      writing = false;
+      if (pendingWrite) { pendingWrite = false; flush(); }
+    });
+  }
+  function load() {
+    if (!localOk) return;
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      if (raw) { var s = JSON.parse(raw); if (s && s.v === 1) state = Object.assign(defaultState(), s); }
+      var hr = localStorage.getItem(LS_KEY + "-h");
+      if (hr) { var hh = JSON.parse(hr); if (Array.isArray(hh)) history = hh; }
+    } catch (e) { state = defaultState(); }
+  }
+  function setStatus(msg) { document.getElementById("store-status").textContent = msg; }
+  function localStatus() {
+    setStatus(localOk ? "Progression enregistrée dans ce navigateur." : "Progression non enregistrée : elle sera perdue à la fermeture de la page.");
+  }
+  function connect() {
+    if (!window.claude || typeof window.claude.use !== "function") { localStatus(); return; }
+    localStatus();
+    Promise.all([window.claude.use("db"), window.claude.use("user")]).then(function (caps) {
+      var db = caps[0], user = caps[1];
+      if (!db || !user) return null;
+      return user.id().then(function (uid) {
+        if (!uid) return null;
+        var ref = db.doc("data/users/" + uid + "/carte_progression");
+        return ref.get().then(function (snap) {
+          if (snap && snap.exists) {
+            var d = snap.data() || {};
+            if (typeof d.state === "string") {
+              var s = JSON.parse(d.state);
+              if (s && s.v === 1 && (s.updatedAt || 0) > (state.updatedAt || 0)) { state = Object.assign(defaultState(), s); renderAll(false); }
+            }
+          }
+          remote = { ref: ref };
+          setStatus("Progression enregistrée sur ton compte : tu la retrouves sur tes autres appareils.");
+          if ((state.updatedAt || 0) > 0) flush();
+        });
+      });
+    }).catch(function () { localStatus(); });
+  }
+
+  /* ---------------- Prompts ---------------- */
+  function branchCmd(id) { return "git switch main\ngit switch -c tache/" + id; }
+  function mergeCmd(id) { return "git switch main\ngit merge --no-ff tache/" + id + " -m \"" + id + " acceptée\""; }
+  function fileRef(t) { return t.free ? (t.file || "[fichier du guide]") : "docs/construction/" + t.file; }
+
+  function pAuthor(t) {
+    var id = t.id;
+    if (id === "0.A") return "Lis docs/construction/etape-0.md, section « 0.A — Dossier de décisions », et exécute exactement le prompt qui s'y trouve.\nTu es sur la branche tache/0.A.\nTermine par le rapport demandé.";
+    if (id === "0.B") return "Lis docs/construction/etape-0.md, section « 0.B — Squelettes et source unique de règles », et exécute exactement le prompt qui s'y trouve.\nTu es sur la branche tache/0.B.\nTermine par le rapport final au format du prompt universel de réalisation (docs/construction/README.md).";
+    if (id === "T00") return "Lis docs/construction/etape-0.md, section « T00 — Environnement de Qwen », et exécute la tâche jouet qui s'y trouve.\nN'invente aucune sortie : si une commande échoue, recopie l'erreur telle quelle et arrête-toi.";
+    if (id === "T04") return "Lis docs/construction/etape-1.md, section T04, et exécute le prompt de préparation pour le jeu que j'ai choisi :\nNom : [à compléter]\nDépôt : [à compléter]\nRévision : [à compléter]\nTu es sur la branche tache/T04.\nTermine par le rapport final au format demandé.";
+    return "Tu réalises la tâche " + id + " du projet GODOT_DEV_MAPPER.\nTu es sur la branche tache/" + id + ".\nLis " + fileRef(t) + ", section " + id + ", et exécute exactement le prompt de réalisation qui s'y trouve, avec les règles de REGLES_AGENTS.md.\nTermine par le rapport final au format demandé.";
+  }
+  function pVerify(t) {
+    var id = t.id;
+    if (t.vp === "relecture0B") return "Lis docs/construction/etape-0.md, section 0.B, et exécute le « Prompt de relecture pour Gemini » sur la branche tache/0.B. Ne modifie rien.\nCommence ta réponse par « Verdict : ACCEPTÉE » si tu ne trouves aucun écart, ou par « Verdict : REFUSÉE » suivi des écarts numérotés.";
+    if (t.vp === "spike01b") return "Tu es vérificateur indépendant pour la tâche T05 (SPIKE-01b) du projet GODOT_DEV_MAPPER. Tu ne modifies rien.\nLis, sur la branche tache/T05, la section SPIKE-01b de docs/spikes/SPIKE-01.md, puis la section T05 de docs/construction/etape-2.md.\nVérifie que chacun des sept critères a une manipulation, une observation et un chiffre, et que la décision découle des chiffres. Cherche toute affirmation sans preuve.\nRéponds en commençant par « Verdict : ACCEPTÉE » ou « Verdict : REFUSÉE », puis donne les problèmes numérotés.";
+    var extra = t.vp === "contrat" ? "\nRelis aussi chaque contrat contre docs/plan-directeur.md : contradictions, cas non spécifiés, exemples incohérents." : "";
+    return "Tu es vérificateur indépendant pour la tâche " + id + " du projet GODOT_DEV_MAPPER. Tu n'as pas écrit ce code et tu ne modifies rien.\nApplique le « Prompt universel de vérification » de docs/construction/README.md à la section " + id + " de " + fileRef(t) + ".\nRévision de départ : main. Révision à vérifier : tache/" + id + "." + extra + "\nLe rapport de l'auteur suit.\n\n[colle ici le rapport de l'auteur]";
+  }
+  function pFix(t) {
+    return "Le vérificateur a refusé la tâche " + t.id + ". Son verdict suit.\nCorrige uniquement les problèmes listés, sur la branche tache/" + t.id + ", sans modifier les tests ni les contrôles.\nExécute de nouveau tous les contrôles de la tâche, puis refais le rapport final au format demandé.\n\n[colle ici le verdict]";
+  }
+  function pEscalate(t) {
+    return "Applique le « Prompt d'escalade » de docs/construction/README.md à la tâche " + t.id + " du projet GODOT_DEV_MAPPER (section " + t.id + " de " + fileRef(t) + "), sur la branche tache/" + t.id + ".\nÀ la suite : le contrôle en échec, les sorties des deux dernières tentatives et le rapport de l'auteur.\n\n[colle ici ces éléments]";
+  }
+  function pGate(st, parked) {
+    var base;
+    if (st.group === "POC") {
+      base = "Applique le « Prompt de porte d'étape » de docs/construction/README.md à " + st.the + " du projet GODOT_DEV_MAPPER.\nExécute toi-même chaque point de contrôle de docs/construction/" + st.file + ", sur la branche main, et produis la page demandée. Tu ne décides pas.";
+    } else {
+      var pre = st.group === "MVP" ? "mvp" : "v1";
+      base = "Applique le « Prompt de porte d'étape » de docs/construction/README.md à " + st.the + " du projet GODOT_DEV_MAPPER.\nSes points de contrôle sont dans docs/construction/" + st.file + ", section " + st.id + ", et dans docs/construction/" + pre + "-" + st.id + ".md. Exécute-les toi-même sur la branche main et produis la page demandée. Tu ne décides pas.";
+      if (st.id === "P8") base += "\nCette porte est aussi la porte du MVP : vérifie en plus les critères de la section « Porte du MVP » de docs/construction/mvp.md.";
+      if (st.id === "P16") base += "\nCette porte est aussi la porte de la V1 : vérifie en plus les critères de la section « Porte de la V1 » de docs/construction/v1.md.";
+    }
+    if (parked.length) base += "\nCes tâches sont mises de côté et ne seront pas vérifiées maintenant : " + list(parked) + ". Indique quels points de contrôle en dépendent.";
+    return base;
+  }
+  function pRetro(st) { return "Applique le « Prompt de rétro » de docs/construction/README.md à " + st.the + " du projet GODOT_DEV_MAPPER. La page de porte suit.\n\n[colle ici la page de porte]"; }
+  function pReplan(st) { return "La porte " + st.de + " du projet GODOT_DEV_MAPPER recommande de revoir le plan. La page de porte suit.\nPropose un amendement minimal : le diff exact de docs/plan-directeur.md et des fichiers du guide concernés, avec son impact sur les budgets et les tâches suivantes.\nN'applique rien : je valide d'abord.\n\n[colle ici la page de porte]"; }
+  function pSplit(st) {
+    if (st.group === "MVP") return "Applique le « Prompt de découpage d'une phase » de docs/construction/mvp.md à la phase " + st.id + " du projet GODOT_DEV_MAPPER.\nCapacités : " + st.caps + ". Budget de la phase : " + st.budget + " humaines.\nTu es sur la branche tache/" + st.id + "-decoupage. Produis docs/construction/mvp-" + st.id + ".md et ne réalise aucune tâche.";
+    return "Applique le prompt de découpage décrit dans docs/construction/v1.md (celui de mvp.md, avec la règle que v1.md ajoute) à la phase " + st.id + " du projet GODOT_DEV_MAPPER.\nCapacités : " + st.caps + ". Budget de la phase : " + st.budget + " humaines.\nTu es sur la branche tache/" + st.id + "-decoupage. Produis docs/construction/v1-" + st.id + ".md et ne réalise aucune tâche.";
+  }
+
+  /* ---------------- Vues des nœuds ---------------- */
+  var NODE_NAMES = { run: "réalisation", status: "statut du rapport", question: "question", escalate: "escalade", decideChange: "proposition à trancher",
+    verify: "vérification", verdict: "verdict", fix: "correction", merge: "fusion", decide01: "décisions", install: "installation",
+    t00ok: "mesures", noqwen: "Qwen pas prêt", select: "candidats", choose: "choix du jeu", manual: "essai", manualFix: "correction",
+    inject: "injection des bugs", measure: "mesure", crosscheck: "relecture", verdict19: "verdict", prepare: "revue", recompute: "recalcul",
+    fix20: "correction de la revue", decide20: "décision", amend: "amendement", split: "découpage", reviewSplit: "relecture du découpage",
+    loop: "tâches de la phase", gate: "porte", decideGate: "décision", correct: "correction", replan: "plan", retro: "rétro", close: "clôture" };
+
+  function machineWarn(t) {
+    return (t.machine && !state.machine) ? "Cette tâche demande ta machine. Coche « Ma machine est disponible » en haut quand elle l'est." : null;
+  }
+
+  function taskView(t, node, api) {
+    var id = t.id;
+    var A0 = authorOf(t);
+    var A = chain(A0, api.esc());
+    var E = chain(A0, api.esc() + 1);
+    var V = verifierOf(t, A);
+    var afterDone = V ? "verify" : (t.flow === "decisions" ? "decide01" : "merge");
+    var warn = machineWarn(t);
+    switch (node) {
+      case "run":
+        return { actor: A, warn: warn, title: "Lance la réalisation de " + id,
+          do: t.flow === "t00" ? "Dans le harnais de Qwen, colle le prompt et laisse Qwen travailler jusqu'à son rapport." :
+            "Crée d'abord la branche de la tâche dans le terminal. Ouvre ensuite " + ACTORS[A].name + ", colle le prompt et laisse l'agent travailler jusqu'à son rapport final.",
+          before: t.flow === "t00" ? null : branchCmd(id), prompt: pAuthor(t),
+          expect: "un rapport qui se termine par une ligne « Statut : TERMINÉ », « QUESTION » ou « ESCALADE ».",
+          outcomes: [{ label: "J'ai le rapport", fn: function () { api.go("status"); } }] };
+      case "status":
+        return { actor: "toi", title: "Lis le statut du rapport",
+          do: "Cherche la ligne « Statut » à la fin du rapport de " + ACTORS[A].name + ", puis dis-le ici.",
+          outcomes: [
+            { label: "TERMINÉ", kind: "ok", fn: function () { api.go(afterDone); } },
+            { label: "QUESTION", kind: "warn", fn: function () { api.go("question"); } },
+            { label: "ESCALADE", kind: "bad", fn: function () { api.go("escalate"); } }] };
+      case "question":
+        return { actor: "toi", title: "Réponds à la question de " + ACTORS[A].name,
+          do: "Réponds dans la même conversation. S'il demande de toucher un fichier interdit, un contrat ou le plan, ne tranche pas au fil de l'eau : réponds « note-le comme écart et continue sans ». La porte d'étape le traitera.",
+          expect: "un nouveau rapport, avec une nouvelle ligne « Statut ».",
+          outcomes: [{ label: "J'ai répondu, le nouveau rapport est là", fn: function () { api.go("status"); } }] };
+      case "escalate":
+        if (E === "toi") return { actor: "toi", title: "Débloque " + id + " toi-même",
+          do: "Opus est bloqué deux fois. Lis son diagnostic et décide : préciser la consigne, modifier un contrat, ou abandonner une option. Puis relance la réalisation dans une nouvelle conversation, avec ta décision.",
+          outcomes: [{ label: "J'ai décidé, je relance la réalisation", fn: function () { api.escalated("run"); } }] };
+        return { actor: E, title: "Escalade " + id + " vers " + ACTORS[E].name,
+          do: "Ouvre " + ACTORS[E].name + " dans une nouvelle conversation. Colle le prompt, puis à la suite : le contrôle en échec, les sorties des deux dernières tentatives et le rapport de l'auteur.",
+          prompt: pEscalate(t),
+          expect: "soit une correction faite avec un rapport « Statut : TERMINÉ », soit une proposition de changement à valider par toi.",
+          outcomes: [
+            { label: "Corrigé : rapport TERMINÉ", kind: "ok", fn: function () { api.escalated(V ? "verify" : afterDone); } },
+            { label: "Il propose un changement", kind: "warn", fn: function () { api.escalated("decideChange"); } }] };
+      case "decideChange":
+        return { actor: "toi", title: "Tranche la proposition",
+          do: "Lis la proposition de changement. Si tu l'acceptes, fais-la appliquer par Opus (contrat, guide ou plan), puis fusionne-la. Si tu la refuses, note pourquoi dans PROJECT_STATE.md. Ensuite, relance la réalisation dans une nouvelle conversation.",
+          outcomes: [{ label: "J'ai tranché, je relance la réalisation", fn: function () { api.go("run"); } }] };
+      case "verify":
+        if (V === "toi") return toiVerify(t, api);
+        return { actor: V, title: "Fais vérifier " + id + " par " + ACTORS[V].name,
+          do: "Ouvre " + ACTORS[V].name + " dans une nouvelle conversation, jamais celle de l'auteur. Colle le prompt, puis le rapport de l'auteur à l'endroit indiqué.",
+          prompt: pVerify(t),
+          expect: "un verdict qui commence par « Verdict : ACCEPTÉE » ou « Verdict : REFUSÉE ».",
+          outcomes: [{ label: "J'ai le verdict", fn: function () { api.go("verdict"); } }] };
+      case "verdict":
+        return { actor: "toi", title: "Lis le verdict",
+          do: "Un verdict « ACCEPTÉE » doit montrer les contrôles relancés et les contre-épreuves détectées. Sans ces preuves, traite-le comme « REFUSÉE ».",
+          outcomes: [
+            { label: "ACCEPTÉE", kind: "ok", fn: function () { api.go("merge"); } },
+            { label: "REFUSÉE", kind: "bad", fn: function () { api.refuse(); } }] };
+      case "fix":
+        return { actor: A, title: "Renvoie le verdict à " + ACTORS[A].name,
+          do: "Retourne dans la conversation de l'auteur. Colle le prompt, puis le verdict à l'endroit indiqué.",
+          prompt: pFix(t),
+          expect: "un nouveau rapport, avec tous les contrôles relancés.",
+          outcomes: [{ label: "J'ai le nouveau rapport", fn: function () { api.go("status"); } }] };
+      case "merge": {
+        var extra = "";
+        if (id === "0.A") extra = " PROJECT_STATE.md n'existe pas encore : il naîtra en 0.B.";
+        else extra = " Puis, dans PROJECT_STATE.md, passe " + id + " à « Acceptée », avec la date, ton temps et celui de l'agent.";
+        if (t.freeze) extra += " Enfin, passe l'en-tête de docs/CONTRACTS.md à « Statut : validé » avec la date : les contrats sont gelés.";
+        if (t.vp === "spike01b") extra = " Avant de fusionner, rejoue toi-même le critère 3 du rapport (contrôle T05-b)." + extra;
+        return { actor: "toi", title: "Fusionne " + id,
+          do: "Dans le terminal, fusionne la branche de la tâche." + extra,
+          before: mergeCmd(id),
+          outcomes: [{ label: id + " est fusionnée", kind: "ok", fn: function () { api.complete(); } }] };
+      }
+      case "decide01":
+        return { actor: "toi", title: "Tranche les décisions bloquantes",
+          do: "Ouvre docs/DECISIONS.md. Pour D-01, D-05 et D-07, remplace « proposée » par « validée » et la date. Mes recommandations : D-01 Godot 4.7.2 ; D-05 runner maison ; D-07 4.7.2 bloquant, préversion testée à part. Pour D-02, garde les critères : le jeu se choisit en T04. Vérifie ensuite avec la commande.",
+          before: "for d in D-01 D-05 D-07; do grep -E \"^\\| $d \" docs/DECISIONS.md | grep -q \"validée\" || echo \"manque $d\"; done",
+          expect: "aucune sortie.",
+          outcomes: [{ label: "Les trois sont validées", kind: "ok", fn: function () { api.go("merge"); } }] };
+      case "install":
+        return { actor: "toi", warn: warn, title: "Installe l'environnement de Qwen",
+          do: "Installe un serveur local pour Qwen3.8-27B et un harnais d'agent qui sait lire, écrire et exécuter des commandes. Ouvre le harnais dans le dossier du dépôt et fais-lui lire REGLES_AGENTS.md. Vérifie que la commande `godot` lance bien Godot 4.7.2.",
+          before: "godot --version",
+          expect: "une ligne qui commence par 4.7.2.stable.",
+          outcomes: [{ label: "C'est installé", fn: function () { api.go("run"); } }] };
+      case "t00ok":
+        return { actor: "toi", title: "Note les mesures de Qwen",
+          do: "Dans PROJECT_STATE.md : débit en tokens par seconde, durée de la tâche jouet, appels d'outil ratés. À partir de maintenant, Qwen prend ses tâches.",
+          outcomes: [{ label: "C'est noté", kind: "ok", fn: function () { api.complete(); } }] };
+      case "noqwen":
+        return { actor: "toi", title: "Qwen n'est pas prêt",
+          do: "Note l'échec dans PROJECT_STATE.md. La carte confie désormais les tâches de Qwen à Sonnet. Tu pourras retenter T00 plus tard depuis l'onglet La carte.",
+          outcomes: [{ label: "Compris", fn: function () { api.complete(); } }] };
+      case "select":
+        return { actor: "gemini", title: "Fais chercher les jeux candidats",
+          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt.",
+          prompt: "Lis docs/construction/etape-1.md, section T04, et exécute le « Prompt de sélection, pour Gemini ». Tu ne copies aucun fichier de jeu dans le dépôt.",
+          expect: "un tableau de trois candidats au plus, puis une recommandation et ses deux faiblesses.",
+          outcomes: [{ label: "J'ai les candidats", fn: function () { api.go("choose"); } }] };
+      case "choose":
+        return { actor: "toi", title: "Choisis le jeu de test",
+          do: "Choisis un jeu parmi les candidats, en vérifiant toi-même sa licence. Dans docs/DECISIONS.md, passe D-02 à « validée », avec le nom, le dépôt et la révision. Tu en auras besoin dans le prompt suivant.",
+          outcomes: [{ label: "J'ai choisi", kind: "ok", fn: function () { api.go("run"); } }] };
+      case "manual":
+        return { actor: "toi", warn: warn, title: t.title, do: t.manual,
+          outcomes: [
+            { label: "Tout est conforme", kind: "ok", fn: function () { api.complete(); } },
+            { label: "Il y a un problème", kind: "bad", fn: function () { api.go("manualFix"); } }] };
+      case "manualFix":
+        return { actor: "toi", title: "Corrige avant de continuer",
+          do: "Ouvre l'onglet Boucle libre. Identifiant : " + t.fixId + "-correctif ; fichier : docs/construction/" + t.file + " ; auteur : " + ACTORS[t.fixAuthor].name + " ; vérificateur : Gemini. Décris le problème constaté dans la conversation de l'auteur, suis la boucle jusqu'à la fusion, puis reviens ici refaire l'essai.",
+          outcomes: [{ label: "Corrigé, je refais l'essai", fn: function () { api.go("manual"); } }] };
+      case "inject":
+        return { actor: "gemini", warn: warn, title: "Fais injecter trois bugs à l'aveugle",
+          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt, en complétant le nom du jeu.",
+          prompt: "Lis docs/construction/etape-7.md, section T19, et exécute le « Prompt d'injection, pour Gemini ».\nLe banc d'essai est : [nom du jeu].",
+          expect: "trois symptômes et la manière de les déclencher, rien d'autre. Ne lis pas l'enveloppe scellée.",
+          outcomes: [{ label: "J'ai les trois symptômes", fn: function () { api.go("measure"); } }] };
+      case "measure":
+        return { actor: "toi", title: "Mesure la valeur",
+          do: "Diagnostique le bug 1 avec l'outil, le bug 2 sans, le bug 3 avec. Chronomètre tout, installation et instrumentation comprises. Remplis le tableau de docs/mesures/valeur-poc.md (modèle dans etape-7.md). N'ouvre l'enveloppe scellée qu'après le troisième diagnostic, et note l'heure.",
+          outcomes: [{ label: "Le tableau est rempli", fn: function () { api.go("crosscheck"); } }] };
+      case "crosscheck":
+        return { actor: "gemini", title: "Fais relire la mesure",
+          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt, en complétant le nom du jeu.",
+          prompt: "Relis docs/mesures/valeur-poc.md contre ../benches/[nom du jeu]/ENVELOPPE_SCELLEE.md. Pour chaque bug, la cause trouvée correspond-elle à la cause réelle ? Le tableau est-il complet, coûts d'installation compris ? Ne modifie rien.\nCommence par « Verdict : ACCEPTÉE » si le tableau est complet et cohérent, sinon par « Verdict : REFUSÉE » suivi des écarts.",
+          expect: "un verdict.",
+          outcomes: [{ label: "J'ai le verdict", fn: function () { api.go("verdict19"); } }] };
+      case "verdict19":
+        return { actor: "toi", title: "Lis le verdict de la mesure",
+          do: "Si le verdict est ACCEPTÉE, fais un commit du tableau sur main. Sinon, complète le tableau et refais-le relire.",
+          before: "git switch main\ngit add docs/mesures/valeur-poc.md\ngit commit -m \"T19 : mesure de valeur\"",
+          outcomes: [
+            { label: "ACCEPTÉE, c'est commité", kind: "ok", fn: function () { api.complete(); } },
+            { label: "REFUSÉE", kind: "bad", fn: function () { api.go("measure"); } }] };
+      case "prepare":
+        return { actor: "opus", title: "Fais préparer la revue de continuation",
+          do: "Crée la branche, puis ouvre Opus dans une nouvelle conversation et colle le prompt.",
+          before: branchCmd("T20"),
+          prompt: "Lis docs/construction/etape-7.md, section T20, et exécute le prompt qui s'y trouve.\nTu es sur la branche tache/T20.",
+          expect: "docs/revues/revue-poc.md, avec budgets, fiabilité des modèles, valeur, risques, options et un projet d'amendement PD-0.4.",
+          outcomes: [{ label: "J'ai la revue", fn: function () { api.go("recompute"); } }] };
+      case "recompute":
+        return { actor: "gemini", title: "Fais recalculer les chiffres de la revue",
+          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt.",
+          prompt: "Sur la branche tache/T20, recalcule à partir de PROJECT_STATE.md les totaux de docs/revues/revue-poc.md : heures humaines, temps agent, taux de réussite par modèle. Ne modifie rien. Liste chaque écart, ou écris « aucun écart ».",
+          outcomes: [
+            { label: "Aucun écart", kind: "ok", fn: function () { api.go("decide20"); } },
+            { label: "Il y a des écarts", kind: "bad", fn: function () { api.go("fix20"); } }] };
+      case "fix20":
+        return { actor: "opus", title: "Fais corriger la revue",
+          do: "Retourne dans la conversation d'Opus, colle les écarts trouvés par Gemini et demande la correction de docs/revues/revue-poc.md.",
+          outcomes: [{ label: "La revue est corrigée", fn: function () { api.go("recompute"); } }] };
+      case "decide20":
+        return { actor: "toi", title: "Décide la suite du projet",
+          do: "Lis la revue. Choisis, puis note ta décision et sa raison dans docs/DECISIONS.md.",
+          outcomes: [
+            { label: "Continuer vers le MVP", kind: "ok", fn: function () { api.set(function () { state.mvp = true; state.cursor.node = "amend"; }); } },
+            { label: "Réduire ou réorienter", kind: "warn", fn: function () { api.set(function () { state.mvp = true; state.reduced = true; state.cursor.node = "amend"; }); } },
+            { label: "Arrêter le projet", kind: "bad", fn: function () { api.set(function () { state.stopped = true; completeTask("T20"); }); } }] };
+      case "amend":
+        return { actor: "toi", title: "Fais appliquer l'amendement du plan",
+          do: "Valide l'amendement PD-0.4 proposé par la revue. Fais-le appliquer par Opus dans une nouvelle conversation avec le prompt, puis fusionne la branche.",
+          prompt: "Applique à docs/plan-directeur.md l'amendement PD-0.4 proposé dans docs/revues/revue-poc.md, sur la branche tache/T20, en tenant compte de ma décision : [colle ta décision].\nTermine par un rapport.",
+          before: mergeCmd("T20"),
+          outcomes: [{ label: "Amendement appliqué et fusionné", kind: "ok", fn: function () { api.complete(); } }] };
+      case "split": {
+        var st = STATIONS[TASK_STATION[id]];
+        return { actor: "opus", title: "Fais découper " + st.the + " en tâches",
+          do: "Crée la branche, puis ouvre Opus dans une nouvelle conversation et colle le prompt.",
+          before: branchCmd(id + "-decoupage"), prompt: pSplit(st),
+          expect: "un fichier docs/construction/" + (st.group === "MVP" ? "mvp-" : "v1-") + id + ".md, avec 4 à 12 tâches, leurs contrôles et leurs prompts.",
+          outcomes: [{ label: "Le découpage est prêt", fn: function () { api.go("reviewSplit"); } }] };
+      }
+      case "reviewSplit": {
+        var st2 = STATIONS[TASK_STATION[id]];
+        return { actor: "toi", title: "Relis le découpage",
+          do: "Vérifie que chaque tâche a des contrôles exécutables et au moins une contre-épreuve, et que le total tient dans le budget (" + st2.budget + "). Si oui, fusionne. Sinon, renvoie tes remarques à Opus dans la même conversation.",
+          before: mergeCmd(id + "-decoupage"),
+          outcomes: [
+            { label: "Découpage validé et fusionné", kind: "ok", fn: function () { api.go("loop"); } },
+            { label: "À corriger", kind: "bad", fn: function () { api.go("split"); } }] };
+      }
+      case "loop": {
+        var st3 = STATIONS[TASK_STATION[id]];
+        var f = "docs/construction/" + (st3.group === "MVP" ? "mvp-" : "v1-") + id + ".md";
+        var outs = [{ label: "Toutes les tâches de la phase sont acceptées", kind: "ok", fn: function () { api.complete(); } }];
+        if (state.reduced) outs.push({ label: "Sauter cette phase (retirée par l'amendement)", kind: "warn", fn: function () { api.complete(); } });
+        return { actor: "toi", title: "Fais les tâches " + st3.de,
+          do: "Pour chaque tâche de " + f + ", dans l'ordre : ouvre l'onglet Boucle libre, saisis l'identifiant, ce fichier, l'auteur et le vérificateur indiqués, puis suis la boucle jusqu'à la fusion. Reviens ici quand elles sont toutes acceptées.",
+          outcomes: outs };
+      }
+    }
+    return { actor: "toi", title: "Étape inconnue", do: "Annule la dernière action.", outcomes: [] };
+  }
+
+  function toiVerify(t, api) {
+    if (t.id === "T00") return { actor: "toi", title: "Vérifie T00 toi-même",
+      do: "Relance toi-même les deux commandes du rapport (contrôle T00-a). Puis demande à Qwen d'ajouter une faute de syntaxe dans hello.gd et de relancer la première commande (contre-épreuve T00-b) : il doit rapporter le code 1 et l'erreur réelle, sans la masquer.",
+      before: "godot --headless --path sandbox/t00 --check-only -s res://hello.gd ; echo $?\ngodot --headless --path sandbox/t00 -s res://hello.gd ; echo $?",
+      expect: "0, puis T00_OK et 0 ; à la contre-épreuve, le code 1 rapporté honnêtement.",
+      outcomes: [
+        { label: "Qwen réussit", kind: "ok", fn: function () { api.set(function () { state.qwenOk = true; state.cursor.node = "t00ok"; }); } },
+        { label: "Qwen échoue", kind: "bad", fn: function () { api.set(function () { state.qwenOk = false; state.cursor.node = "noqwen"; }); } }] };
+    if (t.id === "T04") return { actor: "toi", title: "Vérifie T04 toi-même",
+      do: "Exécute les contrôles T04-a et T04-b, puis la contre-épreuve T04-c, de docs/construction/etape-1.md, section T04.",
+      before: "python3 tools/check_benches.py ; echo $?",
+      expect: "T04-a donne 0 ; T04-b ne montre aucune ligne d'erreur nouvelle ; la contre-épreuve fait échouer T04-a.",
+      outcomes: [
+        { label: "Tout est conforme", kind: "ok", fn: function () { api.go("merge"); } },
+        { label: "Un contrôle échoue", kind: "bad", fn: function () { api.refuse(); } }] };
+    return { actor: "toi", title: "Vérifie " + t.id + " toi-même",
+      do: "Exécute chaque contrôle et chaque contre-épreuve de la section " + t.id + " de " + fileRef(t) + ", en partant de la branche tache/" + t.id + ".",
+      expect: "chaque contrôle donne le résultat attendu.",
+      outcomes: [
+        { label: "Tout est conforme", kind: "ok", fn: function () { api.go("merge"); } },
+        { label: "Un contrôle échoue", kind: "bad", fn: function () { api.refuse(); } }] };
+  }
+
+  function gateView(si, node) {
+    var st = STATIONS[si];
+    var parked = st.tasks.filter(function (x) { return !state.done[x]; });
+    function go(n) { commit(function () { state.cursor.node = n; }); }
+    switch (node) {
+      case "gate":
+        return { actor: "opus", title: "Lance la porte " + st.de,
+          do: (parked.length ? "Les tâches faites sont acceptées ; " + list(parked) + (parked.length > 1 ? " sont mises" : " est mise") + " de côté. " : "Toutes les tâches " + st.de + " sont acceptées. ") +
+              "Place-toi sur main, puis ouvre Opus dans une nouvelle conversation et colle le prompt.",
+          before: "git switch main", prompt: pGate(st, parked),
+          expect: "une page avec chaque point de contrôle OK ou KO, le budget consommé, les problèmes ouverts et une recommandation.",
+          outcomes: [{ label: "J'ai la page de porte", fn: function () { go("decideGate"); } }] };
+      case "decideGate": {
+        var outs = [];
+        if (parked.length) outs.push({ label: "Passer en provisoire", kind: "warn", fn: function () { go("retro"); } });
+        else outs.push({ label: "Passer", kind: "ok", fn: function () { go("retro"); } });
+        outs.push({ label: "Corriger d'abord", kind: "warn", fn: function () { go("correct"); } });
+        outs.push({ label: "Revoir le plan", kind: "bad", fn: function () { go("replan"); } });
+        return { actor: "toi", title: "Décide la suite " + st.de,
+          do: "Lis la page de porte. Passe si tous les points de contrôle sont OK. Corrige d'abord si un point est KO à cause d'une tâche. Revois le plan si le problème vient du plan lui-même." +
+              (parked.length ? " Comme " + list(parked) + (parked.length > 1 ? " restent" : " reste") + " en attente, tu ne peux passer qu'en provisoire : la porte sera rejouée " + (parked.length > 1 ? "quand elles seront faites." : "quand elle sera faite.") : ""),
+          outcomes: outs };
+      }
+      case "correct":
+        return { actor: "toi", title: "Corrige la tâche en cause",
+          do: "Repère dans la page de porte la tâche en cause. Ouvre l'onglet Boucle libre avec l'identifiant de cette tâche suivi de « -correctif », son fichier du guide, son auteur et son vérificateur. Décris le problème de la porte dans la conversation de l'auteur, suis la boucle jusqu'à la fusion, puis reviens relancer la porte.",
+          outcomes: [{ label: "Corrigé, je relance la porte", fn: function () { go("gate"); } }] };
+      case "replan":
+        return { actor: "opus", title: "Fais proposer un amendement du plan",
+          do: "Ouvre Opus dans une nouvelle conversation et colle le prompt, puis la page de porte. Valide ou refuse l'amendement, fais-le appliquer, fusionne.",
+          prompt: pReplan(st),
+          outcomes: [{ label: "Amendement appliqué, je relance la porte", fn: function () { go("gate"); } }] };
+      case "retro":
+        return { actor: "opus", title: "Fais la rétro " + st.de,
+          do: "Ouvre Opus dans une nouvelle conversation. Colle le prompt, puis la page de porte.",
+          prompt: pRetro(st),
+          expect: "trois améliorations au plus, chacune avec le fichier, le texte avant et le texte après.",
+          outcomes: [{ label: "J'ai la rétro", fn: function () { go("close"); } }] };
+      case "close":
+        return { actor: "toi", title: "Clos " + st.the,
+          do: "Applique les améliorations de la rétro que tu retiens, ou fais-les appliquer par Opus, puis fusionne. Dans PROJECT_STATE.md, marque " + st.the + " « " + (parked.length ? "Acceptée en provisoire" : "Acceptée") + " » avec la date. Termine par un commit.",
+          before: "git switch main\ngit commit -am \"" + st.label + " close\"",
+          outcomes: [{ label: cap(st.the) + " est close", kind: "ok", fn: function () { commit(function () { closeStation(si); }); } }] };
+    }
+    return null;
+  }
+
+  function mainApi(t) {
+    return {
+      esc: function () { return state.esc[t.id] || 0; },
+      go: function (n) { commit(function () { state.cursor.node = n; }); },
+      escalated: function (n) { commit(function () { state.esc[t.id] = (state.esc[t.id] || 0) + 1; state.refusals[t.id] = 0; state.cursor.node = n; }); },
+      refuse: function () { commit(function () { var r = (state.refusals[t.id] || 0) + 1; state.refusals[t.id] = r; state.cursor.node = r >= 2 ? "escalate" : "fix"; }); },
+      complete: function () { commit(function () { completeTask(t.id); }); },
+      set: function (fn) { commit(fn); }
+    };
+  }
+  function freeTask() {
+    var f = state.free;
+    return { id: f.id, title: f.id, file: f.file, flow: "standard", author: f.author, verifier: f.verifier, free: true, deps: [] };
+  }
+  function freeApi() {
+    return {
+      esc: function () { return state.free.esc || 0; },
+      go: function (n) { commit(function () { state.free.node = n; }); },
+      escalated: function (n) { commit(function () { state.free.esc = (state.free.esc || 0) + 1; state.free.refusals = 0; state.free.node = n; }); },
+      refuse: function () { commit(function () { state.free.refusals = (state.free.refusals || 0) + 1; state.free.node = state.free.refusals >= 2 ? "escalate" : "fix"; }); },
+      complete: function () { commit(function () { state.free.active = false; state.free.last = state.free.id; }); },
+      set: function (fn) { commit(fn); }
+    };
+  }
+
+  function mainView() {
+    var c = state.cursor;
+    if (!c) return null;
+    if (c.kind === "task") return taskView(TASKS[c.task], c.node, mainApi(TASKS[c.task]));
+    if (c.kind === "gate") return gateView(c.s, c.node);
+    if (c.kind === "blocked") {
+      var t = TASKS[c.task];
+      return { actor: "toi", title: t.id + " attend " + list(c.missing),
+        do: t.id + " dépend de " + list(c.missing) + ", pas encore " + (c.missing.length > 1 ? "faites" : "faite") + ". Commence par " + c.missing[0] + ".",
+        outcomes: [{ label: "Aller à " + c.missing[0], fn: function () { jump(c.missing[0]); } }] };
+    }
+    if (c.kind === "idle") {
+      var ids = Object.keys(state.parked).sort(orderCmp);
+      var items = ids.map(function (x) { return x + " (" + reasonText(state.parked[x]) + ")"; });
+      return { actor: "toi", title: "Plus rien ne peut avancer pour l'instant",
+        do: "Ce qui reste attend : " + items.join(", ") + ". " + (state.machine ?
+          "Ta machine est marquée disponible : reprends la suite." :
+          "Quand ta machine sera disponible, coche la case en haut : la carte te ramènera à la première tâche en attente."),
+        outcomes: state.machine ? [{ label: "Reprendre la suite", fn: function () { commit(function () { state.cursor = scan(); }); } }] : [] };
+    }
+    if (c.kind === "end" && c.reason === "stop") return { actor: "toi", title: "Projet arrêté",
+      do: "Ta décision est consignée dans docs/DECISIONS.md. Pour revenir sur ce choix, utilise « Annuler la dernière action ».", outcomes: [] };
+    if (c.kind === "end") return { actor: "toi", title: "La V1 est terminée",
+      do: "Toutes les phases sont closes. Avant toute diffusion, vérifie que la licence du plugin est décidée (D-06).", outcomes: [] };
+    return null;
+  }
+
+  /* ---------------- Rendu ---------------- */
+  function h(tag, attrs) {
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === "class") n.className = v;
+      else if (k.indexOf("on") === 0) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? "" : v);
+    });
+    for (var i = 2; i < arguments.length; i++) append(n, arguments[i]);
+    return n;
+  }
+  function append(n, kid) {
+    if (kid === null || kid === undefined || kid === false) return;
+    if (Array.isArray(kid)) { kid.forEach(function (k) { append(n, k); }); return; }
+    n.appendChild(typeof kid === "string" ? document.createTextNode(kid) : kid);
+  }
+  function rich(text) {
+    var frag = document.createDocumentFragment();
+    String(text).split("`").forEach(function (part, i) {
+      if (!part) return;
+      if (i % 2) frag.appendChild(h("code", null, part));
+      else frag.appendChild(document.createTextNode(part.replace(/ ([:;?!»])/g, "\u00a0$1").replace(/« /g, "«\u00a0")));
+    });
+    return frag;
+  }
+  function glyph(a) { return h("span", { class: "glyph g-" + a, "aria-hidden": "true" }); }
+  function whoTag(a) { return h("span", { class: "who" }, glyph(a), ACTORS[a].name); }
+
+  function snippet(label, text, kind) {
+    var pre = h("pre", { class: kind }, text);
+    var btn = h("button", { type: "button", class: "copy" }, kind === "prompt" ? "Copier le prompt" : "Copier");
+    btn.addEventListener("click", function () { copyText(text, btn, pre); });
+    return h("div", { class: "snippet " + kind }, h("div", { class: "snippet-head" }, h("span", null, label), btn), pre);
+  }
+  function copyText(text, btn, pre) {
+    var original = btn.textContent;
+    function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = original; }, 1700); }
+    function fallback() {
+      try {
+        var ta = h("textarea", { class: "offscreen", "aria-hidden": "true" });
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand && document.execCommand("copy");
+        ta.remove();
+        if (ok) { done("Copié"); return; }
+      } catch (e) { /* on sélectionne le texte ci-dessous */ }
+      var r = document.createRange(); r.selectNodeContents(pre);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      done("Sélectionné : fais Ctrl+C");
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function () { done("Copié"); }, fallback);
+    } else fallback();
+  }
+
+  var reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var busy = false;
+  function animateThen(card, fn) {
+    if (busy) return;
+    if (reduceMotion || !card) { fn(); return; }
+    busy = true;
+    card.classList.add("leaving");
+    setTimeout(function () { busy = false; fn(); }, 170);
+  }
+
+  function renderCard(container, v, focus) {
+    container.textContent = "";
+    if (!v) return;
+    var card = h("article", { class: "node", "data-actor": v.actor });
+    var title = h("h2", { class: "node-title", tabindex: "-1" }, whoTag(v.actor), h("span", null, v.title));
+    card.appendChild(title);
+    var body = h("div", { class: "node-body" });
+    if (v.warn) body.appendChild(h("p", { class: "warn" }, rich(v.warn)));
+    if (v.actor !== "toi") body.appendChild(h("p", { class: "where" }, h("strong", null, "Où : "), ACTORS[v.actor].where));
+    if (v.do) body.appendChild(h("p", null, rich(v.do)));
+    if (v.before) body.appendChild(snippet("Dans le terminal, à la racine du dépôt", v.before, "cmd"));
+    if (v.prompt) body.appendChild(snippet("Prompt à coller", v.prompt, "prompt"));
+    if (v.expect) body.appendChild(h("p", { class: "expect" }, h("strong", null, "Tu dois obtenir : "), rich(v.expect)));
+    card.appendChild(body);
+    if (v.outcomes && v.outcomes.length) {
+      var ports = h("div", { class: "ports", role: "group", "aria-label": "Ce qui s'est passé" });
+      ports.appendChild(h("p", { class: "ports-label" }, v.outcomes.length > 1 ? "Qu'est-ce qui s'est passé ?" : "Quand c'est fait :"));
+      v.outcomes.forEach(function (o) {
+        var b = h("button", { type: "button", class: "port " + (o.kind || "") }, h("span", null, o.label));
+        b.addEventListener("click", function () { animateThen(card, o.fn); });
+        ports.appendChild(b);
+      });
+      card.appendChild(ports);
+    }
+    container.appendChild(card);
+    if (focus) { try { title.focus({ preventScroll: true }); } catch (e) { title.focus(); } }
+  }
+
+  function taskStatus(tid) {
+    if (state.done[tid]) return "done";
+    if (state.parked[tid]) return "parked";
+    var c = state.cursor;
+    if (c && (c.kind === "task" || c.kind === "blocked") && c.task === tid) return "current";
+    return "todo";
+  }
+  var STATUS_TEXT = { done: "acceptée", parked: "mise de côté", current: "en cours", todo: "à faire" };
+  var MARK = { done: "✓", parked: "⏸", current: "●", todo: "○" };
+
+  function currentStationIndex() {
+    var c = state.cursor;
+    if (c && typeof c.s === "number") return c.s;
+    for (var i = 0; i < STATIONS.length; i++) if (!state.gates[STATIONS[i].id]) return i;
+    return STATIONS.length - 1;
+  }
+
+  function renderRail() {
+    var si = currentStationIndex(), st = STATIONS[si];
+    document.getElementById("rail-title").textContent = st.label + " : " + st.title;
+    var rail = document.getElementById("rail");
+    rail.textContent = "";
+    st.tasks.forEach(function (tid) {
+      var t = TASKS[tid], s = taskStatus(tid);
+      var a = authorOf(t);
+      var label = s === "parked" ? reasonText(state.parked[tid]) : STATUS_TEXT[s];
+      var b = h("button", { type: "button", title: t.title },
+        h("span", { class: "rid" }, glyph(a), tid),
+        h("span", { class: "rstate" }, label));
+      b.addEventListener("click", function () { askJump(tid); });
+      rail.appendChild(h("li", { class: s }, b));
+    });
+    var c = state.cursor;
+    var gs = state.gates[st.id] ? "done" : (c && c.kind === "gate" && c.s === si ? "current" : "todo");
+    rail.appendChild(h("li", { class: "gate " + gs }, h("button", { type: "button", disabled: true },
+      h("span", { class: "rid" }, "Porte"), h("span", { class: "rstate" }, gs === "done" ? (state.provisional[st.id] ? "passée en provisoire" : "passée") : gs === "current" ? "en cours" : "à la fin"))));
+  }
+
+  function renderCrumb() {
+    var c = state.cursor, el = document.getElementById("crumb");
+    el.textContent = "";
+    if (!c || c.kind === "idle" || c.kind === "end") { el.appendChild(document.createTextNode("Tu es ici : en attente.")); return; }
+    var st = STATIONS[c.s];
+    el.appendChild(document.createTextNode("Tu es ici : "));
+    el.appendChild(h("strong", null, st.label));
+    if (c.kind === "gate") el.appendChild(document.createTextNode(", porte, " + NODE_NAMES[c.node] + "."));
+    else el.appendChild(document.createTextNode(", " + c.task + " " + TASKS[c.task].title + (c.node ? ", " + (NODE_NAMES[c.node] || c.node) : "") + "."));
+  }
+
+  function renderNotice() {
+    var box = document.getElementById("notice");
+    box.textContent = "";
+    var parked = Object.keys(state.parked).sort(orderCmp);
+    if (parked.length) {
+      var p = h("p", { class: "note" }, h("strong", null, "Mis de côté : "),
+        parked.map(function (x) { return x + " (" + reasonText(state.parked[x]) + ")"; }).join(", ") + ".");
+      if (state.machine) {
+        var first = parked.filter(function (x) { return state.parked[x] === "machine"; })[0];
+        if (first) { var b = h("button", { type: "button", class: "linkish" }, "Reprendre " + first + " maintenant"); b.addEventListener("click", function () { jump(first); }); p.appendChild(b); }
+      }
+      box.appendChild(p);
+    }
+    if (!state.done.T20 && state.qwenOk !== true) {
+      box.appendChild(h("p", { class: "note info" }, state.qwenOk === false ?
+        "Qwen a échoué à T00 : Sonnet prend ses tâches. Tu peux retenter T00 depuis l'onglet La carte." :
+        "Qwen n'est pas encore vérifié (T00) : Sonnet prend ses tâches en attendant."));
+    }
+  }
+
+  function renderProgress() {
+    var done = POC_TASKS.filter(function (k) { return state.done[k]; }).length;
+    var closed = STATIONS.filter(function (s) { return s.group === "POC" && state.gates[s.id]; }).length;
+    var el = document.getElementById("progress");
+    el.textContent = "";
+    el.appendChild(h("strong", null, "POC : " + done + " tâches acceptées sur " + POC_TASKS.length));
+    el.appendChild(document.createTextNode(", " + closed + " étapes closes sur 8."));
+    if (state.mvp) {
+      var ph = STATIONS.filter(function (s) { return s.group !== "POC" && state.gates[s.id]; }).length;
+      el.appendChild(document.createTextNode(" Phases closes : " + ph + " sur " + PHASES.length + "."));
+    }
+    document.getElementById("undo").disabled = history.length === 0;
+    document.getElementById("machine").checked = !!state.machine;
+  }
+
+  function renderMap() {
+    var actions = document.getElementById("map-actions");
+    actions.textContent = "";
+    if (state.qwenOk === false || state.done.T00) {
+      var rb = h("button", { type: "button", class: "ghost" }, "Retenter T00 (environnement de Qwen)");
+      rb.addEventListener("click", function () {
+        commit(function () { delete state.done.T00; state.qwenOk = null; delete state.parked.T00; state.cursor = { kind: "task", s: 0, task: "T00", node: "install" }; });
+        selectTab("now");
+      });
+      actions.appendChild(rb);
+    }
+    var root = document.getElementById("mapview");
+    root.textContent = "";
+    var groups = [["POC", "POC : prouver l'idée", "25 à 40 heures de ton temps, en huit étapes."],
+                  ["MVP", "MVP : un outil utile sur un vrai jeu", "43 à 74 heures, en six phases. S'ouvre si la revue T20 décide de continuer."],
+                  ["V1", "V1 : les modes avancés", "75 à 120 heures, en huit phases."]];
+    var cur = currentStationIndex();
+    groups.forEach(function (g) {
+      root.appendChild(h("h2", { class: "group" }, g[1]));
+      root.appendChild(h("p", { class: "group-sub" }, g[2]));
+      var ol = h("ol", { class: "stations" });
+      STATIONS.forEach(function (st, si) {
+        if (st.group !== g[0]) return;
+        var cls = state.gates[st.id] ? (state.provisional[st.id] ? "provisional" : "closed") : (si === cur && state.cursor && state.cursor.kind !== "idle" ? "current" : "");
+        var stateText = state.gates[st.id] ? (state.provisional[st.id] ? "close en provisoire" : "close") : (cls === "current" ? "tu es ici" : "à venir");
+        var li = h("li", { class: "station " + cls },
+          h("div", { class: "st-head" }, h("h3", null, st.label + " : " + st.title), h("span", { class: "st-meta" }, st.budget + ", " + stateText)));
+        var ul = h("ul", { class: "st-tasks" });
+        st.tasks.forEach(function (tid) {
+          var t = TASKS[tid], s = taskStatus(tid);
+          var a = authorOf(t);
+          var v = t.verifier ? verifierOf(t, a) : null;
+          var chip = h("button", { type: "button", class: "chip " + s, "aria-label": tid + ", " + t.title + ", " + (s === "parked" ? reasonText(state.parked[tid]) : STATUS_TEXT[s]) },
+            h("span", { class: "mark", "aria-hidden": "true" }, MARK[s]), glyph(a), v && v !== "toi" ? glyph(v) : null,
+            st.group === "POC" ? tid + " " + t.title : "Découpage, puis tâches de la phase");
+          chip.addEventListener("click", function () { askJump(tid); });
+          ul.appendChild(h("li", null, chip));
+        });
+        li.appendChild(ul);
+        ol.appendChild(li);
+      });
+      root.appendChild(ol);
+    });
+  }
+
+  function renderFree() {
+    var f = state.free;
+    document.getElementById("f-id").value = f.id || "";
+    document.getElementById("f-file").value = f.file || "";
+    document.getElementById("f-author").value = f.author || "qwen";
+    document.getElementById("f-verifier").value = f.verifier || "gemini";
+    var box = document.getElementById("freecard");
+    if (f.active) renderCard(box, taskView(freeTask(), f.node, freeApi()), false);
+    else if (f.last) { box.textContent = ""; box.appendChild(h("p", { class: "note info" }, "La tâche " + f.last + " est acceptée et fusionnée. Saisis la suivante, puis commence-la.")); }
+    else box.textContent = "";
+  }
+
+  function renderAll(focus) {
+    renderProgress();
+    renderNotice();
+    renderCrumb();
+    renderRail();
+    renderCard(document.getElementById("card"), mainView(), focus && activeTab === "now");
+    renderMap();
+    renderFree();
+  }
+
+  /* ---------------- Navigation ---------------- */
+  function jump(tid) {
+    commit(function () {
+      delete state.parked[tid];
+      state.cursor = { kind: "task", s: TASK_STATION[tid], task: tid, node: firstNode(TASKS[tid]) };
+    });
+    selectTab("now");
+  }
+  function askJump(tid) {
+    if (state.done[tid]) { window.alert(tid + " est déjà acceptée."); return; }
+    var c = state.cursor;
+    if (c && c.kind === "task" && c.task === tid) { selectTab("now"); return; }
+    if (window.confirm("Aller à " + tid + " maintenant ? Ce qui n'est pas fait avant reste à faire, et la carte y reviendra ensuite.")) jump(tid);
+  }
+
+  var activeTab = "now";
+  var TABS = ["now", "map", "rules", "free"];
+  function selectTab(name) {
+    activeTab = name;
+    TABS.forEach(function (n) {
+      document.getElementById("t-" + n).setAttribute("aria-selected", n === name ? "true" : "false");
+      document.getElementById("p-" + n).hidden = n !== name;
+    });
+  }
+  TABS.forEach(function (n) {
+    document.getElementById("t-" + n).addEventListener("click", function () { selectTab(n); });
+  });
+
+  document.getElementById("machine").addEventListener("change", function (e) {
+    var on = e.target.checked;
+    commit(function () {
+      state.machine = on;
+      if (!state.cursor || state.cursor.kind === "idle") state.cursor = scan();
+    });
+  });
+  document.getElementById("undo").addEventListener("click", function () {
+    if (!history.length) return;
+    state = Object.assign(defaultState(), JSON.parse(history.pop()));
+    state.updatedAt = Date.now();
+    save();
+    renderAll(true);
+  });
+  document.getElementById("reset").addEventListener("click", function () {
+    if (!window.confirm("Tout recommencer à zéro ? Ta progression sera effacée.")) return;
+    history = [];
+    state = defaultState();
+    state.cursor = scan();
+    state.updatedAt = Date.now();
+    save();
+    renderAll(false);
+  });
+  document.getElementById("f-start").addEventListener("click", function () {
+    var id = document.getElementById("f-id").value.trim();
+    var file = document.getElementById("f-file").value.trim();
+    var au = document.getElementById("f-author").value;
+    var ve = document.getElementById("f-verifier").value;
+    var err = document.getElementById("f-err");
+    var msg = !id ? "Saisis l'identifiant de la tâche." : !file ? "Saisis le fichier du guide qui décrit la tâche." : au === ve ? "L'auteur et le vérificateur doivent être différents." : "";
+    err.hidden = !msg; err.textContent = msg;
+    if (msg) return;
+    commit(function () { state.free = { id: id, file: file, author: au, verifier: ve, node: "run", refusals: 0, esc: 0, active: true, last: "" }; });
+  });
+
+  /* ---------------- Démarrage ---------------- */
+  load();
+  if (!state.cursor) state.cursor = scan();
+  renderAll(false);
+  connect();
+})();
+</script>
+</body>
+</html>
