@@ -1,6 +1,14 @@
 # Guide de construction, étape par étape
 
-Révision GC-0.2 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.3, OR-0.3, MC-0.3 et SPIKE-01a
+Révision GC-0.3 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.4, OR-0.4, MC-0.4 et SPIKE-01a
+
+**Changements depuis GC-0.2**, après une relecture externe :
+- copies de travail isolées pour chaque tâche et pour son vérificateur ;
+- plus aucun fichier partagé modifié par les agents : marqueurs de tests en attente, un script par contrôle ajouté, état du projet mis à jour à la fusion ;
+- QUESTION réservée aux changements de contrat, de périmètre ou d'interface publique ;
+- validation des formats en deux niveaux, avec motif de rejet vérifié ;
+- T13 découpée en trois tâches ; latence mesurée en deux parties ; mesure de valeur exploratoire ;
+- permissions et prérequis de T05, T06, T07, T17, T18 et P6 mis en cohérence.
 
 **Pour savoir quoi faire maintenant**, ouvre la carte interactive `carte.html` : elle affiche une seule action à la fois, le modèle à lancer, le prompt à copier, et ce qui se passe selon le résultat. Ce guide en est la référence détaillée.
 
@@ -39,6 +47,24 @@ Commandes exécutées le 8 octobre 2026 avec Godot 4.7.2 officiel sous Linux, et
 
 Dans les fiches, `godot` désigne le binaire de la version testée ; la CI le lit dans `versions.json`.
 
+## Copies de travail et fichiers partagés
+
+Chaque tâche se fait dans sa propre copie de travail Git, et sa vérification dans une autre. Deux tâches en parallèle ne se gênent donc jamais, et une contre-épreuve ne peut rien effacer d'autre.
+
+| Moment | Commande, depuis le dossier principal du dépôt |
+| --- | --- |
+| Début de la tâche | `git worktree add ../gdm-{ID} -b tache/{ID} main` ; l'auteur travaille dans `../gdm-{ID}` |
+| Vérification | `git worktree add --detach ../gdm-verif-{ID} tache/{ID}` ; le vérificateur travaille dans `../gdm-verif-{ID}` |
+| Fin de la vérification | `git worktree remove --force ../gdm-verif-{ID}` |
+| Fusion | `git switch main`, `git merge --no-ff tache/{ID}`, puis `tools/ci/run_all_checks.sh` sur main, puis `git worktree remove ../gdm-{ID}` |
+
+Les agents ne modifient jamais un fichier que plusieurs tâches partagent :
+- **`PROJECT_STATE.md` et `docs/DECISIONS.md`** : mis à jour seulement à l'étape de fusion, sur main, par toi ou à ta demande.
+- **Tests en attente** : un marqueur par test, `tests/pending/<nom du test>.pending`, qui contient l'identifiant de la tâche. Une tâche supprime seulement ses propres marqueurs.
+- **Contrôles ajoutés** : un script par contrôle, `tools/ci/checks.d/NN-nom.sh`. `run_all_checks.sh` les exécute dans l'ordre ; après T03, personne ne le modifie.
+
+L'étape de fusion est aussi l'étape d'intégration : `run_all_checks.sh` y est relancé sur main. S'il échoue, la fusion est annulée avec `git reset --hard ORIG_HEAD`, avant tout envoi de main, et la tâche repart en correction sur sa branche. Un `git revert` ne convient pas ici : une nouvelle fusion de la même branche ne réappliquerait pas les changements annulés.
+
 ## Fichiers du guide
 
 | Fichier | Contenu |
@@ -47,7 +73,7 @@ Dans les fiches, `godot` désigne le binaire de la version testée ; la CI le li
 | `etape-1.md` | Fondations : projet, runner, contrôle de dépendances, CI, banc d'essai (T01 à T04) |
 | `etape-2.md` | Spikes : partie éditeur du canal (T05), frontière de compatibilité (T06) |
 | `etape-3.md` | Contrats C-01 à C-07, schémas et tests de contrat (T07, T08) |
-| `etape-4.md` | Implémentation sous contrat (T09 à T13) |
+| `etape-4.md` | Implémentation sous contrat (T09 à T13c) |
 | `etape-5.md` | Intégration : réception côté éditeur, instrumentation du banc d'essai (T14, T15) |
 | `etape-6.md` | Interface et robustesse (T16 à T18) |
 | `etape-7.md` | Mesure de valeur et revue de continuation (T19, T20) |
@@ -60,7 +86,7 @@ Le POC est détaillé tâche par tâche. Le MVP et la V1 sont décrits phase par
 
 À faire → En cours → À vérifier → Acceptée, ou Refusée.
 
-Une tâche peut aussi s'arrêter en **QUESTION**, quand un point est ambigu ou qu'un fichier interdit devrait changer. Elle passe en **ESCALADE** après deux échecs au même contrôle. Le statut vit dans `PROJECT_STATE.md`.
+Une tâche s'arrête en **QUESTION** seulement s'il faudrait changer un contrat, le périmètre ou une interface publique, ou modifier un fichier hors de sa liste. Les choix d'implémentation conformes au contrat, l'agent les tranche et les note dans son rapport. Une tâche passe en **ESCALADE** après deux échecs au même contrôle. Le statut vit dans `PROJECT_STATE.md`, mis à jour à l'étape de fusion.
 
 ## Qui vérifie qui
 
@@ -86,20 +112,21 @@ Tu réalises la tâche {ID} du projet GODOT_DEV_MAPPER, un plugin pour Godot 4.7
 3. PROJECT_STATE.md.
 
 RÈGLES NON NÉGOCIABLES
+- Tu travailles uniquement dans la copie de travail de la tâche, ../gdm-{ID}, sur la branche tache/{ID}.
 - Tu ne modifies que les fichiers autorisés de la tâche. Si un autre fichier doit changer, tu t'arrêtes avec le statut QUESTION.
-- Tu ne modifies jamais tests/contract/, les fixtures, docs/CONTRACTS.md, contracts/ ni docs/construction/, sauf dans T07 et T08, dont c'est l'objet. Dans tests/pending.json, tu retires seulement les entrées de ta tâche.
-- Tu ne prends aucune décision de conception absente des documents : statut QUESTION.
+- Tu ne modifies jamais tests/contract/ (tests et fixtures de contrat), contracts/, docs/CONTRACTS.md, docs/construction/, PROJECT_STATE.md ni docs/DECISIONS.md, sauf si la tâche les liste dans ses fichiers autorisés. Dans tests/pending/, tu supprimes seulement les marqueurs de ta tâche.
+- Tu tranches toi-même les choix d'implémentation qui respectent le contrat, et tu les notes dans ton rapport. Tu t'arrêtes avec le statut QUESTION seulement pour un changement de contrat, de périmètre ou d'interface publique.
 - Avant d'utiliser une API Godot dont tu n'es pas certain qu'elle existe en 4.7.2, tu écris un script de trois lignes qui l'appelle et tu l'exécutes. Une API non vérifiée n'entre pas dans le code.
 - Tu n'affaiblis jamais un test ou un contrôle pour le faire passer.
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée ; tu colles sa sortie réelle.
 
 DÉROULÉ
 1. Reformule l'objectif en une phrase. Liste les fichiers que tu vas créer ou modifier, puis les contrôles que tu exécuteras.
-2. Si la tâche a des tests en attente dans tests/pending.json, active-les et montre qu'ils échouent.
+2. Si la tâche a des tests en attente, supprime ses marqueurs dans tests/pending/ et montre que ces tests échouent.
 3. Implémente le plus petit changement qui satisfait les contrôles.
 4. Exécute tous les contrôles de la tâche, puis tools/ci/run_all_checks.sh s'il existe.
 5. Si un contrôle échoue, corrige. Après deux tentatives infructueuses sur le même contrôle : statut ESCALADE.
-6. Mets à jour PROJECT_STATE.md : statut, temps passé, écarts.
+6. Ne touche pas à PROJECT_STATE.md : ton rapport donne le statut, le temps passé et les écarts, et l'étape de fusion les reporte.
 
 RAPPORT FINAL, dans ce format exact
 - Statut : TERMINÉ | QUESTION | ESCALADE
@@ -109,23 +136,25 @@ RAPPORT FINAL, dans ce format exact
 - Écarts au contrat ou au guide : aucun, ou liste
 - Hypothèses faites : aucune, ou liste
 - Questions : aucune, ou liste
+- Temps passé et nombre de tentatives : …
 ```
 
 ## Prompt universel de vérification
 
 ```text
-Tu es vérificateur indépendant pour la tâche {ID} du projet GODOT_DEV_MAPPER. Tu n'as pas écrit ce code. Tu ne modifies aucun fichier suivi par Git ; toute modification temporaire est annulée avant ta réponse.
+Tu es vérificateur indépendant pour la tâche {ID} du projet GODOT_DEV_MAPPER. Tu n'as pas écrit ce code. Tu travailles dans ta propre copie de travail, ../gdm-verif-{ID}, créée sur le commit à vérifier : tu n'y fais aucun commit, et tu ne touches à aucune autre copie.
 
-ENTRÉES : la section {ID} de docs/construction/{fichier d'étape}, le rapport de l'auteur, le dépôt à la révision {commit}, la révision de départ {base}.
+ENTRÉES : la section {ID} de docs/construction/{fichier d'étape}, le rapport de l'auteur, la branche tache/{ID} et la branche main.
 
-1. PÉRIMÈTRE. Exécute git diff --name-only {base}..{commit}. Tout fichier hors de la liste autorisée est un motif de refus.
-2. ÉTAT PROPRE. Supprime .godot/, réimporte le projet, puis exécute chaque contrôle de la tâche et tools/ci/run_all_checks.sh. Note les codes de sortie et les lignes clés.
-3. CONTRE-ÉPREUVES. Pour chaque contrôle marqué (CE), applique le sabotage décrit, vérifie que le contrôle échoue, puis annule avec git checkout -- . et supprime les fichiers que tu as créés. Un contrôle qui ne détecte pas son sabotage est un motif de refus.
+1. PÉRIMÈTRE. Exécute git diff --name-only main...tache/{ID}. Tout fichier hors de la liste autorisée est un motif de refus.
+2. ÉTAT PROPRE. Ta copie est neuve : importe le projet, puis exécute chaque contrôle de la tâche et tools/ci/run_all_checks.sh. Note les codes de sortie et les lignes clés.
+3. CONTRE-ÉPREUVES. Pour chaque contrôle marqué (CE), applique le sabotage décrit, vérifie que le contrôle échoue, puis annule avec git checkout -- . et git clean -fd, dans ta copie seulement. Un contrôle qui ne détecte pas son sabotage est un motif de refus.
 4. CONTOURNEMENTS. Cherche :
    - test sans assertion, ou toujours vrai ;
    - test désactivé, renommé ou sorti du runner ;
    - valeur attendue recopiée depuis la sortie du code ;
-   - entrée retirée de tests/pending.json sans test qui passe ;
+   - marqueur supprimé de tests/pending/ sans test qui passe ;
+   - fixture invalide rejetée pour un autre motif que celui de son nom ;
    - API Godot inventée ou non vérifiée ;
    - dépendance interdite entre modules ;
    - API sensible hors de la frontière de compatibilité ;
@@ -154,7 +183,7 @@ Rapport : cause, preuve, action faite ou proposée, statut.
 
 ```text
 Prépare la porte de sortie de l'étape {N} du projet GODOT_DEV_MAPPER. Entrées : docs/construction/etape-{N}.md, les verdicts de vérification de chaque tâche, PROJECT_STATE.md.
-Exécute toi-même chaque point de contrôle de l'étape et produis une page :
+Pour les points de contrôle couverts par tools/ci/run_all_checks.sh, exécute ce script une fois sur main : son résultat fait foi. Exécute toi-même les autres points de contrôle de l'étape, puis produis une page :
 - tableau : point de contrôle, commande, attendu, obtenu, OK ou KO ;
 - heures humaines et temps agent consommés, contre le budget de l'étape ;
 - problèmes ouverts et risques nouveaux ;
@@ -164,7 +193,7 @@ Tu ne décides pas : la décision est humaine.
 
 ## Cheminement d'amélioration
 
-Après chaque étape, une rétro de dix minutes compare ce qui s'est passé aux signaux ci-dessous.
+Après chaque étape, une rétro de dix minutes compare ce qui s'est passé aux signaux ci-dessous. Si l'étape n'a connu ni refus, ni escalade, ni QUESTION, la rétro se réduit à noter les temps : pas de prompt.
 
 | Signal | Lecture | Correction |
 | --- | --- | --- |
@@ -183,7 +212,7 @@ Dis aussi s'il faut garder ou changer le routage des modèles, avec la mesure qu
 Ne modifie rien : la décision est humaine.
 ```
 
-Chaque amélioration acceptée est appliquée au guide, dont la révision augmente (GC-0.2, GC-0.3…).
+Chaque amélioration acceptée est appliquée au guide, dont la révision augmente (GC-0.4, GC-0.5…).
 
 ## Carte des étapes
 
@@ -193,7 +222,7 @@ Chaque amélioration acceptée est appliquée au guide, dont la révision augmen
 | 1 Fondations | T01 à T04 | 4–6 | T01 à T03 : oui, sauf l'envoi sur GitHub. T04 : en partie |
 | 2 Spikes | T05, T06 | 4–6 | T06 : oui. T05 : non, il faut l'éditeur avec rendu |
 | 3 Contrats | T07, T08 | 4–6 | T07 : oui. T08 : non, il attend SPIKE-01b (T05). La validation reste à toi |
-| 4 Implémentation | T09 à T13 | 4–7 | Godot sans interface suffit, mais tout dépend de T08, donc de T05 |
+| 4 Implémentation | T09 à T13c | 4–7, objectif favorable | Godot sans interface suffit, mais tout dépend de T08, donc de T05 |
 | 5 Intégration | T14, T15 | 2–4 | Après T08 : T15 et la logique de T14. Essai dans l'éditeur : non |
 | 6 Interface et robustesse | T16 à T18 | 3–4 | Après T08 : logique et tests. Vérification visuelle : non |
 | 7 Valeur et revue | T19, T20 | 2–3 | Non : mesure et décision humaines |
@@ -208,8 +237,8 @@ Sans ta machine, le projet avance jusqu'à T07 : décisions, squelettes, T01 à 
 | Fichier | Créé en | Rôle |
 | --- | --- | --- |
 | `REGLES_AGENTS.md`, `tools/sync_rules.sh` | Étape 0 | Source unique des règles, copiée vers `CLAUDE.md` et `GEMINI.md` |
-| `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/pending.json` | T02 | Runner, assertions, tests écrits mais pas encore activés |
+| `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/pending/` | T02 | Runner, assertions, un marqueur par test pas encore activé |
 | `tools/check_deps.py`, `tools/deps_rules.json` | T02 | Règles de dépendance entre modules et API sensibles |
-| `tools/ci/run_all_checks.sh`, `tools/ci/fetch_godot.sh` | T03 | Tous les contrôles en une commande ; binaires officiels |
-| `contracts/schemas/`, `tools/validate_fixtures.py`, `tools/check_contracts.py` | T07, T08 | Schémas JSON et contrôle des contrats |
-| `tools/harness/fake_editor.gd` | T13 | Banc de test du runtime sans éditeur, issu de SPIKE-01a |
+| `tools/ci/run_all_checks.sh`, `tools/ci/checks.d/`, `tools/ci/fetch_godot.sh` | T03 | Tous les contrôles en une commande, un script par contrôle ajouté ; binaires officiels |
+| `contracts/schemas/`, `tools/validate_fixtures.py`, `tools/check_contracts.py` | T07, T08 | Schémas JSON, règles sémantiques à codes d'erreur, contrôle des contrats |
+| `tools/harness/fake_editor.gd` | T13b | Banc de test du runtime sans éditeur, issu de SPIKE-01a |

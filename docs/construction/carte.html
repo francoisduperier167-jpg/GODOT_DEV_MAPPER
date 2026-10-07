@@ -271,10 +271,10 @@ footer p { margin: 0; }
       <table>
         <thead><tr><th>Qui</th><th>Il réalise</th><th>Il vérifie</th><th>Il intervient aussi</th></tr></thead>
         <tbody>
-          <tr><td><span class="who"><span class="glyph g-qwen"></span>Qwen</span></td><td>T01 à T03, la préparation de T04, T09 à T13, T15, T17, T18</td><td>Rien</td><td>Seulement une fois T00 réussi</td></tr>
+          <tr><td><span class="who"><span class="glyph g-qwen"></span>Qwen</span></td><td>T01 à T03, la préparation de T04, T09 à T13c, T15, T17, T18</td><td>Rien</td><td>Seulement une fois T00 réussi</td></tr>
           <tr><td><span class="who"><span class="glyph g-sonnet"></span>Sonnet</span></td><td>T14 et T16 ; les tâches de Qwen tant que Qwen n'est pas prêt</td><td>Rien</td><td>Quand Qwen escalade</td></tr>
           <tr><td><span class="who"><span class="glyph g-gemini"></span>Gemini</span></td><td>Le choix du jeu de test, l'injection des bugs de T19</td><td>Presque tout le code, les squelettes, les contrats, les spikes</td><td>Recalcule les chiffres de la revue T20</td></tr>
-          <tr><td><span class="who"><span class="glyph g-opus"></span>Opus</span></td><td>Décisions, squelettes, spikes, contrats, revue T20</td><td>T03, T12, T13, T18</td><td>Portes, rétros, découpages, escalades de Sonnet et de Gemini</td></tr>
+          <tr><td><span class="who"><span class="glyph g-opus"></span>Opus</span></td><td>Décisions, squelettes, spikes, contrats, revue T20</td><td>T03, T12, T13a, T13b, T18</td><td>Portes, rétros, découpages, escalades de Sonnet et de Gemini</td></tr>
           <tr><td><span class="who"><span class="glyph g-toi"></span>Toi</span></td><td>Les décisions, les essais sur ta machine, la mesure de valeur</td><td>T00 et T04</td><td>Lire chaque verdict, fusionner, décider à chaque porte</td></tr>
         </tbody>
       </table>
@@ -283,7 +283,7 @@ footer p { margin: 0; }
     <h3>Quand une étape est-elle finalisée ?</h3>
     <p>Quand ces quatre choses sont faites, dans l'ordre :</p>
     <ol>
-      <li>toutes ses tâches sont acceptées et fusionnées dans <code>main</code> ;</li>
+      <li>toutes ses tâches sont acceptées et fusionnées dans <code>main</code>, avec des contrôles verts après chaque fusion ;</li>
       <li>Opus a exécuté la porte d'étape, et chaque point de contrôle est OK ;</li>
       <li>tu as décidé « Passer » ;</li>
       <li>la rétro est faite, et l'étape est marquée « Acceptée » dans <code>PROJECT_STATE.md</code>.</li>
@@ -293,14 +293,14 @@ footer p { margin: 0; }
     <div class="flowwrap">
       <svg class="flow" viewBox="0 0 720 596" role="img" aria-labelledby="f1t f1d">
         <title id="f1t">La boucle d'une tâche</title>
-        <desc id="f1d">Toi crées la branche ; l'auteur réalise et rend un rapport ; selon le statut, tu réponds à une question, tu escalades, ou tu lances le vérificateur ; selon le verdict, l'auteur corrige ou tu fusionnes ; puis tâche suivante.</desc>
+        <desc id="f1d">Toi crées la copie de travail ; l'auteur réalise et rend un rapport ; selon le statut, tu réponds à une question, tu escalades, ou tu lances le vérificateur ; selon le verdict, l'auteur corrige ou tu fusionnes ; puis tâche suivante.</desc>
         <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
-        <g class="toi"><rect class="box" x="40" y="16" width="320" height="52" rx="8"/><rect class="bar" x="40" y="16" width="6" height="52" rx="3"/><text x="60" y="38"><tspan class="b">Toi</tspan> : crée la branche</text><text class="m" x="60" y="58">git switch -c tache/ID</text></g>
+        <g class="toi"><rect class="box" x="40" y="16" width="320" height="52" rx="8"/><rect class="bar" x="40" y="16" width="6" height="52" rx="3"/><text x="60" y="38"><tspan class="b">Toi</tspan> : crée la copie de travail</text><text class="m" x="60" y="58">git worktree add ../gdm-ID</text></g>
         <g><rect class="box" x="40" y="96" width="320" height="52" rx="8"/><rect class="bar" x="40" y="96" width="6" height="52" rx="3"/><text x="60" y="118"><tspan class="b">L'auteur</tspan> : réalise la tâche</text><text class="m" x="60" y="138">prompt de réalisation, puis rapport</text></g>
         <polygon class="dia" points="200,172 300,206 200,240 100,206"/><text x="200" y="211" text-anchor="middle">Statut du rapport ?</text>
-        <g><rect class="box" x="40" y="290" width="320" height="52" rx="8"/><rect class="bar" x="40" y="290" width="6" height="52" rx="3"/><text x="60" y="312"><tspan class="b">Le vérificateur</tspan> : contrôle</text><text class="m" x="60" y="332">autre modèle, autre conversation</text></g>
+        <g><rect class="box" x="40" y="290" width="320" height="52" rx="8"/><rect class="bar" x="40" y="290" width="6" height="52" rx="3"/><text x="60" y="312"><tspan class="b">Le vérificateur</tspan> : contrôle</text><text class="m" x="60" y="332">autre modèle, autre copie de travail</text></g>
         <polygon class="dia" points="200,366 300,400 200,434 100,400"/><text x="200" y="405" text-anchor="middle">Verdict ?</text>
-        <g class="toi"><rect class="box" x="40" y="484" width="320" height="52" rx="8"/><rect class="bar" x="40" y="484" width="6" height="52" rx="3"/><text x="60" y="506"><tspan class="b">Toi</tspan> : fusionne dans main</text><text class="m" x="60" y="526">et note « Acceptée »</text></g>
+        <g class="toi"><rect class="box" x="40" y="484" width="320" height="52" rx="8"/><rect class="bar" x="40" y="484" width="6" height="52" rx="3"/><text x="60" y="506"><tspan class="b">Toi</tspan> : fusionne dans main</text><text class="m" x="60" y="526">contrôles relancés, puis « Acceptée »</text></g>
         <rect class="pill" x="110" y="556" width="180" height="32" rx="16"/><text x="200" y="577" text-anchor="middle">Tâche suivante</text>
         <g><rect class="box" x="430" y="150" width="270" height="52" rx="8"/><text x="446" y="172"><tspan class="b">QUESTION</tspan> : tu réponds</text><text class="m" x="446" y="192">même conversation, puis ↺</text></g>
         <g><rect class="box" x="430" y="214" width="270" height="52" rx="8"/><text x="446" y="236"><tspan class="b">ESCALADE</tspan> : modèle plus fort</text><text class="m" x="446" y="256">prompt d'escalade, puis ↺</text></g>
@@ -345,19 +345,21 @@ footer p { margin: 0; }
     </div>
     <p class="caption">↺ : après la correction ou l'amendement, Opus relance la porte.</p>
 
-    <h2>Cinq règles pour ne pas te perdre</h2>
+    <h2>Six règles pour ne pas te perdre</h2>
     <ol>
       <li>Une conversation neuve pour chaque tâche et chaque rôle. Le vérificateur ne voit jamais la conversation de l'auteur.</li>
       <li>Jamais le même modèle pour réaliser et vérifier une tâche.</li>
       <li>Un verdict sans contrôles relancés ne compte pas : traite-le comme un refus.</li>
       <li>Deux échecs, on escalade. On n'insiste pas une troisième fois avec le même modèle.</li>
-      <li>Chaque tâche vit sur sa branche <code>tache/ID</code>. La branche <code>main</code> ne reçoit que du travail accepté.</li>
+      <li>Chaque tâche vit dans sa propre copie de travail, <code>../gdm-ID</code>, et sa vérification dans une autre, <code>../gdm-verif-ID</code>. La branche <code>main</code> ne reçoit que du travail accepté, et les contrôles y sont relancés après chaque fusion.</li>
+      <li>Seule l'étape de fusion touche <code>PROJECT_STATE.md</code> et <code>docs/DECISIONS.md</code>. Un agent ne s'arrête sur une question que pour un changement de contrat, de périmètre ou d'interface publique.</li>
     </ol>
 
     <h2>Avant la toute première action</h2>
     <ol>
       <li>Décompresse <code>GODOT_DEV_MAPPER.zip</code> avec <code>unzip</code>, puis place-toi dans le dossier.</li>
       <li>Ouvre ce dossier dans Claude Code, dans ton outil Gemini et, plus tard, dans le harnais de Qwen.</li>
+      <li>Les copies de travail des tâches se créent à côté de ce dossier : <code>../gdm-T01</code>, <code>../gdm-verif-T01</code>… La carte te donne chaque commande, et te dit dans quel dossier ouvrir chaque agent.</li>
       <li>Chaque prompt de cette carte renvoie à un fichier de <code>docs/construction/</code> : les agents le lisent eux-mêmes dans le dépôt.</li>
     </ol>
   </section>
@@ -402,7 +404,7 @@ footer p { margin: 0; }
     { id: "E1", group: "POC", num: "1", label: "Étape 1", the: "l'étape 1", de: "de l'étape 1", title: "Fondations", file: "etape-1.md", budget: "4–6 h", tasks: ["T01", "T02", "T03", "T04"] },
     { id: "E2", group: "POC", num: "2", label: "Étape 2", the: "l'étape 2", de: "de l'étape 2", title: "Spikes", file: "etape-2.md", budget: "4–6 h", tasks: ["T05", "T06"] },
     { id: "E3", group: "POC", num: "3", label: "Étape 3", the: "l'étape 3", de: "de l'étape 3", title: "Contrats", file: "etape-3.md", budget: "4–6 h", tasks: ["T07", "T08"] },
-    { id: "E4", group: "POC", num: "4", label: "Étape 4", the: "l'étape 4", de: "de l'étape 4", title: "Implémentation sous contrat", file: "etape-4.md", budget: "4–7 h", tasks: ["T09", "T10", "T11", "T12", "T13"] },
+    { id: "E4", group: "POC", num: "4", label: "Étape 4", the: "l'étape 4", de: "de l'étape 4", title: "Implémentation sous contrat", file: "etape-4.md", budget: "4–7 h", tasks: ["T09", "T10", "T11", "T12", "T13a", "T13b", "T13c"] },
     { id: "E5", group: "POC", num: "5", label: "Étape 5", the: "l'étape 5", de: "de l'étape 5", title: "Intégration", file: "etape-5.md", budget: "2–4 h", tasks: ["T14", "T15", "V5"] },
     { id: "E6", group: "POC", num: "6", label: "Étape 6", the: "l'étape 6", de: "de l'étape 6", title: "Interface et robustesse", file: "etape-6.md", budget: "3–4 h", tasks: ["T16", "T17", "T18", "V6"] },
     { id: "E7", group: "POC", num: "7", label: "Étape 7", the: "l'étape 7", de: "de l'étape 7", title: "Valeur et revue", file: "etape-7.md", budget: "2–3 h", tasks: ["T19", "T20"] }
@@ -444,14 +446,16 @@ footer p { margin: 0; }
     "T10": { title: "Modèle, graphe déclaré, clés de sonde", author: "qwen", verifier: "gemini", deps: ["T07", "T09"] },
     "T11": { title: "Event Store minimal", author: "qwen", verifier: "gemini", deps: ["T08", "T10"] },
     "T12": { title: "Façades et profil moteur", author: "qwen", verifier: "opus", deps: ["T06", "T08"] },
-    "T13": { title: "FlowTrace, banc sans éditeur, SPIKE-05", author: "qwen", verifier: "opus", deps: ["T08", "T09", "T12"] },
-    "T14": { title: "Réception côté éditeur", author: "sonnet", verifier: "gemini", deps: ["T09", "T11", "T12", "T13"] },
-    "T15": { title: "Instrumentation du banc d'essai", author: "qwen", verifier: "gemini", deps: ["T04", "T13"] },
+    "T13a": { title: "FlowTrace : runtime et protocole de session", author: "qwen", verifier: "opus", deps: ["T08", "T09", "T12"] },
+    "T13b": { title: "Banc sans éditeur et scénarios de coupure", author: "qwen", verifier: "opus", deps: ["T13a"] },
+    "T13c": { title: "Mesures de performance (SPIKE-05)", author: "qwen", verifier: "gemini", deps: ["T13b"] },
+    "T14": { title: "Réception côté éditeur", author: "sonnet", verifier: "gemini", deps: ["T09", "T11", "T12", "T13a"] },
+    "T15": { title: "Instrumentation du banc d'essai", author: "qwen", verifier: "gemini", deps: ["T04", "T13b"] },
     "V5":  { title: "Essai dans l'éditeur réel", flow: "manual", author: "toi", deps: ["T14", "T15"], machine: true, fixId: "T14", fixAuthor: "sonnet",
              manual: "Sur ta machine : ouvre l'éditeur avec le plugin, lance le banc d'essai instrumenté et démarre une collecte. Suis la procédure écrite dans le rapport de T14, puis compare les compteurs du store à ceux du banc de test (point de contrôle PC5.6)." },
     "T16": { title: "Panneau du POC", author: "sonnet", verifier: "gemini", deps: ["T10", "T14"] },
     "T17": { title: "Chemin observé et ouverture du code", author: "qwen", verifier: "gemini", deps: ["T15", "T16"] },
-    "T18": { title: "Robustesse et cycle de vie", author: "qwen", verifier: "opus", deps: ["T13", "T14"] },
+    "T18": { title: "Robustesse et cycle de vie", author: "qwen", verifier: "opus", deps: ["T13b", "T14"] },
     "V6":  { title: "Démonstration visuelle", flow: "manual", author: "toi", deps: ["T16", "T17", "T18"], machine: true, fixId: "T16", fixAuthor: "sonnet",
              manual: "Sur ta machine, en suivant les procédures des rapports de T16 à T18 : captures d'écran du panneau avec deux instances distinguées, chemin observé dans ses trois états, ouverture du code au bon endroit, latence mesurée sous 200 ms, plugin désactivé pendant une collecte sans erreur dans le jeu (point de contrôle PC6.7)." },
     "T19": { title: "Mesure de valeur", flow: "t19", author: "gemini", deps: ["V6"], machine: true },
@@ -479,7 +483,7 @@ footer p { margin: 0; }
 
   /* ---------------- État ---------------- */
   function defaultState() {
-    return { v: 1, machine: false, qwenOk: null, done: {}, parked: {}, refusals: {}, esc: {}, gates: {}, provisional: {},
+    return { v: 1, machine: false, qwenOk: null, done: {}, parked: {}, refusals: {}, esc: {}, gates: {}, provisional: {}, alerts: {},
              mvp: false, reduced: false, stopped: false, cursor: null,
              free: { id: "", file: "", author: "qwen", verifier: "gemini", node: "run", refusals: 0, esc: 0, active: false, last: "" },
              updatedAt: 0 };
@@ -635,24 +639,31 @@ footer p { margin: 0; }
   }
 
   /* ---------------- Prompts ---------------- */
-  function branchCmd(id) { return "git switch main\ngit switch -c tache/" + id; }
-  function mergeCmd(id) { return "git switch main\ngit merge --no-ff tache/" + id + " -m \"" + id + " acceptée\""; }
+  function branchCmd(id) { return "git worktree add ../gdm-" + id + " -b tache/" + id + " main"; }
+  function checksReady(id) { return !!state.done.T03 || id === "T03"; }
+  function mergeCmd(id) {
+    return "git switch main\ngit merge --no-ff tache/" + id + " -m \"" + id + " acceptée\"" +
+      (checksReady(id) ? "\nGODOT=godot tools/ci/run_all_checks.sh" : "") +
+      "\ngit worktree remove ../gdm-" + id;
+  }
+  function verifAddCmd(id) { return "git worktree add --detach ../gdm-verif-" + id + " tache/" + id; }
+  function verifRmCmd(id) { return "git worktree remove --force ../gdm-verif-" + id; }
   function fileRef(t) { return t.free ? (t.file || "[fichier du guide]") : "docs/construction/" + t.file; }
 
   function pAuthor(t) {
     var id = t.id;
-    if (id === "0.A") return "Lis docs/construction/etape-0.md, section « 0.A — Dossier de décisions », et exécute exactement le prompt qui s'y trouve.\nTu es sur la branche tache/0.A.\nTermine par le rapport demandé.";
-    if (id === "0.B") return "Lis docs/construction/etape-0.md, section « 0.B — Squelettes et source unique de règles », et exécute exactement le prompt qui s'y trouve.\nTu es sur la branche tache/0.B.\nTermine par le rapport final au format du prompt universel de réalisation (docs/construction/README.md).";
+    if (id === "0.A") return "Lis docs/construction/etape-0.md, section « 0.A — Dossier de décisions », et exécute exactement le prompt qui s'y trouve.\nTu travailles dans la copie de travail ../gdm-0.A, sur la branche tache/0.A.\nTermine par le rapport demandé.";
+    if (id === "0.B") return "Lis docs/construction/etape-0.md, section « 0.B — Squelettes et source unique de règles », et exécute exactement le prompt qui s'y trouve.\nTu travailles dans la copie de travail ../gdm-0.B, sur la branche tache/0.B.\nTermine par le rapport final au format du prompt universel de réalisation (docs/construction/README.md).";
     if (id === "T00") return "Lis docs/construction/etape-0.md, section « T00 — Environnement de Qwen », et exécute la tâche jouet qui s'y trouve.\nN'invente aucune sortie : si une commande échoue, recopie l'erreur telle quelle et arrête-toi.";
-    if (id === "T04") return "Lis docs/construction/etape-1.md, section T04, et exécute le prompt de préparation pour le jeu que j'ai choisi :\nNom : [à compléter]\nDépôt : [à compléter]\nRévision : [à compléter]\nTu es sur la branche tache/T04.\nTermine par le rapport final au format demandé.";
-    return "Tu réalises la tâche " + id + " du projet GODOT_DEV_MAPPER.\nTu es sur la branche tache/" + id + ".\nLis " + fileRef(t) + ", section " + id + ", et exécute exactement le prompt de réalisation qui s'y trouve, avec les règles de REGLES_AGENTS.md.\nTermine par le rapport final au format demandé.";
+    if (id === "T04") return "Lis docs/construction/etape-1.md, section T04, et exécute le prompt de préparation pour le jeu que j'ai choisi :\nNom : [à compléter]\nDépôt : [à compléter]\nRévision : [à compléter]\nTu travailles dans la copie de travail ../gdm-T04, sur la branche tache/T04.\nTermine par le rapport final au format demandé.";
+    return "Tu réalises la tâche " + id + " du projet GODOT_DEV_MAPPER.\nTu travailles dans la copie de travail ../gdm-" + id + ", sur la branche tache/" + id + ".\nLis " + fileRef(t) + ", section " + id + ", et exécute exactement le prompt de réalisation qui s'y trouve, avec les règles de REGLES_AGENTS.md.\nTermine par le rapport final au format demandé.";
   }
   function pVerify(t) {
     var id = t.id;
-    if (t.vp === "relecture0B") return "Lis docs/construction/etape-0.md, section 0.B, et exécute le « Prompt de relecture pour Gemini » sur la branche tache/0.B. Ne modifie rien.\nCommence ta réponse par « Verdict : ACCEPTÉE » si tu ne trouves aucun écart, ou par « Verdict : REFUSÉE » suivi des écarts numérotés.";
-    if (t.vp === "spike01b") return "Tu es vérificateur indépendant pour la tâche T05 (SPIKE-01b) du projet GODOT_DEV_MAPPER. Tu ne modifies rien.\nLis, sur la branche tache/T05, la section SPIKE-01b de docs/spikes/SPIKE-01.md, puis la section T05 de docs/construction/etape-2.md.\nVérifie que chacun des sept critères a une manipulation, une observation et un chiffre, et que la décision découle des chiffres. Cherche toute affirmation sans preuve.\nRéponds en commençant par « Verdict : ACCEPTÉE » ou « Verdict : REFUSÉE », puis donne les problèmes numérotés.";
+    if (t.vp === "relecture0B") return "Dans ta copie de travail ../gdm-verif-0.B, lis docs/construction/etape-0.md, section 0.B, et exécute le « Prompt de relecture pour Gemini ». Ne modifie rien.\nCommence ta réponse par « Verdict : ACCEPTÉE » si tu ne trouves aucun écart, ou par « Verdict : REFUSÉE » suivi des écarts numérotés.";
+    if (t.vp === "spike01b") return "Tu es vérificateur indépendant pour la tâche T05 (SPIKE-01b) du projet GODOT_DEV_MAPPER. Tu ne modifies rien.\nLis, dans ta copie de travail ../gdm-verif-T05, la section SPIKE-01b de docs/spikes/SPIKE-01.md, puis la section T05 de docs/construction/etape-2.md.\nVérifie que chacun des six critères a une manipulation, une observation et un chiffre, et que la décision découle des chiffres. Cherche toute affirmation sans preuve.\nRéponds en commençant par « Verdict : ACCEPTÉE » ou « Verdict : REFUSÉE », puis donne les problèmes numérotés.";
     var extra = t.vp === "contrat" ? "\nRelis aussi chaque contrat contre docs/plan-directeur.md : contradictions, cas non spécifiés, exemples incohérents." : "";
-    return "Tu es vérificateur indépendant pour la tâche " + id + " du projet GODOT_DEV_MAPPER. Tu n'as pas écrit ce code et tu ne modifies rien.\nApplique le « Prompt universel de vérification » de docs/construction/README.md à la section " + id + " de " + fileRef(t) + ".\nRévision de départ : main. Révision à vérifier : tache/" + id + "." + extra + "\nLe rapport de l'auteur suit.\n\n[colle ici le rapport de l'auteur]";
+    return "Tu es vérificateur indépendant pour la tâche " + id + " du projet GODOT_DEV_MAPPER. Tu n'as pas écrit ce code. Tu travailles dans ta propre copie de travail, ../gdm-verif-" + id + ", et tu n'y fais aucun commit.\nApplique le « Prompt universel de vérification » de docs/construction/README.md à la section " + id + " de " + fileRef(t) + ".\nRévision de départ : main. Révision à vérifier : tache/" + id + "." + extra + "\nLe rapport de l'auteur suit.\n\n[colle ici le rapport de l'auteur]";
   }
   function pFix(t) {
     return "Le vérificateur a refusé la tâche " + t.id + ". Son verdict suit.\nCorrige uniquement les problèmes listés, sur la branche tache/" + t.id + ", sans modifier les tests ni les contrôles.\nExécute de nouveau tous les contrôles de la tâche, puis refais le rapport final au format demandé.\n\n[colle ici le verdict]";
@@ -676,13 +687,13 @@ footer p { margin: 0; }
   function pRetro(st) { return "Applique le « Prompt de rétro » de docs/construction/README.md à " + st.the + " du projet GODOT_DEV_MAPPER. La page de porte suit.\n\n[colle ici la page de porte]"; }
   function pReplan(st) { return "La porte " + st.de + " du projet GODOT_DEV_MAPPER recommande de revoir le plan. La page de porte suit.\nPropose un amendement minimal : le diff exact de docs/plan-directeur.md et des fichiers du guide concernés, avec son impact sur les budgets et les tâches suivantes.\nN'applique rien : je valide d'abord.\n\n[colle ici la page de porte]"; }
   function pSplit(st) {
-    if (st.group === "MVP") return "Applique le « Prompt de découpage d'une phase » de docs/construction/mvp.md à la phase " + st.id + " du projet GODOT_DEV_MAPPER.\nCapacités : " + st.caps + ". Budget de la phase : " + st.budget + " humaines.\nTu es sur la branche tache/" + st.id + "-decoupage. Produis docs/construction/mvp-" + st.id + ".md et ne réalise aucune tâche.";
-    return "Applique le prompt de découpage décrit dans docs/construction/v1.md (celui de mvp.md, avec la règle que v1.md ajoute) à la phase " + st.id + " du projet GODOT_DEV_MAPPER.\nCapacités : " + st.caps + ". Budget de la phase : " + st.budget + " humaines.\nTu es sur la branche tache/" + st.id + "-decoupage. Produis docs/construction/v1-" + st.id + ".md et ne réalise aucune tâche.";
+    if (st.group === "MVP") return "Applique le « Prompt de découpage d'une phase » de docs/construction/mvp.md à la phase " + st.id + " du projet GODOT_DEV_MAPPER.\nCapacités : " + st.caps + ". Budget de la phase : " + st.budget + " humaines.\nTu travailles dans la copie de travail ../gdm-" + st.id + "-decoupage, sur la branche tache/" + st.id + "-decoupage. Produis docs/construction/mvp-" + st.id + ".md et ne réalise aucune tâche.";
+    return "Applique le prompt de découpage décrit dans docs/construction/v1.md (celui de mvp.md, avec la règle que v1.md ajoute) à la phase " + st.id + " du projet GODOT_DEV_MAPPER.\nCapacités : " + st.caps + ". Budget de la phase : " + st.budget + " humaines.\nTu travailles dans la copie de travail ../gdm-" + st.id + "-decoupage, sur la branche tache/" + st.id + "-decoupage. Produis docs/construction/v1-" + st.id + ".md et ne réalise aucune tâche.";
   }
 
   /* ---------------- Vues des nœuds ---------------- */
   var NODE_NAMES = { run: "réalisation", status: "statut du rapport", question: "question", escalate: "escalade", decideChange: "proposition à trancher",
-    verify: "vérification", verdict: "verdict", fix: "correction", merge: "fusion", decide01: "décisions", install: "installation",
+    verify: "vérification", verdict: "verdict", fix: "correction", merge: "fusion", unmerge: "annulation de la fusion", decide01: "décisions", install: "installation",
     t00ok: "mesures", noqwen: "Qwen pas prêt", select: "candidats", choose: "choix du jeu", manual: "essai", manualFix: "correction",
     inject: "injection des bugs", measure: "mesure", crosscheck: "relecture", verdict19: "verdict", prepare: "revue", recompute: "recalcul",
     fix20: "correction de la revue", decide20: "décision", amend: "amendement", split: "découpage", reviewSplit: "relecture du découpage",
@@ -704,7 +715,7 @@ footer p { margin: 0; }
       case "run":
         return { actor: A, warn: warn, title: "Lance la réalisation de " + id,
           do: t.flow === "t00" ? "Dans le harnais de Qwen, colle le prompt et laisse Qwen travailler jusqu'à son rapport." :
-            "Crée d'abord la branche de la tâche dans le terminal. Ouvre ensuite " + ACTORS[A].name + ", colle le prompt et laisse l'agent travailler jusqu'à son rapport final.",
+            "Crée d'abord la copie de travail de la tâche dans le terminal. Ouvre ensuite " + ACTORS[A].name + " dans le dossier ../gdm-" + id + ", colle le prompt et laisse l'agent travailler jusqu'à son rapport final.",
           before: t.flow === "t00" ? null : branchCmd(id), prompt: pAuthor(t),
           expect: "un rapport qui se termine par une ligne « Statut : TERMINÉ », « QUESTION » ou « ESCALADE ».",
           outcomes: [{ label: "J'ai le rapport", fn: function () { api.go("status"); } }] };
@@ -717,7 +728,7 @@ footer p { margin: 0; }
             { label: "ESCALADE", kind: "bad", fn: function () { api.go("escalate"); } }] };
       case "question":
         return { actor: "toi", title: "Réponds à la question de " + ACTORS[A].name,
-          do: "Réponds dans la même conversation. S'il demande de toucher un fichier interdit, un contrat ou le plan, ne tranche pas au fil de l'eau : réponds « note-le comme écart et continue sans ». La porte d'étape le traitera.",
+          do: "Un agent ne doit s'arrêter que pour un changement de contrat, de périmètre ou d'interface publique, ou pour un fichier hors de sa liste. Si sa question porte sur un simple choix d'implémentation conforme au contrat, réponds-lui de trancher lui-même et de le noter dans son rapport. Sinon, ne tranche pas au fil de l'eau : réponds « note-le comme écart et continue sans » ; la porte d'étape le traitera.",
           expect: "un nouveau rapport, avec une nouvelle ligne « Statut ».",
           outcomes: [{ label: "J'ai répondu, le nouveau rapport est là", fn: function () { api.go("status"); } }] };
       case "escalate":
@@ -738,33 +749,43 @@ footer p { margin: 0; }
       case "verify":
         if (V === "toi") return toiVerify(t, api);
         return { actor: V, title: "Fais vérifier " + id + " par " + ACTORS[V].name,
-          do: "Ouvre " + ACTORS[V].name + " dans une nouvelle conversation, jamais celle de l'auteur. Colle le prompt, puis le rapport de l'auteur à l'endroit indiqué.",
-          prompt: pVerify(t),
+          do: "Crée la copie de travail du vérificateur. Ouvre ensuite " + ACTORS[V].name + " dans le dossier ../gdm-verif-" + id + ", dans une nouvelle conversation, jamais celle de l'auteur. Colle le prompt, puis le rapport de l'auteur à l'endroit indiqué.",
+          before: verifAddCmd(id), prompt: pVerify(t),
           expect: "un verdict qui commence par « Verdict : ACCEPTÉE » ou « Verdict : REFUSÉE ».",
           outcomes: [{ label: "J'ai le verdict", fn: function () { api.go("verdict"); } }] };
       case "verdict":
         return { actor: "toi", title: "Lis le verdict",
-          do: "Un verdict « ACCEPTÉE » doit montrer les contrôles relancés et les contre-épreuves détectées. Sans ces preuves, traite-le comme « REFUSÉE ».",
+          do: "Un verdict « ACCEPTÉE » doit montrer les contrôles relancés et les contre-épreuves détectées. Sans ces preuves, traite-le comme « REFUSÉE ». Dans les deux cas, supprime ensuite la copie de travail du vérificateur.",
+          before: verifRmCmd(id),
           outcomes: [
             { label: "ACCEPTÉE", kind: "ok", fn: function () { api.go("merge"); } },
             { label: "REFUSÉE", kind: "bad", fn: function () { api.refuse(); } }] };
       case "fix":
         return { actor: A, title: "Renvoie le verdict à " + ACTORS[A].name,
-          do: "Retourne dans la conversation de l'auteur. Colle le prompt, puis le verdict à l'endroit indiqué.",
+          do: "Retourne dans la conversation de l'auteur, dans le dossier ../gdm-" + id + ". Colle le prompt, puis le verdict, ou la sortie en échec, à l'endroit indiqué.",
           prompt: pFix(t),
           expect: "un nouveau rapport, avec tous les contrôles relancés.",
           outcomes: [{ label: "J'ai le nouveau rapport", fn: function () { api.go("status"); } }] };
       case "merge": {
+        var ready = checksReady(id);
         var extra = "";
         if (id === "0.A") extra = " PROJECT_STATE.md n'existe pas encore : il naîtra en 0.B.";
-        else extra = " Puis, dans PROJECT_STATE.md, passe " + id + " à « Acceptée », avec la date, ton temps et celui de l'agent.";
+        else extra = " Si tout est vert, passe " + id + " à « Acceptée » dans PROJECT_STATE.md, avec la date, ton temps, celui de l'agent et le nombre de tentatives du rapport, puis fais un commit.";
+        if (id === "T05" || id === "T06") extra += " Reporte aussi dans docs/DECISIONS.md la décision KEEP, REWRITE ou DISCARD du rapport.";
         if (t.freeze) extra += " Enfin, passe l'en-tête de docs/CONTRACTS.md à « Statut : validé » avec la date : les contrats sont gelés.";
         if (t.vp === "spike01b") extra = " Avant de fusionner, rejoue toi-même le critère 3 du rapport (contrôle T05-b)." + extra;
+        var outs = [{ label: ready ? "Fusionnée, contrôles verts sur main" : id + " est fusionnée", kind: "ok", fn: function () { api.complete(); } }];
+        if (ready) outs.push({ label: "Les contrôles échouent sur main", kind: "bad", fn: function () { api.go("unmerge"); } });
         return { actor: "toi", title: "Fusionne " + id,
-          do: "Dans le terminal, fusionne la branche de la tâche." + extra,
+          do: "Dans le dossier principal du dépôt, fusionne la branche" + (ready ? ", relance tous les contrôles sur main" : "") + ", puis supprime la copie de travail de la tâche." + extra,
           before: mergeCmd(id),
-          outcomes: [{ label: id + " est fusionnée", kind: "ok", fn: function () { api.complete(); } }] };
+          outcomes: outs };
       }
+      case "unmerge":
+        return { actor: "toi", title: "Annule la fusion de " + id,
+          do: "La fusion casse main. Annule-la avant tout envoi de main, recrée la copie de travail de la tâche, puis renvoie la sortie en échec à l'auteur.",
+          before: "git reset --hard ORIG_HEAD\ngit worktree add ../gdm-" + id + " tache/" + id,
+          outcomes: [{ label: "Fusion annulée, je renvoie la sortie à l'auteur", kind: "warn", fn: function () { api.refuse(); } }] };
       case "decide01":
         return { actor: "toi", title: "Tranche les décisions bloquantes",
           do: "Ouvre docs/DECISIONS.md. Pour D-01, D-05 et D-07, remplace « proposée » par « validée » et la date. Mes recommandations : D-01 Godot 4.7.2 ; D-05 runner maison ; D-07 4.7.2 bloquant, préversion testée à part. Pour D-02, garde les critères : le jeu se choisit en T04. Vérifie ensuite avec la commande.",
@@ -812,7 +833,7 @@ footer p { margin: 0; }
           outcomes: [{ label: "J'ai les trois symptômes", fn: function () { api.go("measure"); } }] };
       case "measure":
         return { actor: "toi", title: "Mesure la valeur",
-          do: "Diagnostique le bug 1 avec l'outil, le bug 2 sans, le bug 3 avec. Chronomètre tout, installation et instrumentation comprises. Remplis le tableau de docs/mesures/valeur-poc.md (modèle dans etape-7.md). N'ouvre l'enveloppe scellée qu'après le troisième diagnostic, et note l'heure.",
+          do: "Chaque bug a sa propre branche du banc d'essai : gdm-bug-1, gdm-bug-2, gdm-bug-3. Diagnostique le bug 1 avec l'outil, le 2 sans, le 3 avec. Chronomètre tout, installation et instrumentation comprises, et note ce qui aide et ce qui gêne. Remplis le tableau de docs/mesures/valeur-poc.md (modèle dans etape-7.md), avec une conclusion qualitative : les durées ne sont qu'indicatives. N'ouvre l'enveloppe scellée qu'après le troisième diagnostic, et note l'heure.",
           outcomes: [{ label: "Le tableau est rempli", fn: function () { api.go("crosscheck"); } }] };
       case "crosscheck":
         return { actor: "gemini", title: "Fais relire la mesure",
@@ -829,15 +850,15 @@ footer p { margin: 0; }
             { label: "REFUSÉE", kind: "bad", fn: function () { api.go("measure"); } }] };
       case "prepare":
         return { actor: "opus", title: "Fais préparer la revue de continuation",
-          do: "Crée la branche, puis ouvre Opus dans une nouvelle conversation et colle le prompt.",
+          do: "Crée la copie de travail, puis ouvre Opus dans le dossier ../gdm-T20, dans une nouvelle conversation, et colle le prompt.",
           before: branchCmd("T20"),
-          prompt: "Lis docs/construction/etape-7.md, section T20, et exécute le prompt qui s'y trouve.\nTu es sur la branche tache/T20.",
+          prompt: "Lis docs/construction/etape-7.md, section T20, et exécute le prompt qui s'y trouve.\nTu travailles dans la copie de travail ../gdm-T20, sur la branche tache/T20.",
           expect: "docs/revues/revue-poc.md, avec budgets, fiabilité des modèles, valeur, risques, options et un projet d'amendement PD-0.4.",
           outcomes: [{ label: "J'ai la revue", fn: function () { api.go("recompute"); } }] };
       case "recompute":
         return { actor: "gemini", title: "Fais recalculer les chiffres de la revue",
           do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt.",
-          prompt: "Sur la branche tache/T20, recalcule à partir de PROJECT_STATE.md les totaux de docs/revues/revue-poc.md : heures humaines, temps agent, taux de réussite par modèle. Ne modifie rien. Liste chaque écart, ou écris « aucun écart ».",
+          prompt: "Dans la copie de travail ../gdm-T20, recalcule à partir de PROJECT_STATE.md les totaux de docs/revues/revue-poc.md : heures humaines, temps agent, taux de réussite par modèle. Ne modifie rien. Liste chaque écart, ou écris « aucun écart ».",
           outcomes: [
             { label: "Aucun écart", kind: "ok", fn: function () { api.go("decide20"); } },
             { label: "Il y a des écarts", kind: "bad", fn: function () { api.go("fix20"); } }] };
@@ -861,7 +882,7 @@ footer p { margin: 0; }
       case "split": {
         var st = STATIONS[TASK_STATION[id]];
         return { actor: "opus", title: "Fais découper " + st.the + " en tâches",
-          do: "Crée la branche, puis ouvre Opus dans une nouvelle conversation et colle le prompt.",
+          do: "Crée la copie de travail, puis ouvre Opus dans le dossier ../gdm-" + id + "-decoupage, dans une nouvelle conversation, et colle le prompt.",
           before: branchCmd(id + "-decoupage"), prompt: pSplit(st),
           expect: "un fichier docs/construction/" + (st.group === "MVP" ? "mvp-" : "v1-") + id + ".md, avec 4 à 12 tâches, leurs contrôles et leurs prompts.",
           outcomes: [{ label: "Le découpage est prêt", fn: function () { api.go("reviewSplit"); } }] };
@@ -944,6 +965,9 @@ footer p { margin: 0; }
           prompt: pReplan(st),
           outcomes: [{ label: "Amendement appliqué, je relance la porte", fn: function () { go("gate"); } }] };
       case "retro":
+        if (st.group === "POC" && !state.alerts[st.id]) return { actor: "toi", title: "Rétro express " + st.de,
+          do: "Cette étape n'a connu ni refus, ni escalade, ni question : pas besoin de prompt. Note seulement les temps passés dans PROJECT_STATE.md.",
+          outcomes: [{ label: "Les temps sont notés", fn: function () { go("close"); } }] };
         return { actor: "opus", title: "Fais la rétro " + st.de,
           do: "Ouvre Opus dans une nouvelle conversation. Colle le prompt, puis la page de porte.",
           prompt: pRetro(st),
@@ -958,12 +982,13 @@ footer p { margin: 0; }
     return null;
   }
 
+  function markAlert(tid) { var st = STATIONS[TASK_STATION[tid]]; if (st) state.alerts[st.id] = true; }
   function mainApi(t) {
     return {
       esc: function () { return state.esc[t.id] || 0; },
-      go: function (n) { commit(function () { state.cursor.node = n; }); },
+      go: function (n) { commit(function () { if (n === "question" || n === "escalate" || n === "manualFix" || n === "unmerge") markAlert(t.id); state.cursor.node = n; }); },
       escalated: function (n) { commit(function () { state.esc[t.id] = (state.esc[t.id] || 0) + 1; state.refusals[t.id] = 0; state.cursor.node = n; }); },
-      refuse: function () { commit(function () { var r = (state.refusals[t.id] || 0) + 1; state.refusals[t.id] = r; state.cursor.node = r >= 2 ? "escalate" : "fix"; }); },
+      refuse: function () { commit(function () { markAlert(t.id); var r = (state.refusals[t.id] || 0) + 1; state.refusals[t.id] = r; state.cursor.node = r >= 2 ? "escalate" : "fix"; }); },
       complete: function () { commit(function () { completeTask(t.id); }); },
       set: function (fn) { commit(fn); }
     };

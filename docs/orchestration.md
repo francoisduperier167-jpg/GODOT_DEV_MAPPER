@@ -1,8 +1,12 @@
 # Orchestration du projet, étape par étape
 
-Révision OR-0.3 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.3, MC-0.3 et SPIKE-01a · remplace OR-0.2
+Révision OR-0.4 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.4, MC-0.4, GC-0.3 et SPIKE-01a · remplace OR-0.3
 
 Le détail d'exécution de chaque tâche (objectif, obligations, méthodologie, contrôles exécutables, prompts de réalisation et de vérification) est dans le guide `docs/construction/`.
+
+**Changements depuis OR-0.3** : copies de travail isolées, fichiers partagés réservés à la fusion ; T05 ramenée à six critères, celui des instances antérieures passant en T13a ; T06 dépend de T03 ; T13 découpée en T13a, T13b et T13c.
+
+**Isolation.** Chaque tâche se fait dans sa propre copie de travail Git, et sa vérification dans une autre. Seule l'étape de fusion modifie les fichiers partagés (`PROJECT_STATE.md`, `docs/DECISIONS.md`). Détail : guide, section « Copies de travail et fichiers partagés ».
 
 **Changements depuis OR-0.2** :
 
@@ -51,7 +55,7 @@ flowchart LR
   E0["0 · Validation<br/>T00"] --> E1["1 · Fondations<br/>T01 T02 T03 · T04"]
   E1 --> E2["2 · Spikes<br/>T05 · T06"]
   E2 --> E3["3 · Contrats<br/>T07 · T08"]
-  E3 --> E4["4 · Implémentation<br/>T09 T10 T11 · T12 T13"]
+  E3 --> E4["4 · Implémentation<br/>T09 T10 T11 · T12 T13a-c"]
   E4 --> E5["5 · Intégration<br/>T14 · T15"]
   E5 --> E6["6 · Interface et robustesse<br/>T16 T17 · T18"]
   E6 --> E7["7 · Valeur et revue<br/>T19 T20"]
@@ -61,11 +65,11 @@ Dans le schéma, le point médian sépare les deux files d'une étape.
 
 | Étape | File A | File B | Porte de sortie |
 | --- | --- | --- | --- |
-| 0 Validation | Humain et Opus : PD-0.3, MC-0.3, décisions D-01, D-02, D-05, D-07, squelettes de docs | T00 | Décisions consignées ; Qwen opérationnel avec ses outils |
+| 0 Validation | Humain et Opus : PD-0.4, MC-0.4, décisions D-01, D-02, D-05, D-07, squelettes de docs | T00 | Décisions consignées ; Qwen opérationnel avec ses outils |
 | 1 Fondations | T01, puis T02, puis T03 | T04 | CI verte sur 4.7.2 ; un test en échec bien détecté ; banc d'essai prêt |
 | 2 Spikes | T05 | T06 | Rapports KEEP, REWRITE ou DISCARD |
 | 3 Contrats | T07 | T08, préparé en parallèle, finalisé après T07 | C-01 à C-07 validés et gelés pour le POC |
-| 4 Implémentation | T09, puis T10, puis T11 | T12, puis T13 | Tests verts sur 4.7.2 ; préversion rapportée ; chemin désactivé mesuré |
+| 4 Implémentation | T09, puis T10, puis T11 | T12, puis T13a, T13b, T13c | Tests verts sur 4.7.2 ; préversion rapportée ; chemin désactivé mesuré |
 | 5 Intégration | T14 | T15 | Événements du banc d'essai reçus et stockés |
 | 6 Interface et robustesse | T16, puis T17 | T18 | Démonstration complète ; arrêt propre |
 | 7 Valeur et revue | T19, puis T20 | — | Décision : continuer, réduire, réorienter ou arrêter |
@@ -80,19 +84,21 @@ Dans le schéma, le point médian sépare les deux files d'une étape.
 | T03 | CI : 4.7.2 bloquant, préversion dans un job séparé ; choix et configuration du lint | 1 | L6 | Qwen, revue Opus | T01, T02 | Push vert ; push volontairement cassé rouge ; lint et contrôle de dépendances exécutés ; job préversion exécuté | Moyen |
 | T04 | Choix et préparation du banc d'essai (D-02) | 1 | L5 | Humain et Gemini | Étape 0 | Fiche du jeu (licence, version, ennemis à décision) ; copie ouverte sans erreur sur 4.7.2 | Moyen |
 | T05 | SPIKE-01b : partie éditeur du canal, sur ta machine ; la partie jeu (SPIKE-01a) est faite | 2 | L2 | Opus | T01 | Critères de la fiche T05 remplis ; rapport mis à jour | Élevé |
-| T06 | SPIKE-02 : façade, capacités, UID, isolation de compilation, à la main sur 4.7.2 et la préversion | 2 | L6 | Opus | T01 | Rapport ; règle d'isolation écrite | Élevé |
+| T06 | SPIKE-02 : façade, capacités, UID, isolation de compilation, à la main sur 4.7.2 et la préversion | 2 | L6 | Opus | T03 | Rapport ; règle d'isolation écrite | Élevé |
 | T07 | Contrats C-01 identités et cycle de vie, C-02 ancrage, C-05 graphe déclaré | 3 | L1 | Opus et humain | Étape 0 | Contrats validés, exemples complets valides et invalides | Moyen |
 | T08 | Contrats C-03 façades ; C-04 enveloppe, champs par type et réserve de contrôle ; C-06 Event Store ; C-07 API et protocole de session de FlowTrace | 3 | L2, L6 | Opus et humain | T05, T06, T07 | Contrats validés ; tests de contrat listés | Moyen |
 | T09 | Codec et validateur de l'enveloppe (C-04) | 4 | L1 | Qwen | T08 | Identifiants 64 bits sans perte ; version inconnue rejetée ; tailles bornées | Faible |
 | T10 | Modèle minimal, graphe déclaré, résolution des clés de sonde (C-01, C-02, C-05) | 4 | L1 | Qwen | T07, T09 | Fixture chargée ; clé inconnue « non résolue » ; références non résolues conservées | Faible |
 | T11 | Event Store minimal : rétention, fin de session, chemin observé (C-06) | 4 | L1 | Qwen | T08, T10 | Troncature marquée ; « fin inconnue » ; requête par invocation testée | Moyen |
 | T12 | Façades de compatibilité, côté éditeur et dans le dossier runtime autonome, et profil moteur (C-03) | 4 | L6 | Qwen, revue Opus | T06, T08 | Tests de contrat verts sur 4.7.2 ; préversion rapportée | Moyen |
-| T13 | FlowTrace : classe statique, protocole de session, bail, buffer et réserve de contrôle, lots, invocations, cycle de vie ; SPIKE-05 | 4 | L2 | Qwen, revue Opus | T08, T09, T12 | Commande en réentrance, coupure et réserve pleine testées ; coûts actif et désactivé mesurés | Moyen |
-| T14 | Réception côté éditeur vers l'Event Store | 5 | L3 | Sonnet, relu par Gemini | T09, T11, T12, T13 | Séquences contrôlées, trous comptés, messages du moteur ignorés | Moyen |
-| T15 | Instrumentation du banc d'essai : deux instances, attack ou chase, retrait puis réinsertion | 5 | L5 | Qwen | T04, T13 | Événements émis ; aucune destruction affichée après réinsertion | Faible |
+| T13a | FlowTrace : runtime et protocole de session, registre et état initial | 4 | L2 | Qwen, revue Opus | T08, T09, T12 | Table d'états couverte ; réentrance, réserve pleine et instances antérieures testées | Moyen |
+| T13b | Banc sans éditeur et scénarios de coupure | 4 | L2 | Qwen, revue Opus | T13a | Aucun lot après « stopped » ; bail déclenché ; contrôle intégré à la CI | Moyen |
+| T13c | Mesures de performance (SPIKE-05) | 4 | L2 | Qwen, revue Gemini | T13b | Coûts actif et désactivé mesurés et reproductibles | Faible |
+| T14 | Réception côté éditeur vers l'Event Store | 5 | L3 | Sonnet, relu par Gemini | T09, T11, T12, T13a | Séquences contrôlées, trous comptés, messages du moteur ignorés | Moyen |
+| T15 | Instrumentation du banc d'essai : deux instances, attack ou chase, retrait puis réinsertion | 5 | L5 | Qwen | T04, T13b | Événements émis ; aucune destruction affichée après réinsertion | Faible |
 | T16 | Panneau du POC : journal sélectionnable, graphe déclaré en liste, sélection d'instance | 6 | L3 | Sonnet, relu par Gemini | T10, T14 | Deux instances distinguées ; rafraîchissement borné ; latence jusqu'à l'affichage mesurée par aller-retour | Moyen |
 | T17 | Chemin observé par invocation et ouverture du code à la bonne révision | 6 | L3, L1 | Qwen et Sonnet | T15, T16 | « Cohérent » sur le cas attendu ; « indéterminé » après un trou provoqué ; lien périmé signalé | Moyen |
-| T18 | Robustesse : sans debugger, arrêt, redémarrage, plugin désactivé pendant une collecte puis réactivé, session tuée | 6 | L2 | Qwen | T13, T14 | Trois opérations du cycle de vie démontrées ; aucun lot après « stopped » ; « fin inconnue » affichée | Faible |
+| T18 | Robustesse : sans debugger, arrêt, redémarrage, plugin désactivé pendant une collecte puis réactivé, session tuée | 6 | L2 | Qwen | T13b, T14 | Trois opérations du cycle de vie démontrées ; aucun lot après « stopped » ; « fin inconnue » affichée | Faible |
 | T19 | Mesure de valeur : deux ou trois bugs, installation et instrumentation comprises | 7 | L5 | Humain | T16 à T18 | Tableau chronométré avec et sans l'outil | Moyen |
 | T20 | Revue de continuation ; décisions sur SPIKE-03, SPIKE-04 et la reprise d'AST Flow ; recalibrage du routage | 7 | Toutes | Opus et humain | T19 | Décision consignée ; budgets et routage mis à jour | Faible |
 
@@ -162,9 +168,9 @@ L'ordre de dépendance est ferme. Le contenu des tâches T06 à T20 peut changer
   2. Démarrage confirmé par « started » avant tout lot.
   3. Arrêt explicite avant la désactivation du plugin : « stopped » reçu en une seconde au plus, aucun lot ensuite.
   4. Coupure (jeu tué, ou plugin retiré sans arrêt) : collecte arrêtée par le bail côté jeu ; « fin inconnue » côté éditeur.
-  5. Instances enregistrées avant le démarrage présentes dans l'état initial.
-  6. Cinq lancements successifs depuis l'éditeur, sans fuite ni erreur.
-  7. Débit et cadence mesurés avec rendu, à 1 200 et 10 000 événements par seconde.
+  5. Cinq lancements successifs depuis l'éditeur, sans fuite ni erreur.
+  6. Débit et cadence mesurés avec rendu, à 1 200 et 10 000 événements par seconde.
+- **Déplacé** : le critère des instances enregistrées avant le démarrage relève du runtime ; il est vérifié en T13a.
 - **Risque** : élevé. **Autonomie** : A0. **Modèle** : Opus. **File** : L2.
 
 ## Au-delà du POC

@@ -8,10 +8,10 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 
 | Chemin | Rôle |
 | --- | --- |
-| `docs/plan-directeur.md` | Plan directeur PD-0.3 : capacités, architecture, protocole de session, modèle de données, POC, MVP, budgets en heures, risques |
-| `docs/methodologie.md` | Méthode de construction MC-0.3 : sources de vérité et leur hiérarchie, contrats, tests, CI, veille de Godot, gabarits |
-| `docs/orchestration.md` | OR-0.3 : déroulé pas à pas, tâches T00 à T20, routage entre quatre modèles |
-| `docs/construction/` | Guide de construction GC-0.2 et sa carte interactive `carte.html` : pour chaque étape, objectif, obligations, méthodologie, points de contrôle, amélioration et prompts de réalisation et de vérification |
+| `docs/plan-directeur.md` | Plan directeur PD-0.4 : capacités, architecture, protocole de session, modèle de données, POC, MVP, budgets en heures, risques |
+| `docs/methodologie.md` | Méthode de construction MC-0.4 : sources de vérité et leur hiérarchie, contrats, tests, CI, veille de Godot, gabarits |
+| `docs/orchestration.md` | OR-0.4 : déroulé pas à pas, tâches T00 à T20, routage entre quatre modèles |
+| `docs/construction/` | Guide de construction GC-0.3 et sa carte interactive `carte.html` : pour chaque étape, objectif, obligations, méthodologie, points de contrôle, amélioration et prompts de réalisation et de vérification |
 | `docs/spikes/SPIKE-01.md` | Rapport de SPIKE-01a : canal du débogueur, partie jeu, mesuré sur 4.7.2 et 4.8-dev7 |
 | `spikes/` | Prototypes jetables des spikes |
 | `docs/estimation.md` | Historique : pertinence, faisabilité et raisonnement de charge initial, en sessions |

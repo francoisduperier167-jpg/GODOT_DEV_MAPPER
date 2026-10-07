@@ -1,6 +1,14 @@
 # Plan directeur — Godot Visual Program & Execution Explorer
 
-Révision PD-0.3 · statut : **proposé** · 8 octobre 2026 · entrée : `prompts/conception.txt` v2.2 · remplace PD-0.2
+Révision PD-0.4 · statut : **proposé** · 8 octobre 2026 · entrée : `prompts/conception.txt` v2.2 · remplace PD-0.3
+
+**Changements depuis PD-0.3**, après une relecture du guide de construction :
+
+- Latence mesurée en deux parties : transport, puis réception → affichage (§8).
+- Mesure de valeur exploratoire ; critère d'arrêt reformulé (§1, §9).
+- T13 découpée en T13a, T13b et T13c (§1, §9, §10).
+- Validation des formats en deux niveaux (§10).
+- Ce que le POC montre, et ce qu'il ne montre pas (§1).
 
 **Changements depuis PD-0.2**, amendement court après une seconde relecture et SPIKE-01a :
 
@@ -57,15 +65,15 @@ Le pilotage suit séparément les heures humaines, le temps agent et les capacit
 
 La compatibilité commence par une frontière légère : tous les appels moteur sensibles passent par une façade, 4.7.2 est figée, la préversion est testée à part. Les adaptateurs par version et la veille automatisée n'arrivent qu'au MVP, ou plus tôt si une rupture réelle apparaît.
 
-**POC : 21 tâches, 25 à 40 heures humaines avec agents** (40 à 65 h sans agent), soit 3 à 5 semaines à 10 h par semaine. Démonstration : deux instances, une décision, une trace réelle, un lien source et un arrêt propre.
+**POC : 23 tâches, 25 à 40 heures humaines avec agents** (40 à 65 h sans agent), soit 3 à 5 semaines à 10 h par semaine. Démonstration : deux instances, une décision, une trace réelle, un lien source et un arrêt propre. Le POC montre un journal, une liste arborescente du graphe déclaré et le chemin observé d'une invocation : il ne valide pas l'expérience visuelle complète. La carte navigable arrive au MVP ; la timeline, les flux de données et l'export pour une IA arrivent en V1.
 
 **MVP : 68 à 114 heures humaines cumulées avec agents**, ou 64 à 108 si GDScript AST Flow sert de backend statique. L'économie porte sur l'implémentation du backend, pas sur son évaluation.
 
 **V1 : 143 à 234 heures humaines cumulées avec agents.** Ces chiffres sont des objectifs de travail, relecture et corrections humaines comprises. Ils seront recalibrés après la première chaîne complète (T17).
 
-**Inconnues.** SPIKE-01a, la partie jeu du canal débogueur, est faite : la collecte démarre, s'arrête et redémarre sans perte, sur 4.7.2 et 4.8-dev7 (`docs/spikes/SPIKE-01.md`). Restent avant le code du POC : SPIKE-01b, la partie éditeur, et SPIKE-02 (façade et isolation de compilation). SPIKE-05 (coût de capture, chemin désactivé compris) dans la tâche T13. SPIKE-03 (rendu) et SPIKE-04 (reprise d'un parseur) au début du MVP. SPIKE-06 (fiabilité des modèles) mesuré pendant l'étape 4.
+**Inconnues.** SPIKE-01a, la partie jeu du canal débogueur, est faite : la collecte démarre, s'arrête et redémarre sans perte, sur 4.7.2 et 4.8-dev7 (`docs/spikes/SPIKE-01.md`). Restent avant le code du POC : SPIKE-01b, la partie éditeur, et SPIKE-02 (façade et isolation de compilation). SPIKE-05 (coût de capture, chemin désactivé compris) dans la tâche T13c. SPIKE-03 (rendu) et SPIKE-04 (reprise d'un parseur) au début du MVP. SPIKE-06 (fiabilité des modèles) mesuré pendant l'étape 4.
 
-**Critère d'arrêt.** Si le POC ne fait pas gagner de temps sur deux ou trois bugs d'un jeu open source, coût d'installation et d'instrumentation compris, réorienter avant l'acquisition statique.
+**Critère d'arrêt.** Si le POC ne montre aucun signal d'utilité sur trois bugs d'un jeu open source (mesure exploratoire, coûts d'installation et d'instrumentation compris), réorienter avant l'acquisition statique.
 
 ## 2. Vision, scénarios et glossaire
 
@@ -367,7 +375,7 @@ Lecture : dans l'invocation v-940, la décision « à portée » est fausse ; ch
 | MVP | Capacités négociées, connexion tardive, reconnexion, marqueurs de lacune explicites, frames et ticks physiques, doublons, références tardives, export |
 | V1 et plus | Corrélation à travers `await`, collecte multi-thread et ordre entre producteurs, build exporté sans debugger |
 
-**Coût du chemin désactivé.** Un appel inactif coûte plus qu'un test booléen : ses arguments sont évalués avant l'appel. Les règles d'écriture sont donc : clés en StringName littéraux, résultats primitifs, aucune construction de chaîne au point d'appel, et `if FlowTrace.enabled:` devant toute charge coûteuse. Le coût côté appelant est mesuré, collecte inactive puis active (SPIKE-05, dans T13).
+**Coût du chemin désactivé.** Un appel inactif coûte plus qu'un test booléen : ses arguments sont évalués avant l'appel. Les règles d'écriture sont donc : clés en StringName littéraux, résultats primitifs, aucune construction de chaîne au point d'appel, et `if FlowTrace.enabled:` devant toute charge coûteuse. Le coût côté appelant est mesuré, collecte inactive puis active (SPIKE-05, dans T13c).
 
 **Temporalité.** Horloge monotone en microsecondes au POC ; frames et ticks physiques au MVP. Cycle de vie des blocs : non démarré, actif, suspendu, terminé, échoué, abandonné, incomplet. La relecture reconstruit les vues depuis le journal ; le rejeu déterministe reste hors périmètre.
 
@@ -395,11 +403,12 @@ Le POC n'a pas besoin de graphe dessiné : un journal sélectionnable et une lis
 
 | Mesure | Objectif initial, à valider | Mesuré par |
 | --- | --- | --- |
-| Surcoût de capture active | 5 % du temps de frame au plus, à 1 000 événements par seconde | T13 (SPIKE-05) |
-| Chemin désactivé, côté appelant compris | Non mesurable dans le temps de frame à 1 000 appels par seconde | T13 |
-| Mémoire du buffer runtime | 8 Mo par producteur au plus | T13 |
-| Débit soutenu sans perte | 10 000 événements par seconde au moins ; SPIKE-01a : 24 000 sans perte, sans rendu | T13, puis SPIKE-01b avec rendu |
-| Latence runtime vers affichage | 200 ms au plus au 95e centile ; SPIKE-01a : aller-retour médian d'environ 50 ms, sans rendu | T16, par aller-retour mesuré avec la seule horloge de l'éditeur |
+| Surcoût de capture active | 5 % du temps de frame au plus, à 1 000 événements par seconde | T13c (SPIKE-05) |
+| Chemin désactivé, côté appelant compris | Non mesurable dans le temps de frame à 1 000 appels par seconde | T13c |
+| Mémoire du buffer runtime | 8 Mo par producteur au plus | T13a |
+| Débit soutenu sans perte | 10 000 événements par seconde au moins ; SPIKE-01a : 24 000 sans perte, sans rendu | T13b, puis SPIKE-01b avec rendu |
+| Aller-retour du transport | Informatif ; SPIKE-01a : médiane d'environ 50 ms, sans rendu | T16, ping mesuré avec la seule horloge de l'éditeur |
+| Délai réception → affichage | Latence estimée (moitié de l'aller-retour plus ce délai) : 200 ms au plus au 95e centile | T16, horodatages de réception et d'affichage, horloge de l'éditeur |
 | Rafraîchissement de l'interface | 30 Hz au plus | T16 |
 | Indexation statique | 15 s au plus pour 300 scripts | MVP |
 | Éléments visibles | 300 sans dégradation perceptible | SPIKE-03 |
@@ -429,22 +438,22 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 
 | Phase | Livre | Tâches | Heures humaines avec agents | Sans agent | Porte |
 | --- | --- | --- | --- | --- | --- |
-| P0 à P3 : POC | CAP-01 à CAP-07 | 21 | 25–40 | 40–65 | Démonstration et mesure de valeur |
+| P0 à P3 : POC | CAP-01 à CAP-07 | 23 | 25–40 | 40–65 | Démonstration et mesure de valeur |
 | P4a Évaluations : SPIKE-03 rendu, SPIKE-04 backend statique | Décisions | 3–5 | 6–12 | 10–18 | Rapports KEEP, REWRITE ou DISCARD |
 | P4b Backend statique et inventaire | CAP-08, CAP-09 | 9–13 | 8–14, ou 4–8 avec AST Flow | 20–30 | Inventaire d'un jeu réel |
 | P5 Navigation et Project Tree | CAP-10 | 8–12 | 8–13 | 20–30 | Test de cartographie réussi |
 | P6 Historique, persistance, protocole MVP | CAP-11, CAP-07 complet | 10–16 | 10–16 | 30–45 | Session rechargée, reconnexion |
 | P7 Logique et Game Flow annoté | CAP-12 annoté | 5–9 | 5–9 | 15–25 | Bloc incomplet visible |
 | P8 Compatibilité MVP et stabilisation | CAP-13, bascule vers 4.8 stable | 6–10 | 6–10 | 20–30 | MVP installé proprement |
-| **MVP cumulé** | | **62–86** | **68–114**, ou 64–108 avec AST Flow | **155–243** | Revue de continuation |
+| **MVP cumulé** | | **64–88** | **68–114**, ou 64–108 avec AST Flow | **155–243** | Revue de continuation |
 | P9 à P16 : V1 | CAP-12 à CAP-18, deux versions stables | 65–110 | 75–120 | 190–285 | Démonstrations CAP-12 à 18 |
-| **V1 cumulée** | | **127–196** | **143–234** | **345–528** | |
+| **V1 cumulée** | | **129–198** | **143–234** | **345–528** | |
 
 À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. Ce sont des objectifs de travail, à recalibrer après T17.
 
 **Mesure de valeur, élargie**
 
-- **Diagnostic, au POC (T19)** : deux ou trois bugs réels ou provoqués, chronométrés avec et sans l'outil. Le temps d'installation, de déclaration du graphe et d'instrumentation est compté.
+- **Diagnostic, au POC (T19), exploratoire** : trois bugs de difficulté comparable, chacun sur une variante isolée du banc d'essai, diagnostiqués avec et sans l'outil ; ordre contrebalancé si deux personnes participent. Coûts d'installation, de déclaration et d'instrumentation comptés. Trois bugs donnent un signal d'utilité et révèlent les problèmes d'usage ; ils ne chiffrent pas un gain fiable. La conclusion est qualitative, les durées indicatives.
 - **Cartographie, à la porte du MVP** : retrouver tous les appelants d'une fonction, et expliquer un système inconnu du banc d'essai, chronométrés avec et sans l'outil.
 
 **Portes de passage**
@@ -455,7 +464,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 
 **Critères d'arrêt ou de réorientation**
 
-- POC sans gain mesuré, coût d'installation compris : réorienter.
+- POC sans aucun signal d'utilité, coûts d'installation compris : réorienter.
 - Dépassement de 50 % d'un budget de phase : revue de continuation immédiate.
 - Un modèle sous 40 % de réussite au premier essai après dix tâches : réacheminer ses tâches.
 - Rupture de version qui impose du code hors de la façade : revue d'architecture.
@@ -478,7 +487,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 
 ## 10. Dossier de passage vers la méthodologie
 
-**Identité.** PD-0.3, proposé, 8 octobre 2026, fondé sur `prompts/conception.txt` v2.2 et sur SPIKE-01a. Méthode associée : MC-0.3 ; orchestration : OR-0.3.
+**Identité.** PD-0.4, proposé, 8 octobre 2026, fondé sur `prompts/conception.txt` v2.2 et sur SPIKE-01a. Méthode associée : MC-0.4 ; orchestration : OR-0.4 ; guide de construction : GC-0.3.
 
 **Versions.** 4.7.2 bloquante (D-01) ; dernière préversion 4.8 contrôlée sans bloquer.
 
@@ -519,7 +528,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | SPIKE-02 | Façade, détection de capacités, UID et isolation de compilation tiennent-ils sur 4.7.2 et sur la préversion ? | POC |
 | SPIKE-03 | Quel rendu tient 300 éléments visibles ? | MVP |
 | SPIKE-04 | GDScript AST Flow ou extraction maison ? | MVP |
-| SPIKE-05 | Coût de capture active et du chemin désactivé, côté appelant compris | POC, dans T13 |
+| SPIKE-05 | Coût de capture active et du chemin désactivé, côté appelant compris | POC, dans T13c |
 | SPIKE-06 | Taux de réussite de chaque modèle sur des tâches sous contrat | POC, étape 4 |
 
 **Décisions à confirmer**
@@ -539,6 +548,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 
 - Toutes les capacités du prompt sont couvertes ou explicitement reportées.
 - Les exemples de données respectent le modèle annoncé : champs requis présents, cibles définies ou non résolues.
+- Les formats se valident en deux niveaux : schéma JSON, puis règles sémantiques à codes d'erreur (références, unicité d'une clé, ordre des séquences, taille en octets).
 - Les contrats du POC ont chacun une tâche de validation avant leur premier usage.
 - Le chemin observé n'est jamais présenté comme causal.
 - Vérifiés côté jeu par SPIKE-01a : aller-retour, classe statique déclenchée par frame, bail, arrêt sans lot tardif. Restent non vérifiés : la partie éditeur (SPIKE-01b), l'isolation de compilation et les UID (SPIKE-02), le coût de capture (SPIKE-05).

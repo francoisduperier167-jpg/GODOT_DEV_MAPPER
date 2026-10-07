@@ -81,7 +81,7 @@ Sources : docs/plan-directeur.md, docs/methodologie.md, docs/DECISIONS.md, docs/
 - docs/CONTRACTS.md : une section par contrat C-01 à C-07, avec sept rubriques : objet, format ou API, exemples valides, exemples invalides, comportement en erreur, version, tests de contrat. Contenu : « à rédiger en T07 » ou « à rédiger en T08 ».
 - docs/COMPATIBILITY.md : fenêtre de support issue de D-01 et D-07.
 - docs/TEST_PLAN.md : types de tests, commandes de contrôle vérifiées (reprises du guide), principe des contre-épreuves.
-- PROJECT_STATE.md : tableau des tâches T00 à T20 avec statut « À faire » ; budget de chaque étape ; mesures à tenir (heures humaines, temps agent, capacités acceptées, réussite par modèle).
+- PROJECT_STATE.md : tableau des tâches T00 à T20, T13 découpée en T13a, T13b et T13c, au statut « À faire », avec en tête la mention « mis à jour seulement à l'étape de fusion » ; budget de chaque étape ; mesures à tenir (heures humaines, temps agent, capacités acceptées, réussite par modèle).
 - REGLES_AGENTS.md : 150 lignes au plus. Il contient les règles non négociables et le format de rapport du prompt universel de réalisation, les invariants INV-01 à INV-09 en une ligne chacun, et les commandes de contrôle.
 - tools/sync_rules.sh : copie REGLES_AGENTS.md vers CLAUDE.md et GEMINI.md. Avec --check, il compare sans rien écrire et renvoie 1 si une copie diffère.
 

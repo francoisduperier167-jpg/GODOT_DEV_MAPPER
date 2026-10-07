@@ -16,7 +16,7 @@ En parallèle, prouver que l'outil ne casse rien : jeu sans débogueur, redémar
 - **L'interface ne calcule rien.** Toute la logique d'affichage vit dans `projections/` et se teste sans interface. Les scènes de `ui/` ne font qu'afficher.
 - **Affichage borné.** Rafraîchissement à 30 Hz au plus ; journal virtualisé, qui ne crée de lignes que pour la partie visible.
 - **Aucune affirmation causale.** Le chemin observé affiche « cohérent », « incohérent » ou « indéterminé — trace incomplète », jamais « cause ».
-- **Latence mesurée honnêtement.** Par un aller-retour mesuré avec la seule horloge de l'éditeur, jamais en soustrayant des horodatages du jeu.
+- **Latence mesurée en deux parties.** D'abord l'aller-retour du transport, par un ping mesuré avec la seule horloge de l'éditeur. Ensuite le délai entre la réception d'un lot et son affichage, lui aussi mesuré avec l'horloge de l'éditeur : il couvre l'Event Store, la projection et le rafraîchissement du panneau. Jamais en soustrayant des horodatages du jeu.
 - **Accessibilité.** Les états ne reposent jamais sur la seule couleur.
 
 ## Méthodologie
@@ -33,8 +33,8 @@ En parallèle, prouver que l'outil ne casse rien : jeu sans débogueur, redémar
 | PC6.3 | Tenue en charge | Test de projection sur 10 000 événements | Sous le seuil fixé dans le test (objectif : 50 ms) |
 | PC6.4 | Trois états du chemin observé | Fixtures « cohérent », « incohérent », « trou », « sortie manquante » | État attendu pour chacune |
 | PC6.5 | Lien périmé | Fixture de source modifiée après la trace | Avertissement présent |
-| PC6.6 | Robustesse | `tests/integration/run_lifecycle.sh` | Tous les scénarios verts |
-| PC6.7 | Démonstration visuelle | Sur ta machine : captures d'écran et latence mesurée | Deux instances distinguées ; latence au 95e centile sous 200 ms |
+| PC6.6 | Robustesse | `tests/integration/run_lifecycle.sh`, rejoué par `checks.d/65-lifecycle.sh` | Tous les scénarios verts |
+| PC6.7 | Démonstration visuelle | Sur ta machine : captures d'écran ; aller-retour du transport ; délai réception → affichage | Deux instances distinguées ; latence estimée (moitié de l'aller-retour plus délai d'affichage) sous 200 ms au 95e centile |
 
 ## Cheminement d'amélioration
 
@@ -46,7 +46,7 @@ En parallèle, prouver que l'outil ne casse rien : jeu sans débogueur, redémar
 
 Sonnet pour l'interface, Qwen pour la projection · A1 · file A · dépend de T10 et T14 · vérification : Gemini · pack de contexte EDITOR
 
-Fichiers autorisés : `addons/godot_dev_mapper/projections/journal_projection.gd`, `addons/godot_dev_mapper/ui/poc_panel.tscn`, `addons/godot_dev_mapper/ui/poc_panel.gd`, `addons/godot_dev_mapper/editor/` (ajout du panneau et mesure d'aller-retour), `addons/godot_dev_mapper/plugin.gd` (ajout du panneau uniquement), `tests/unit/test_journal_projection.gd`, `tools/ci/run_all_checks.sh` (marqueur), `PROJECT_STATE.md`.
+Fichiers autorisés : `addons/godot_dev_mapper/projections/journal_projection.gd`, `addons/godot_dev_mapper/ui/poc_panel.tscn`, `addons/godot_dev_mapper/ui/poc_panel.gd`, `addons/godot_dev_mapper/editor/` (ajout du panneau, aller-retour, horodatage de réception), `addons/godot_dev_mapper/plugin.gd` (ajout du panneau uniquement), `tests/unit/test_journal_projection.gd`, `tools/ci/checks.d/60-panel.sh`.
 
 ```text
 Tu réalises la tâche T16 du projet GODOT_DEV_MAPPER. Applique les règles et le format de rapport du prompt universel de réalisation.
@@ -61,14 +61,19 @@ OBJECTIF
    - un sélecteur d'instance, un journal virtualisé, l'arbre du graphe déclaré ;
    - rafraîchissement à 30 Hz au plus ;
    - GDM_PANEL_READY affiché si GDM_TRACE_LIFECYCLE vaut 1.
-3. Mesure de latence par aller-retour : l'éditeur envoie un ping horodaté par sa propre horloge, le jeu le renvoie, l'éditeur calcule. Le résultat s'affiche dans une zone de diagnostic du panneau.
-4. tests/unit/test_journal_projection.gd, avec un test de tenue en charge sur 10 000 événements (seuil : 50 ms).
+3. Mesures de latence, affichées dans une zone de diagnostic du panneau :
+   - aller-retour du transport : l'éditeur envoie un ping horodaté par sa propre horloge, le jeu le renvoie, l'éditeur calcule ;
+   - délai réception → affichage : la passerelle horodate chaque lot à sa réception ; le panneau calcule l'écart quand il affiche ses événements ; 95e centile sur la session ;
+   - latence estimée : moitié de l'aller-retour plus ce délai.
+4. tests/unit/test_journal_projection.gd, avec un test de tenue en charge sur 10 000 événements (seuil : 50 ms) et un test du délai réception → affichage avec une horloge factice.
+5. tools/ci/checks.d/60-panel.sh : rejoue le contrôle T16-b et affiche « CHECK panel OK » ou « CHECK panel KO ».
 
 CONTRÔLES
 T16-a  runner → 0
 T16-b  GDM_TRACE_LIFECYCLE=1 godot --headless --editor --path . --quit-after 300 > /tmp/ed.out 2>&1 ; grep -c GDM_PANEL_READY /tmp/ed.out ; grep -cE "^(ERROR|SCRIPT ERROR)" /tmp/ed.out   → 1 et 0
 T16-c  python3 tools/check_deps.py ; echo $?   → 0 ; ui/ ne lit jamais le store directement
 T16-d  GODOT=<binaire> tools/ci/run_all_checks.sh ; echo $?   → 0
+T16-e  Test du délai réception → affichage, avec une horloge factice → vert ; la zone de diagnostic affiche les deux mesures
 CONTRE-ÉPREUVE (CE) pour le vérificateur : ignorer le filtre d'instance dans la projection → test_journal_projection échoue.
 SUR MA MACHINE, plus tard (PC6.7) : la procédure pour les captures d'écran et la mesure de latence, écrite dans ton rapport.
 ```
@@ -77,7 +82,7 @@ SUR MA MACHINE, plus tard (PC6.7) : la procédure pour les captures d'écran et 
 
 Qwen pour la projection, Sonnet pour l'ouverture du code · A1 · file A · dépend de T15 et T16 · vérification : Gemini · packs de contexte CORE et EDITOR
 
-Fichiers autorisés : `addons/godot_dev_mapper/projections/observed_path.gd`, `addons/godot_dev_mapper/editor/source_opener.gd`, `addons/godot_dev_mapper/ui/poc_panel.gd` (affichage), `tests/unit/test_observed_path.gd`, `tests/unit/fixtures/observed_path/`, `PROJECT_STATE.md`.
+Fichiers autorisés : `addons/godot_dev_mapper/projections/observed_path.gd`, `addons/godot_dev_mapper/editor/source_opener.gd`, `addons/godot_dev_mapper/ui/poc_panel.gd` (affichage), `tests/unit/test_observed_path.gd`, `tests/unit/fixtures/observed_path/`.
 
 ```text
 Tu réalises la tâche T17 du projet GODOT_DEV_MAPPER. Applique les règles et le format de rapport du prompt universel de réalisation.
@@ -105,9 +110,9 @@ SUR MA MACHINE, plus tard : un clic ouvre le bon fichier à la bonne ligne.
 
 ## T18 — Robustesse et cycle de vie
 
-Qwen · A1 · file B · dépend de T13 et T14 · vérification : Opus · pack de contexte RUNTIME
+Qwen · A1 · file B · dépend de T13b et T14 · vérification : Opus · pack de contexte RUNTIME
 
-Fichiers autorisés : `tests/integration/run_lifecycle.sh`, `tools/harness/` (nouveaux scénarios), `tests/unit/test_session_controller.gd` (nouveaux cas), `PROJECT_STATE.md`. Toute correction du code du runtime ou du contrôleur passe par le statut QUESTION.
+Fichiers autorisés : `tests/integration/run_lifecycle.sh`, `tools/harness/` (nouveaux scénarios), `tests/unit/test_session_controller.gd` (nouveaux cas), `tools/ci/checks.d/65-lifecycle.sh`. Pour corriger un défaut sans changer de contrat : `addons/godot_dev_mapper_runtime/flow_trace.gd` et `addons/godot_dev_mapper/editor/session_controller.gd`. Les tests de contrat restent intouchables ; une correction qui exigerait de changer un contrat passe par QUESTION.
 
 ```text
 Tu réalises la tâche T18 du projet GODOT_DEV_MAPPER. Applique les règles et le format de rapport du prompt universel de réalisation.
@@ -120,7 +125,8 @@ OBJECTIF : prouver par des scénarios automatiques que l'outil ne casse pas le j
 4. jeu tué pendant la collecte (kill -9) : le contrôleur de session conclut « fin inconnue » ;
 5. désactivation du plugin pendant une collecte, simulée sur le contrôleur : arrêt envoyé, attente d'une seconde au plus, puis retrait ;
 6. jeu redémarré après un arrêt : nouvelle session, aucun mélange avec l'ancienne.
-Si un scénario échoue à cause du code du runtime ou du contrôleur, ne corrige pas : statut QUESTION, avec le diagnostic.
+Si un scénario échoue à cause du runtime ou du contrôleur, corrige le défaut s'il se corrige sans changer de contrat, et décris-le dans le rapport. S'il faut changer un contrat : statut QUESTION, avec le diagnostic.
+Ajoute tools/ci/checks.d/65-lifecycle.sh, qui exécute run_lifecycle.sh et affiche « CHECK lifecycle OK » ou « CHECK lifecycle KO ».
 
 CONTRÔLES
 T18-a  tests/integration/run_lifecycle.sh ; echo $?   → 0, un OK par scénario

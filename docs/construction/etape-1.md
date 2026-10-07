@@ -19,6 +19,7 @@ En parallèle, le jeu de test est choisi et s'ouvre sur 4.7.2.
 - Le dossier `addons/godot_dev_mapper_runtime/` ne référence jamais `addons/godot_dev_mapper/` (INV-06).
 - Les versions de Godot ne sont écrites qu'à un endroit : `addons/godot_dev_mapper/compat/versions.json`.
 - Chaque contrôle ajouté a sa contre-épreuve.
+- Chaque tâche travaille dans sa propre copie de travail, et ne touche à aucun fichier partagé (guide, section « Copies de travail et fichiers partagés »).
 - Aucun fichier du jeu de test n'entre dans le dépôt : on le référence par dépôt et révision.
 
 ## Méthodologie
@@ -41,6 +42,7 @@ En parallèle, le jeu de test est choisi et s'ouvre sur 4.7.2.
 | PC1.7 | Tout en une commande | `GODOT=<binaire> tools/ci/run_all_checks.sh` | Code 0 et `ALL_CHECKS OK` |
 | PC1.8 | CI distante | Dernier passage sur GitHub après envoi | Job stable vert ; job préversion exécuté |
 | PC1.9 | Banc d'essai | `python3 tools/check_benches.py`, puis import de la copie de travail sur 4.7.2 | Code 0 ; aucune ligne d'erreur nouvelle |
+| PC1.10 | (CE) Contrôles ajoutés | Déposer dans `tools/ci/checks.d/` un script qui sort en 1, relancer PC1.7 | Code 1, puis 0 une fois le script retiré |
 
 PC1.8 attend l'envoi sur GitHub. Tant que ta machine est indisponible, PC1.7 en est l'équivalent local.
 
@@ -56,7 +58,7 @@ PC1.8 attend l'envoi sur GitHub. Tant que ta machine est indisponible, PC1.7 en 
 Qwen · A1 · file A · dépend de T00 et de l'étape 0 · vérification : Gemini · contexte : plan §4 (modules, arborescence)
 
 Fichiers autorisés :
-- `project.godot`, `.gitignore`, `PROJECT_STATE.md` ;
+- `project.godot`, `.gitignore` ;
 - `addons/godot_dev_mapper/plugin.cfg` et `plugin.gd` ;
 - un `README.md` par module : core, protocol, store, projections, ui, editor, persistence, acquisition, compat ;
 - `addons/godot_dev_mapper_runtime/README.md`.
@@ -95,10 +97,9 @@ Sabotage pour le vérificateur : `print(undefined_var)` dans `_enter_tree` ; T01
 Qwen · A1 · file A · dépend de T01 · vérification : Gemini · contexte : plan §4 (table des modules, API sensibles), méthodologie §3
 
 Fichiers autorisés :
-- `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/pending.json`, `tests/README.md` ;
+- `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/pending/README.md`, `tests/README.md` ;
 - `tests/unit/test_smoke.gd`, `tests/unit/test_selftest.gd` ;
-- `tools/check_deps.py`, `tools/deps_rules.json`, `tools/check_deps_fixtures/` ;
-- `PROJECT_STATE.md`.
+- `tools/check_deps.py`, `tools/deps_rules.json`, `tools/check_deps_fixtures/`.
 
 ```text
 Tu réalises la tâche T02 du projet GODOT_DEV_MAPPER. Applique les règles et le format de rapport du prompt universel de réalisation.
@@ -108,10 +109,10 @@ Un runner de tests sans interface dont le code de sortie est fiable, et un contr
 
 RUNNER
 - tests/gdm_test.gd : classe de base (extends RefCounted) avec assert_true(cond, msg), assert_eq(attendu, obtenu, msg) et fail(msg). Elle compte les assertions et les échecs de chaque test.
-- tests/run_all.gd : extends SceneTree. Il trouve récursivement les fichiers res://tests/**/test_*.gd et ignore ceux listés dans tests/pending.json, un objet {chemin: tâche} qui les compte comme « pending ». Il exécute chaque méthode dont le nom commence par test_. Un test sans aucune assertion compte comme échoué. Il affiche PASS ou FAIL suivi de chemin::méthode, puis la ligne finale « GDM_TESTS passed=N failed=M pending=K ». Il quitte avec le code 0 si M = 0, et 1 sinon.
+- tests/run_all.gd : extends SceneTree. Il trouve récursivement les fichiers res://tests/**/test_*.gd et ignore ceux qui ont un marqueur dans tests/pending/ (un fichier <nom du test>.pending qui contient l'identifiant de la tâche) et les compte comme « pending ». Il exécute chaque méthode dont le nom commence par test_. Un test sans aucune assertion compte comme échoué. Il affiche PASS ou FAIL suivi de chemin::méthode, puis la ligne finale « GDM_TESTS passed=N failed=M pending=K ». Il quitte avec le code 0 si M = 0, et 1 sinon.
 - tests/unit/test_smoke.gd : un test trivial, avec une assertion.
 - tests/unit/test_selftest.gd : si GDM_SELFTEST_FAIL vaut « 1 », un test échoue ; si GDM_SELFTEST_NOASSERT vaut « 1 », un test ne fait aucune assertion ; sinon, les deux passent.
-- tests/pending.json : {}.
+- tests/pending/README.md : la convention des marqueurs ; aucun marqueur pour l'instant.
 Une erreur d'exécution GDScript ne remonte pas toujours au runner. T03 fera donc échouer la vérification à toute ligne « SCRIPT ERROR » dans la sortie du runner. Dis-le dans tests/README.md.
 
 CONTRÔLE DE DÉPENDANCES
@@ -131,7 +132,7 @@ T02-c  (CE) GDM_SELFTEST_NOASSERT=1 godot --headless --path . -s res://tests/run
 T02-d  python3 tools/check_deps.py ; echo $?                                 → 0
 T02-e  (CE) python3 tools/check_deps.py --root tools/check_deps_fixtures ; echo $?   → 1, trois lignes de violation
 T02-f  godot --headless --path . --check-only -s res://tests/run_all.gd ; echo $?   → 0
-T02-g  (CE) ajoute temporairement un fichier test_pending_demo.gd en échec et inscris-le dans tests/pending.json : T02-a reste à 0 avec pending=1 ; retire-le de pending.json : code 1 ; puis supprime-le.
+T02-g  (CE) ajoute temporairement un test test_pending_demo.gd en échec et son marqueur tests/pending/test_pending_demo.gd.pending : T02-a reste à 0 avec pending=1 ; supprime le marqueur : code 1 ; puis supprime les deux fichiers.
 ```
 
 ## T03 — Contrôle unique, lint et CI
@@ -141,8 +142,8 @@ Qwen · A1 · file A · dépend de T01 et T02 · vérification : Opus · context
 Fichiers autorisés :
 - `addons/godot_dev_mapper/compat/versions.json` ;
 - `tools/ci/fetch_godot.sh`, `tools/ci/run_all_checks.sh`, `tools/ci/known_engine_errors.txt` ;
-- `.github/workflows/ci.yml`, `requirements-dev.txt`, `gdlintrc` (seulement si nécessaire) ;
-- `PROJECT_STATE.md`.
+- `tools/ci/checks.d/README.md` ;
+- `.github/workflows/ci.yml`, `requirements-dev.txt`, `gdlintrc` (seulement si nécessaire).
 
 ```text
 Tu réalises la tâche T03 du projet GODOT_DEV_MAPPER. Applique les règles et le format de rapport du prompt universel de réalisation.
@@ -160,8 +161,10 @@ Une seule commande rejoue tous les contrôles ; la CI l'exécute sur 4.7.2 de fa
   3. runner (code 0, et aucune ligne SCRIPT ERROR dans sa sortie) ;
   4. check_deps ;
   5. gdlint addons tests ;
-  6. gdformat --check addons tests.
-  Chaque étape affiche « CHECK <nom> OK » ou « CHECK <nom> KO ». À la fin : « ALL_CHECKS OK » et code 0, ou code 1.
+  6. gdformat --check addons tests ;
+  7. chaque script de tools/ci/checks.d/, dans l'ordre de leur nom.
+  Chaque étape affiche « CHECK <nom> OK » ou « CHECK <nom> KO ». À la fin : « ALL_CHECKS OK » et code 0, ou code 1. Après T03, on ajoute un contrôle en déposant un script dans checks.d/, jamais en modifiant run_all_checks.sh.
+- tools/ci/checks.d/README.md : la convention de nommage NN-nom.sh et le format de sortie CHECK.
 - .github/workflows/ci.yml : déclenché par push et pull_request ; deux jobs sur ubuntu-latest. Job « stable » : bloquant. Job « preview » : continue-on-error: true. Étapes : checkout, Python, pip install -r requirements-dev.txt, version lue dans versions.json, fetch_godot.sh, run_all_checks.sh.
 - tools/ci/known_engine_errors.txt : vide, avec un commentaire qui explique son usage.
 
@@ -174,6 +177,7 @@ T03-e  (CE) ajoute print(undefined_var) dans plugin.gd : CHECK plugin KO ; annul
 T03-f  P=$(tools/ci/fetch_godot.sh 4.8-dev7) && GODOT="$P" tools/ci/run_all_checks.sh ; echo $?   → résultat consigné, sans exigence
 T03-g  grep -c "continue-on-error: true" .github/workflows/ci.yml          → 1
 T03-h  grep -rn "4\.7\.2\|4\.8-dev" --include=*.sh --include=*.yml --include=*.gd . | grep -v versions.json   → aucune ligne
+T03-i  (CE) dépose tools/ci/checks.d/99-demo.sh, qui affiche « CHECK demo KO » et sort en 1 : run_all_checks.sh → 1 ; supprime-le
 ```
 
 L'envoi sur GitHub et PC1.8 viendront quand le dépôt sera poussé.
@@ -182,7 +186,7 @@ L'envoi sur GitHub et PC1.8 viendront quand le dépôt sera poussé.
 
 Toi et Gemini · A0, puis A1 pour la migration · file B · vérification : toi · contexte : plan §0 et §9, `docs/DECISIONS.md` (D-02)
 
-Fichiers autorisés : `benches/benches.json`, `docs/benches/<nom>.md`, `tools/check_benches.py`, `PROJECT_STATE.md`. La copie de travail du jeu vit hors du dépôt, par exemple dans `../benches/<nom>`.
+Fichiers autorisés : `benches/benches.json`, `docs/benches/<nom>.md`, `tools/check_benches.py`. La copie de travail du jeu vit hors du dépôt, par exemple dans `../benches/<nom>`.
 
 Prompt de sélection, pour Gemini :
 

@@ -61,7 +61,6 @@ Avec l'éditeur réel et le rendu actif :
 - capture côté plugin et envoi de commandes par la session de débogage ;
 - lancements répétés depuis l'éditeur ;
 - désactivation du plugin pendant une collecte ;
-- instances enregistrées avant le démarrage ;
 - débit et cadence.
 
-Les critères détaillés sont dans la fiche T05 de `docs/orchestration.md`.
+Les critères détaillés sont dans la fiche T05 de `docs/orchestration.md`. Les instances enregistrées avant le démarrage relèvent du runtime : elles sont vérifiées en T13a.

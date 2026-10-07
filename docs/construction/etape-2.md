@@ -1,6 +1,6 @@
 # Étape 2 — Spikes
 
-Tâches : file A : T05 · file B : T06 · Budget : 4 à 6 h humaines · Prérequis : T01 accepté
+Tâches : file A : T05 · file B : T06 · Budget : 4 à 6 h humaines · Prérequis : T01 accepté pour T05, T03 accepté pour T06
 
 ## Objectif
 
@@ -44,7 +44,7 @@ Lever les deux dernières inconnues techniques avant d'écrire les contrats :
 
 Opus et toi · A0 · file A · sur ta machine · vérification : Gemini relit le rapport ; tu rejoues un critère · contexte : `docs/spikes/SPIKE-01.md`, `spikes/spike01_debugger/`, fiche T05 de `docs/orchestration.md`
 
-Fichiers autorisés : `spikes/spike01_debugger/editor/`, `docs/spikes/SPIKE-01.md`, `docs/DECISIONS.md`, `PROJECT_STATE.md`.
+Fichiers autorisés : `spikes/spike01_debugger/editor/`, `docs/spikes/SPIKE-01.md`. La décision KEEP, REWRITE ou DISCARD est reportée dans `docs/DECISIONS.md` à la fusion.
 
 ```text
 Tu conduis SPIKE-01b du projet GODOT_DEV_MAPPER : la partie éditeur du canal du débogueur. La partie jeu est établie : lis docs/spikes/SPIKE-01.md et le code de spikes/spike01_debugger/.
@@ -59,14 +59,14 @@ CONSTRUIS un plugin jetable qui :
 - envoie par la session start, stop et un ping de bail toutes les 250 ms ;
 - affiche ses compteurs dans la sortie de l'éditeur.
 
-MESURE, avec le rendu actif, les sept critères de la fiche T05 :
+MESURE, avec le rendu actif, les six critères de la fiche T05 :
 1. « prêt » reçu par le plugin ;
 2. « started » reçu avant tout lot ;
 3. arrêt avant la désactivation du plugin : « stopped » reçu en une seconde au plus, et aucun lot ensuite ;
 4. coupure (jeu tué, ou plugin retiré sans arrêt) : le bail arrête la collecte côté jeu ; l'éditeur conclut « fin inconnue » ;
-5. instances enregistrées avant le démarrage présentes dans l'état initial ;
-6. cinq lancements successifs depuis l'éditeur, sans erreur ;
-7. débit et cadence à 1 200 et 10 000 événements par seconde.
+5. cinq lancements successifs depuis l'éditeur, sans erreur ;
+6. débit et cadence à 1 200 et 10 000 événements par seconde.
+Le critère des instances enregistrées avant le démarrage relève du runtime : il est vérifié en T13a, pas ici.
 Pour chaque critère : manipulation exacte, observation, chiffre, atteint ou non.
 
 LES MANIPULATIONS À FAIRE À LA MAIN (lancer, arrêter, désactiver le plugin), donne-les-moi une par une et attends mon retour avant de continuer.
@@ -81,15 +81,15 @@ LES MANIPULATIONS À FAIRE À LA MAIN (lancer, arrêter, désactiver le plugin),
 
 | ID | Contrôle | Attendu |
 | --- | --- | --- |
-| T05-a | Rapport : sept critères, chacun avec manipulation, observation et chiffre | Complet |
+| T05-a | Rapport : six critères, chacun avec manipulation, observation et chiffre | Complet |
 | T05-b | Tu rejoues le critère 3 seul, en suivant le rapport | Même observation |
 | T05-c | (CE) Tu désactives le plugin sans envoyer l'arrêt | Le jeu arrête seul sa collecte en 2 s au plus ; le rapport le montre |
 
 ## T06 — SPIKE-02 : frontière de compatibilité
 
-Opus · A0 · file B · sans interface, possible à distance · vérification : Gemini relance `run.sh` · contexte : plan §4 et §5, `docs/ARCHITECTURE.md` (API sensibles)
+Opus · A0 · file B · dépend de T03 · sans interface, possible à distance · vérification : Gemini relance `run.sh` · contexte : plan §4 et §5, `docs/ARCHITECTURE.md` (API sensibles)
 
-Fichiers autorisés : `spikes/spike02_compat/`, `docs/spikes/SPIKE-02.md`, `docs/DECISIONS.md`, `PROJECT_STATE.md`.
+Fichiers autorisés : `spikes/spike02_compat/`, `docs/spikes/SPIKE-02.md`. Les décisions sont reportées dans `docs/DECISIONS.md` à la fusion.
 
 ```text
 Tu conduis SPIKE-02 du projet GODOT_DEV_MAPPER. Tu travailles sans interface, sur Godot 4.7.2 et sur la préversion inscrite dans addons/godot_dev_mapper/compat/versions.json ; tools/ci/fetch_godot.sh fournit les deux binaires. Code jetable dans spikes/spike02_compat/ uniquement.
@@ -125,4 +125,4 @@ Ajoute spikes/spike02_compat/run.sh, qui rejoue tout pour une version passée en
 | T06-a | `spikes/spike02_compat/run.sh <binaire 4.7.2>`, puis la même commande avec la préversion | Sorties identiques à celles du rapport |
 | T06-b | Rapport : quatre sections, avec sorties sur les deux versions | Complet |
 | T06-c | (CE) Le vérificateur retire la détection devant le chargement du script propre à la préversion | Erreur sur 4.7.2, comme le rapport le prédit |
-| T06-d | Décisions consignées dans `docs/DECISIONS.md` | Présentes et datées |
+| T06-d | Décisions proposées dans le rapport, puis reportées à la fusion dans `docs/DECISIONS.md` | Présentes et datées |

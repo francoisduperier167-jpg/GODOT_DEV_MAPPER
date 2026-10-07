@@ -67,7 +67,7 @@ Deux files à 10 h par semaine : l'acquisition et la navigation d'un côté, le 
   - Négociation de capacités dans le protocole.
   - Frames et ticks physiques horodatés.
   - Toute rupture d'un format persisté exige ta validation.
-- **Méthodologie.** Opus étend C-04 et C-06 avec un changement de version. Qwen implémente sous contrat. Les sessions enregistrées du POC deviennent des fixtures de compatibilité ascendante.
+- **Méthodologie.** Une tâche de révision de contrat, confiée à Opus, étend C-04 et C-06 avec un changement de version : elle liste `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés, et passe par ta validation. Qwen implémente ensuite sous contrat. Les sessions enregistrées du POC deviennent des fixtures de compatibilité ascendante.
 - **Points de contrôle.**
   - Une session du POC rechargée par le MVP.
   - Reconnexion testée sur le banc sans éditeur.
@@ -125,7 +125,8 @@ PRODUIS docs/construction/mvp-{Px}.md :
 RÈGLES
 - Une tâche tient en 1 à 3 h de travail agent et en 1 h de relecture humaine au plus.
 - Une tâche qui touche un format persisté, le protocole ou une façade est vérifiée par Opus.
-- Les contrats et leurs tests précèdent l'implémentation, comme à l'étape 3.
+- Les contrats et leurs tests précèdent l'implémentation, comme à l'étape 3. Une tâche qui révise un contrat liste explicitement `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés ; Opus la réalise, Gemini la vérifie, tu la valides.
+- Chaque tâche précise les marqueurs de `tests/pending/` qu'elle crée ou supprime, et les scripts de `tools/ci/checks.d/` qu'elle ajoute. Aucune ne modifie `PROJECT_STATE.md` ni `docs/DECISIONS.md`.
 - Le total reste dans le budget de la phase ({budget} h humaines). Sinon, tu signales le dépassement et proposes quoi retirer.
 - Ne réalise aucune tâche.
 ```

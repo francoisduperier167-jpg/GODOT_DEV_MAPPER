@@ -27,7 +27,7 @@ Faire arriver dans l'Event Store de l'éditeur les événements d'un vrai jeu in
 | PC5.1 | Contrôleur de session | Runner | Tests du contrôleur verts sur toutes les sessions enregistrées |
 | PC5.2 | Passerelle chargée | Contrôle PC1.2 étendu au marqueur `GDM_BRIDGE_READY` | Présent, aucune ligne d'erreur |
 | PC5.3 | Banc d'essai sans débogueur | Jeu lancé sans `--remote-debug` | Aucune ligne d'erreur ; FlowTrace inerte |
-| PC5.4 | Banc d'essai avec le banc de test | `tests/integration/run_bench.sh` | Clés attendues, deux instances distinctes, aucune destruction après réinsertion |
+| PC5.4 | Banc d'essai avec le banc de test | `tests/integration/run_bench.sh`, rejoué par `checks.d/55-bench.sh` | Clés attendues, deux instances distinctes, aucune destruction après réinsertion ; à la porte, OK et jamais IGNORÉ |
 | PC5.5 | Clés orphelines | `python3 tools/check_probe_keys.py` | Code 0 |
 | PC5.6 | Essai dans l'éditeur réel | Sur ta machine : une session du banc d'essai jusqu'au store | Compteurs cohérents avec le banc de test |
 
@@ -41,9 +41,9 @@ PC5.6 attend ta machine. Les autres contrôles passent sans elle.
 
 ## T14 — Réception côté éditeur
 
-Sonnet · A1 · file A · dépend de T09, T11, T12, T13 · vérification : Gemini · pack de contexte EDITOR
+Sonnet · A1 · file A · dépend de T09, T11, T12, T13a · vérification : Gemini · pack de contexte EDITOR
 
-Fichiers autorisés : `addons/godot_dev_mapper/editor/debugger_bridge.gd`, `addons/godot_dev_mapper/editor/session_controller.gd`, `addons/godot_dev_mapper/plugin.gd` (enregistrement de la passerelle uniquement), `tests/unit/test_session_controller.gd`, `tools/ci/run_all_checks.sh` (marqueur), `PROJECT_STATE.md`.
+Fichiers autorisés : `addons/godot_dev_mapper/editor/debugger_bridge.gd`, `addons/godot_dev_mapper/editor/session_controller.gd`, `addons/godot_dev_mapper/plugin.gd` (enregistrement de la passerelle uniquement), `tests/unit/test_session_controller.gd`, `tools/ci/checks.d/50-bridge.sh`.
 
 ```text
 Tu réalises la tâche T14 du projet GODOT_DEV_MAPPER. Applique les règles et le format de rapport du prompt universel de réalisation.
@@ -59,6 +59,7 @@ OBJECTIF
 2. editor/debugger_bridge.gd : la passerelle mince. Elle relaie les messages de la façade débogueur vers le contrôleur, et ses ordres vers la session. Elle affiche GDM_BRIDGE_READY si GDM_TRACE_LIFECYCLE vaut 1.
 3. plugin.gd : seulement l'enregistrement et le retrait de la passerelle.
 4. tests/unit/test_session_controller.gd : rejoue chaque session de tests/contract/fixtures/sessions/ et vérifie l'état final attendu.
+5. tools/ci/checks.d/50-bridge.sh : rejoue le contrôle T14-b et affiche « CHECK bridge OK » ou « CHECK bridge KO ».
 
 CONTRÔLES
 T14-a  runner → 0, tests du contrôleur verts
@@ -73,9 +74,9 @@ SUR MA MACHINE, plus tard (PC5.6) : la procédure exacte pour vérifier une vrai
 
 ## T15 — Instrumentation du banc d'essai
 
-Qwen · A1 · file B · dépend de T04 et T13 · vérification : Gemini · contexte : `docs/benches/<nom>.md`, C-01, C-05, C-07
+Qwen · A1 · file B · dépend de T04 et T13b · vérification : Gemini · contexte : `docs/benches/<nom>.md`, C-01, C-05, C-07
 
-Fichiers autorisés dans le dépôt : `benches/<nom>/flow.json`, `tools/check_probe_keys.py`, `tests/integration/run_bench.sh`, `docs/benches/<nom>.md`, `PROJECT_STATE.md`. Dans la copie de travail du jeu : la branche `gdm-instrumentation` uniquement.
+Fichiers autorisés dans le dépôt : `benches/<nom>/flow.json`, `tools/check_probe_keys.py`, `tests/integration/run_bench.sh`, `docs/benches/<nom>.md`, `tools/ci/checks.d/55-bench.sh`. Dans la copie de travail du jeu : la branche `gdm-instrumentation` uniquement.
 
 ```text
 Tu réalises la tâche T15 du projet GODOT_DEV_MAPPER. Applique les règles et le format de rapport du prompt universel de réalisation.
@@ -89,6 +90,7 @@ OBJECTIF
 2. benches/{nom}/flow.json : graphe déclaré de 6 à 12 éléments, conforme au schéma, avec des ancrages vers les fichiers et les lignes du jeu.
 3. tools/check_probe_keys.py : relève les clés de sonde utilisées dans le code instrumenté et vérifie qu'elles existent toutes dans flow.json. Code 1 sinon.
 4. tests/integration/run_bench.sh : lance le banc de test et le jeu instrumenté, puis vérifie les clés reçues, deux instances distinctes, et aucune destruction après réinsertion.
+5. tools/ci/checks.d/55-bench.sh : exécute run_bench.sh si la copie de travail du banc d'essai est présente. Il affiche « CHECK bench OK », « CHECK bench KO », ou « CHECK bench IGNORÉ (copie absente) » : jamais un faux OK.
 
 CONTRÔLES
 T15-a  python3 tools/validate_fixtures.py --file benches/{nom}/flow.json ; echo $?   → 0
