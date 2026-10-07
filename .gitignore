@@ -1,0 +1,5 @@
+# Godot : cache et imports régénérables
+.godot/
+
+# Sorties des spikes
+*.out

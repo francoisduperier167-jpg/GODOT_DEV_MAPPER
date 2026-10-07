@@ -1,3 +1,5 @@
+> **Document historique.** Estimation faite sur les prompts 2.1, en sessions. Les budgets de référence sont ceux du plan directeur en vigueur (`docs/plan-directeur.md`, §9), en heures.
+
 # Estimation — Godot Visual Program & Execution Explorer
 
 7 octobre 2026

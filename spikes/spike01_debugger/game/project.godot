@@ -1,0 +1,7 @@
+config_version=5
+
+[application]
+
+config/name="spike01_game"
+run/main_scene="res://main.tscn"
+run/max_fps=60

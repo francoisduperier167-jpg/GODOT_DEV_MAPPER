@@ -1,6 +1,16 @@
 # Plan directeur — Godot Visual Program & Execution Explorer
 
-Révision PD-0.2 · statut : **proposé** · 7 octobre 2026 · entrée : `prompts/conception.txt` v2.2 · remplace PD-0.1
+Révision PD-0.3 · statut : **proposé** · 8 octobre 2026 · entrée : `prompts/conception.txt` v2.2 · remplace PD-0.2
+
+**Changements depuis PD-0.2**, amendement court après une seconde relecture et SPIKE-01a :
+
+- Protocole de session de FlowTrace : initialisation, état initial, démarrage et arrêt confirmés, bail, désactivation pendant une collecte (§6, §8).
+- Commandes appliquées à la frontière de frame, après un constat de réentrance (§6).
+- Réserve bornée pour les événements de contrôle (§6).
+- Troisième état du chemin observé : « indéterminé — trace incomplète » (§6).
+- Champs requis par type d'événement (§5, §6).
+- Latence mesurée en T16 par aller-retour, sans soustraire des horloges différentes (§8).
+- Budget de P4 séparé entre évaluations et implémentation ; totaux exacts (§1, §9).
 
 **Changements depuis PD-0.1**, après une relecture externe :
 
@@ -47,13 +57,13 @@ Le pilotage suit séparément les heures humaines, le temps agent et les capacit
 
 La compatibilité commence par une frontière légère : tous les appels moteur sensibles passent par une façade, 4.7.2 est figée, la préversion est testée à part. Les adaptateurs par version et la veille automatisée n'arrivent qu'au MVP, ou plus tôt si une rupture réelle apparaît.
 
-**POC : 20 tâches, 25 à 40 heures humaines avec agents** (40 à 65 h sans agent), soit 3 à 5 semaines à 10 h par semaine. Démonstration : deux instances, une décision, une trace réelle, un lien source et un arrêt propre.
+**POC : 21 tâches, 25 à 40 heures humaines avec agents** (40 à 65 h sans agent), soit 3 à 5 semaines à 10 h par semaine. Démonstration : deux instances, une décision, une trace réelle, un lien source et un arrêt propre.
 
-**MVP : 70 à 110 heures humaines cumulées avec agents.** Reprendre GDScript AST Flow comme base statique en retirerait 5 à 10.
+**MVP : 68 à 114 heures humaines cumulées avec agents**, ou 64 à 108 si GDScript AST Flow sert de backend statique. L'économie porte sur l'implémentation du backend, pas sur son évaluation.
 
-**V1 : 145 à 230 heures humaines cumulées avec agents.**
+**V1 : 143 à 234 heures humaines cumulées avec agents.** Ces chiffres sont des objectifs de travail, relecture et corrections humaines comprises. Ils seront recalibrés après la première chaîne complète (T17).
 
-**Inconnues.** SPIKE-01 (canal débogueur) et SPIKE-02 (façade et isolation de compilation) avant le code du POC. SPIKE-05 (coût de capture, chemin désactivé compris) dans la tâche T13. SPIKE-03 (rendu) et SPIKE-04 (reprise d'un parseur) au début du MVP. SPIKE-06 (fiabilité des modèles) mesuré pendant l'étape 4.
+**Inconnues.** SPIKE-01a, la partie jeu du canal débogueur, est faite : la collecte démarre, s'arrête et redémarre sans perte, sur 4.7.2 et 4.8-dev7 (`docs/spikes/SPIKE-01.md`). Restent avant le code du POC : SPIKE-01b, la partie éditeur, et SPIKE-02 (façade et isolation de compilation). SPIKE-05 (coût de capture, chemin désactivé compris) dans la tâche T13. SPIKE-03 (rendu) et SPIKE-04 (reprise d'un parseur) au début du MVP. SPIKE-06 (fiabilité des modèles) mesuré pendant l'étape 4.
 
 **Critère d'arrêt.** Si le POC ne fait pas gagner de temps sur deux ou trois bugs d'un jeu open source, coût d'installation et d'instrumentation compris, réorienter avant l'acquisition statique.
 
@@ -206,7 +216,7 @@ docs/                          # SPEC, ARCHITECTURE, CONTRACTS, COMPATIBILITY, a
 | RuntimeSession | Une exécution | session_id, revision, engine_profile, capture_config, status (active, terminée, fin inconnue) | POC |
 | RuntimeInstance | Objet vivant | instance_key, probe_key de la définition, label, object_id en chaîne, tree_state, destruction (inconnue ou constatée, avec instant de constat) | POC |
 | Invocation | Exécution d'une fonction | inv_id, instance_key, probe_key, parent_inv optionnel | POC |
-| TraceEvent | Occurrence | session_id, producer_id, seq, t_usec, type, probe, inst, inv, payload | POC |
+| TraceEvent | Occurrence | Communs : seq, t_usec, type ; hérités du lot : session_id, producer_id, revision ; propres au type : voir §6 | POC |
 | Gap | Lacune | session_id, producer_id, from_seq, to_seq, reason, count | POC |
 | TemporalBlockDefinition, TemporalBlockOccurrence | Game Flow | id, parent, cycle de vie, statut | MVP |
 | Annotation, Suggestion | Apport humain, apport IA | target, text, author, created_at, status | MVP |
@@ -292,11 +302,25 @@ La fixture « retrait puis réinsertion » fait partie des tests d'identité dè
 }
 ```
 
-Lecture : dans l'invocation v-940, la décision « à portée » est fausse ; chase est ensuite appelée depuis cette même invocation. Le chemin est donc **cohérent** avec la branche déclarée r-0014. Le trou en 122 est expliqué par le compteur d'éviction.
+Lecture : dans l'invocation v-940, la décision « à portée » est fausse ; chase est ensuite appelée depuis cette même invocation. Le chemin est donc **cohérent** avec la branche déclarée r-0014. Le trou en 122 est expliqué par le compteur d'éviction. Seule la décision porte une charge : les champs requis dépendent du type d'événement (§6).
 
 ## 6. Runtime, protocole, temporalité, preuve et diagnostic
 
-**Chaîne.** Instrumentation, buffer borné par producteur, lots, transport via la façade, validation, Event Store, projections, interface. La classe FlowTrace reste inerte tant que l'éditeur n'a pas ouvert la collecte par un message de démarrage ; ce mécanisme aller-retour est à vérifier en SPIKE-01.
+**Chaîne.** Instrumentation, buffer borné par producteur, lots, transport via la façade, validation, Event Store, projections, interface.
+
+**Protocole de session.** Sa partie jeu est vérifiée par SPIKE-01a (`docs/spikes/SPIKE-01.md`).
+
+| Étape | Règle |
+| --- | --- |
+| Initialisation | Au premier appel de FlowTrace, ou par `FlowTrace.init()` : si un débogueur est attaché, enregistrement de la capture de messages, branchement sur la frontière de frame, puis message « prêt » |
+| Instances antérieures | `register` attribue toujours une identité, même collecte inactive, dans un registre borné ; au démarrage, ce registre part comme « état initial » |
+| Démarrage | L'éditeur envoie « start » ; FlowTrace l'applique à la frontière de frame suivante et répond « started » avec la séquence courante |
+| Arrêt | « stop » s'applique à la frontière de frame : vidage complet, puis « stopped » avec la séquence finale ; aucun lot ne suit |
+| Commandes | Le rappel de capture ne modifie jamais l'état : il note la commande. Constat de SPIKE-01a : les messages entrants peuvent être traités en réentrance, au milieu du code du jeu |
+| Bail | L'éditeur renouvelle un bail toutes les 250 ms ; sans renouvellement pendant 2 s, FlowTrace arrête seul la collecte. Constat : `EngineDebugger.is_active()` reste vrai après une coupure |
+| Désactivation du plugin pendant une collecte | Le plugin envoie « stop » et attend « stopped » une seconde au plus avant de retirer sa capture ; à défaut, le bail arrête la collecte côté jeu |
+| Fin du moteur | Désenregistrement explicite de la capture ; sans lui, une erreur apparaît à la sortie (constaté) |
+| Messages du moteur | set_pid, output, window:title et performance:profile_frame sont ignorés par la capture de l'outil |
 
 | Événement | Produit par | Phase |
 | --- | --- | --- |
@@ -309,16 +333,28 @@ Lecture : dans l'invocation v-940, la décision « à portée » est fausse ; ch
 | signal_emit, signal_received, state_change, block_begin, block_end | Appels explicites | MVP |
 | metric | Échantillonneur de moniteurs | V1 |
 
-**Corrélation minimale par invocation.** FlowTrace tient une pile d'invocations par thread. `enter` empile un nouvel identifiant et enregistre son parent ; `decision` se rattache au sommet ; `exit` dépile. Le POC est limité aux parcours synchrones, sans `await` ni réentrance. Dans ces cas, l'interface affiche « corrélation non garantie ». En V1, l'identifiant renvoyé par `enter` pourra être passé explicitement à travers un `await`.
+**Champs requis par type.** S'y ajoutent les champs communs (seq, t_usec, type) et ceux hérités du lot (session_id, producer_id, revision).
 
-**Chemin observé.** Il réunit les événements d'une même invocation et ses invocations enfants. Il s'affiche « cohérent avec la branche déclarée » ou « incohérent », jamais « cause ».
+| Type | Champs propres requis | Charge |
+| --- | --- | --- |
+| instance_registered | probe, inst | Libellé facultatif |
+| instance_destroyed | inst | `{"detected": true}` si la destruction est constatée par référence faible |
+| function_enter | probe, inst, inv ; parent_inv si l'appel est imbriqué | Aucune |
+| function_exit | probe, inst, inv | Aucune |
+| decision | probe, inst, inv | `{"result": …}`, requise |
+| Contrôle | type | Séquence courante ; pour la fin de session, séquence finale et compteurs |
+
+**Corrélation minimale par invocation.** FlowTrace tient une pile d'invocations par thread. `enter` empile un nouvel identifiant et enregistre son parent ; `decision` se rattache au sommet ; `exit` dépile. Le POC est limité aux parcours synchrones, sans `await` ni réentrance. Trois moyens tiennent ce périmètre : l'instrumentation du banc d'essai est contrôlée (T15) ; les restrictions sont écrites dans C-07 ; FlowTrace vérifie qu'une invocation ouverte se ferme dans la même frame. Hors de ce périmètre, l'interface affiche « corrélation non garantie ». En V1, l'identifiant renvoyé par `enter` pourra être passé explicitement à travers un `await`.
+
+**Chemin observé.** Il réunit les événements d'une même invocation et ses invocations enfants. Il prend l'un de trois états : « cohérent avec la branche déclarée », « incohérent », ou « indéterminé — trace incomplète » quand un trou de séquence touche l'invocation, qu'une sortie manque ou que la corrélation n'est pas garantie. Il ne s'affiche jamais comme une cause.
 
 **Garanties du protocole dès le POC**
 
 | Sujet | Règle |
 | --- | --- |
 | Séquence | Numéro attribué à l'enregistrement, avant le buffer : toute éviction laisse un trou détectable |
-| Éviction | Buffer plein : les événements continus récents partent d'abord ; les événements de contrôle ne sont jamais évincés ; comptage par type |
+| Éviction | Buffer plein : les événements continus récents partent d'abord, avec un comptage par type |
+| Réserve de contrôle | 64 places réservées aux événements de contrôle. Les contrôles répétitifs sont regroupés en compteurs. Réserve pleine : la collecte s'arrête et l'état « capture interrompue » part dès que possible. La mémoire reste bornée dans tous les cas |
 | Taille | 1 Ko de charge par événement (au-delà, tronquée et signalée), 256 événements et 64 Ko par lot ; objectifs à valider |
 | Fin de session | Message de fin avec séquence finale et compteurs ; s'il manque, session marquée « fin inconnue » après la dernière séquence reçue |
 | Rétention | Event Store borné, objectif de 200 000 événements ou 64 Mo par session ; au-delà, éviction des plus anciens avec un marqueur « tronqué avant seq N » |
@@ -362,7 +398,8 @@ Le POC n'a pas besoin de graphe dessiné : un journal sélectionnable et une lis
 | Surcoût de capture active | 5 % du temps de frame au plus, à 1 000 événements par seconde | T13 (SPIKE-05) |
 | Chemin désactivé, côté appelant compris | Non mesurable dans le temps de frame à 1 000 appels par seconde | T13 |
 | Mémoire du buffer runtime | 8 Mo par producteur au plus | T13 |
-| Latence runtime vers affichage | 200 ms au plus au 95e centile | T14 |
+| Débit soutenu sans perte | 10 000 événements par seconde au moins ; SPIKE-01a : 24 000 sans perte, sans rendu | T13, puis SPIKE-01b avec rendu |
+| Latence runtime vers affichage | 200 ms au plus au 95e centile ; SPIKE-01a : aller-retour médian d'environ 50 ms, sans rendu | T16, par aller-retour mesuré avec la seule horloge de l'éditeur |
 | Rafraîchissement de l'interface | 30 Hz au plus | T16 |
 | Indexation statique | 15 s au plus pour 300 scripts | MVP |
 | Éléments visibles | 300 sans dégradation perceptible | SPIKE-03 |
@@ -380,11 +417,11 @@ Sauvegarde atomique par fichier temporaire puis renommage ; validation à l'impo
 
 | Opération | Effet | Ce qui reste |
 | --- | --- | --- |
-| Désactiver l'interface | Panneaux et capture côté éditeur retirés | Le jeu tourne ; FlowTrace reste appelable et inerte, faute de message de démarrage |
+| Désactiver l'interface | Si une collecte est active : arrêt, puis attente de la confirmation une seconde au plus. Ensuite, panneaux et capture côté éditeur retirés | Le jeu tourne ; FlowTrace reste appelable ; il est inerte, ou le devient à l'expiration du bail |
 | Arrêter la collecte | L'éditeur envoie l'arrêt ; FlowTrace vide son buffer et repasse inerte | Interface et données disponibles |
 | Désinstaller l'instrumentation | Un outil liste les appels FlowTrace du projet ; le dossier runtime n'est retiré que s'il n'en reste aucun | Rien, ou un rapport des appels restants |
 
-FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload : les appels du jeu restent valides tant que son fichier existe, même plugin désactivé. Le dossier runtime ne dépend d'aucun fichier du plugin éditeur : il embarque sa façade et l'encodage du protocole. Son déclenchement de lot par frame est à vérifier en SPIKE-01.
+FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload : les appels du jeu restent valides tant que son fichier existe, même plugin désactivé. Le dossier runtime ne dépend d'aucun fichier du plugin éditeur : il embarque sa façade et l'encodage du protocole. Son déclenchement de lot par frame, sans autoload, est vérifié par SPIKE-01a.
 
 **Exports (V1).** AI Snapshot JSON et PNG, choix des champs, exclusion des données sensibles, aperçu avant partage, export local seulement.
 
@@ -392,17 +429,18 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 
 | Phase | Livre | Tâches | Heures humaines avec agents | Sans agent | Porte |
 | --- | --- | --- | --- | --- | --- |
-| P0 à P3 : POC | CAP-01 à CAP-07 | 20 | 25–40 | 40–65 | Démonstration et mesure de valeur |
-| P4 Acquisition statique, SPIKE-03 et 04 | CAP-08, CAP-09 | 12–18 | 12–20, ou 5 à 10 de moins avec AST Flow | 30–45 | Inventaire d'un jeu réel |
+| P0 à P3 : POC | CAP-01 à CAP-07 | 21 | 25–40 | 40–65 | Démonstration et mesure de valeur |
+| P4a Évaluations : SPIKE-03 rendu, SPIKE-04 backend statique | Décisions | 3–5 | 6–12 | 10–18 | Rapports KEEP, REWRITE ou DISCARD |
+| P4b Backend statique et inventaire | CAP-08, CAP-09 | 9–13 | 8–14, ou 4–8 avec AST Flow | 20–30 | Inventaire d'un jeu réel |
 | P5 Navigation et Project Tree | CAP-10 | 8–12 | 8–13 | 20–30 | Test de cartographie réussi |
 | P6 Historique, persistance, protocole MVP | CAP-11, CAP-07 complet | 10–16 | 10–16 | 30–45 | Session rechargée, reconnexion |
 | P7 Logique et Game Flow annoté | CAP-12 annoté | 5–9 | 5–9 | 15–25 | Bloc incomplet visible |
 | P8 Compatibilité MVP et stabilisation | CAP-13, bascule vers 4.8 stable | 6–10 | 6–10 | 20–30 | MVP installé proprement |
-| **MVP cumulé** | | **61–85** | **70–110** | **155–245** | Revue de continuation |
+| **MVP cumulé** | | **62–86** | **68–114**, ou 64–108 avec AST Flow | **155–243** | Revue de continuation |
 | P9 à P16 : V1 | CAP-12 à CAP-18, deux versions stables | 65–110 | 75–120 | 190–285 | Démonstrations CAP-12 à 18 |
-| **V1 cumulée** | | **126–195** | **145–230** | **345–530** | |
+| **V1 cumulée** | | **127–196** | **143–234** | **345–528** | |
 
-À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois.
+À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. Ce sont des objectifs de travail, à recalibrer après T17.
 
 **Mesure de valeur, élargie**
 
@@ -411,7 +449,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 
 **Portes de passage**
 
-- POC : CAP-01 à CAP-07 démontrées sur 4.7.2 ; fixture « retrait puis réinsertion » verte ; chemin désactivé mesuré ; arrêt propre et fin inconnue démontrés ; résultat de la préversion rapporté ; mesure de diagnostic faite.
+- POC : CAP-01 à CAP-07 démontrées sur 4.7.2 ; protocole de session démontré avec l'éditeur réel, désactivation pendant une collecte comprise ; fixture « retrait puis réinsertion » verte ; chemin désactivé mesuré ; arrêt propre et fin inconnue démontrés ; résultat de la préversion rapporté ; mesure de diagnostic faite.
 - MVP : jeu réel de 300 scripts ou plus indexé sans instanciation ; test de cartographie gagnant ; session rechargée ; installation et désinstallation propres ; CI verte sur la fenêtre.
 - V1 : CAP-12 à CAP-18 ; deux versions stables ; matrice publiée ; documentation utilisateur.
 
@@ -440,7 +478,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 
 ## 10. Dossier de passage vers la méthodologie
 
-**Identité.** PD-0.2, proposé, 7 octobre 2026, fondé sur `prompts/conception.txt` v2.2. Méthode associée : MC-0.2 ; orchestration : OR-0.2.
+**Identité.** PD-0.3, proposé, 8 octobre 2026, fondé sur `prompts/conception.txt` v2.2 et sur SPIKE-01a. Méthode associée : MC-0.3 ; orchestration : OR-0.3.
 
 **Versions.** 4.7.2 bloquante (D-01) ; dernière préversion 4.8 contrôlée sans bloquer.
 
@@ -467,16 +505,17 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | C-01 | Identités : définition, instance et cycle de vie, invocation, occurrence, session ; clés de sonde | T07 |
 | C-02 | Ancrage source et révision du programme | T07 |
 | C-03 | Façades de compatibilité du POC et profil moteur | T08 |
-| C-04 | Enveloppe runtime du POC et ses garanties, codec | T08 |
+| C-04 | Enveloppe runtime du POC, champs par type, réserve de contrôle, codec | T08 |
 | C-05 | Modèle minimal et graphe déclaré `.flow.json` v1 | T07 |
 | C-06 | Event Store minimal, rétention, fin de session, requête « chemin observé » | T08 |
-| C-07 | API FlowTrace : register, enter, exit, decision, enabled ; règles du chemin désactivé | T08 |
+| C-07 | API FlowTrace : init, register, enter, exit, decision, enabled, shutdown ; protocole de session ; règles du chemin désactivé | T08 |
 
 **Inconnues**
 
 | ID | Question | Phase |
 | --- | --- | --- |
-| SPIKE-01 | Un message aller-retour entre jeu et éditeur fonctionne-t-il, à quel débit, avec quelle latence, après arrêt et redémarrage ? Le déclenchement par frame d'une classe statique est-il possible ? | POC |
+| SPIKE-01a | Partie jeu : aller-retour, débit, arrêt et redémarrage, classe statique, coupure | Fait : KEEP avec modifications |
+| SPIKE-01b | Partie éditeur : capture du plugin, envoi par la session, lancements répétés, désactivation pendant une collecte, débit avec rendu | POC, T05 |
 | SPIKE-02 | Façade, détection de capacités, UID et isolation de compilation tiennent-ils sur 4.7.2 et sur la préversion ? | POC |
 | SPIKE-03 | Quel rendu tient 300 éléments visibles ? | MVP |
 | SPIKE-04 | GDScript AST Flow ou extraction maison ? | MVP |
@@ -502,5 +541,5 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 - Les exemples de données respectent le modèle annoncé : champs requis présents, cibles définies ou non résolues.
 - Les contrats du POC ont chacun une tâche de validation avant leur premier usage.
 - Le chemin observé n'est jamais présenté comme causal.
-- Mécanismes non vérifiés : aller-retour débogueur, déclenchement par frame d'une classe statique, isolation de compilation, UID de scripts, coûts de capture. Ils relèvent de SPIKE-01, 02 et 05.
-- Ce plan n'affirme aucun résultat de prototype ni aucune performance mesurée.
+- Vérifiés côté jeu par SPIKE-01a : aller-retour, classe statique déclenchée par frame, bail, arrêt sans lot tardif. Restent non vérifiés : la partie éditeur (SPIKE-01b), l'isolation de compilation et les UID (SPIKE-02), le coût de capture (SPIKE-05).
+- Les seules mesures citées viennent de SPIKE-01a, dans un conteneur sans rendu : elles ne valent pas performance de l'outil.

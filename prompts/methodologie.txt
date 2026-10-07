@@ -1,3 +1,5 @@
+[Note du dépôt — prompt d'entrée v2.2, conservé pour l'historique. Le plan directeur en vigueur (docs/plan-directeur.md) prévaut en cas d'écart, notamment sur la compatibilité, allégée avant la preuve de valeur.]
+
 # Prompt de méthodologie — Godot Visual Program & Execution Explorer
 
 Version révisée 2.2 — 7 octobre 2026

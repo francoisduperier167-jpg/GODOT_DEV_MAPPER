@@ -2,25 +2,29 @@
 
 Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explorer**. Il doit cartographier un projet Godot (architecture, logique, données, déroulement du jeu) et superposer à cette carte ce qui s'est réellement exécuté.
 
-**Statut au 7 octobre 2026 : cadrage.** Aucun code du plugin n'existe encore. Le plan directeur, la méthodologie et l'orchestration sont proposés, pas encore validés.
+**Statut au 8 octobre 2026 : cadrage, premier spike fait.** Aucun code du plugin n'existe encore. SPIKE-01a a vérifié la partie jeu du canal du débogueur sur Godot 4.7.2 et 4.8-dev7. Le plan directeur, la méthodologie et l'orchestration sont proposés, pas encore validés.
 
 ## Contenu
 
 | Chemin | Rôle |
 | --- | --- |
-| `docs/plan-directeur.md` | Plan directeur PD-0.2 : capacités, architecture, frontière de compatibilité, modèle de données, POC, MVP, budgets en heures, risques |
-| `docs/methodologie.md` | Méthode de construction MC-0.2 : sources de vérité, contrats, tests, CI, veille de Godot, gabarits |
-| `docs/orchestration.md` | OR-0.2 : déroulé pas à pas, vingt premières tâches, routage entre quatre modèles |
-| `docs/estimation.md` | Pertinence, faisabilité et raisonnement de charge initial ; les budgets de référence sont ceux du plan directeur |
-| `docs/feuille-de-route.svg` | Feuille de route en sessions cumulées |
-| `docs/analyse-des-prompts-v2.0.md` | Analyse critique des prompts initiaux |
-| `prompts/conception.txt` | Prompt de conception v2.2 |
-| `prompts/methodologie.txt` | Prompt de méthodologie v2.2 |
+| `docs/plan-directeur.md` | Plan directeur PD-0.3 : capacités, architecture, protocole de session, modèle de données, POC, MVP, budgets en heures, risques |
+| `docs/methodologie.md` | Méthode de construction MC-0.3 : sources de vérité et leur hiérarchie, contrats, tests, CI, veille de Godot, gabarits |
+| `docs/orchestration.md` | OR-0.3 : déroulé pas à pas, tâches T00 à T20, routage entre quatre modèles |
+| `docs/spikes/SPIKE-01.md` | Rapport de SPIKE-01a : canal du débogueur, partie jeu, mesuré sur 4.7.2 et 4.8-dev7 |
+| `spikes/` | Prototypes jetables des spikes |
+| `docs/estimation.md` | Historique : pertinence, faisabilité et raisonnement de charge initial, en sessions |
+| `docs/feuille-de-route.svg` | Historique : feuille de route des prompts 2.1, en sessions cumulées |
+| `docs/analyse-des-prompts-v2.0.md` | Historique : analyse critique des prompts initiaux |
+| `prompts/conception.txt` | Historique : prompt de conception v2.2 |
+| `prompts/methodologie.txt` | Historique : prompt de méthodologie v2.2 |
+
+**En cas d'écart entre documents**, un fait mesuré dans un rapport de spike prime. Viennent ensuite le plan directeur (périmètre et budgets), l'orchestration (ordre des tâches) et la méthodologie (règles de travail). Les documents marqués « historique » expliquent d'où vient le plan ; ils ne le remplacent pas.
 
 ## Démarrer
 
 1. Relire `docs/plan-directeur.md` et trancher les décisions bloquantes D-01, D-02, D-05 et D-07 (§10).
-2. Suivre `docs/orchestration.md` à partir de l'étape 0.
+2. Suivre `docs/orchestration.md` à partir de l'étape 0 ; la prochaine preuve est SPIKE-01b, la partie éditeur du canal (tâche T05).
 
 ## Compatibilité avec les versions de Godot
 

@@ -1,3 +1,5 @@
+> **Document historique.** Analyse des prompts v2.0. Le plan directeur en vigueur prévaut.
+
 # Analyse et révision des deux prompts
 
 7 octobre 2026 — Godot Visual Program & Execution Explorer

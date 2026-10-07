@@ -1,17 +1,19 @@
 # Méthodologie de construction — Godot Visual Program & Execution Explorer
 
-Révision MC-0.2 · statut : **proposé** · 7 octobre 2026 · entrées : `prompts/methodologie.txt` v2.2, `docs/plan-directeur.md` PD-0.2 (proposé) · remplace MC-0.1
+Révision MC-0.3 · statut : **proposé** · 8 octobre 2026 · entrées : `prompts/methodologie.txt` v2.2, `docs/plan-directeur.md` PD-0.3 (proposé), `docs/spikes/SPIKE-01.md` · remplace MC-0.2
+
+Changements depuis MC-0.2 : hiérarchie des sources ; documents historiques marqués ; environnement de Qwen vérifié en T00 ; fixtures du protocole de session.
 
 Changements depuis MC-0.1 : unités de pilotage en heures ; spikes réordonnés ; compatibilité allégée avant la preuve de valeur ; quatre modèles ; fixtures de cycle de vie ; dossier runtime autonome dans le contrôle de dépendances.
 
-La partie 9, les vingt premières tâches et le déroulé pas à pas, est dans `docs/orchestration.md` (OR-0.2), qui sert de backlog vivant.
+La partie 9, les vingt premières tâches et le déroulé pas à pas, est dans `docs/orchestration.md` (OR-0.3), qui sert de backlog vivant.
 
 ## 1. Hypothèses, entrées réelles et mode d'emploi
 
 | Élément | État au 7 octobre 2026 |
 | --- | --- |
 | Prompt de méthodologie | v2.2, fourni |
-| Plan directeur | PD-0.2, fourni, non validé |
+| Plan directeur | PD-0.3, fourni, non validé |
 | Estimation | `docs/estimation.md`, fournie |
 | Dépôt GODOT_DEV_MAPPER | Documents seulement, aucun code |
 | Décisions approuvées | Aucune, hors paramètres connus |
@@ -38,8 +40,11 @@ Tant que D-01 n'est pas tranchée, aucun code ne peut être déclaré compatible
 | Versions de Godot | `docs/COMPATIBILITY.md` et `compat/versions.json` |
 | Comportements vérifiés | Tests, fixtures et résultats CI rattachés à une révision |
 | Prochaine action et état | `docs/orchestration.md` et `PROJECT_STATE.md` |
+| Faits mesurés | Rapports de `docs/spikes/`, rattachés à une version de Godot et à une machine |
 
 Un test peut être faux, un contrat peut devoir évoluer : une contradiction ouvre une analyse d'impact, jamais une retouche discrète pour faire passer un test.
+
+**Hiérarchie en cas d'écart.** Un fait mesuré dans un rapport de spike prime sur toute hypothèse. Viennent ensuite le plan directeur pour le périmètre et les budgets, l'orchestration pour l'ordre des tâches, puis cette méthodologie pour les règles de travail. Les prompts, l'estimation, l'analyse des prompts et la feuille de route sont historiques : ils expliquent d'où vient le plan, ils ne le remplacent pas.
 
 | Fichier, à créer | Contenu | Normatif | Mis à jour quand |
 | --- | --- | --- | --- |
@@ -84,7 +89,7 @@ Ce contrôle textuel ne voit pas les appels dynamiques ; la revue ciblée le com
 
 | Spike | Question | Mesure | Succès | Durée max, heures humaines |
 | --- | --- | --- | --- | --- |
-| SPIKE-01 | Un aller-retour jeu-éditeur fonctionne-t-il, y compris après un redémarrage et depuis une classe statique ? | Débit, latence, pertes | 2 000 événements par seconde en lots sans perte ; redémarrage propre | 3 h |
+| SPIKE-01 | Un aller-retour jeu-éditeur fonctionne-t-il, y compris après un redémarrage et depuis une classe statique ? | Débit, latence, pertes | 2 000 événements par seconde en lots sans perte ; redémarrage propre | Partie jeu faite (SPIKE-01a, KEEP) ; partie éditeur en T05, 3 h |
 | SPIKE-02 | Façade, détection de capacités, UID et isolation de compilation tiennent-ils sur 4.7.2 et la préversion, testés à la main ? | Erreurs de compilation, comportement | Plugin actif sur les deux versions | 3 h |
 | SPIKE-03 | Quel rendu tient 300 éléments visibles ? | Temps de frame, latence d'interaction | 16 ms au plus à 300 éléments | 3 à 6 h, au début du MVP |
 | SPIKE-04 | GDScript AST Flow ou extraction maison ? | Relations correctes, fausses, manquées ; coût d'intégration | 90 % des appels directs résolus, aucune relation certaine fausse | 3 à 6 h, au début du MVP |
@@ -93,7 +98,7 @@ Ce contrôle textuel ne voit pas les appels dynamiques ; la revue ciblée le com
 
 Chaque spike vit dans `spikes/`, hors du plugin, et se conclut par KEEP, REWRITE ou DISCARD dans `docs/spikes/`. Sans exécution réelle, son résultat reste « à vérifier ».
 
-La première tranche, les phases et leurs budgets sont ceux du plan directeur (§9). Le pilotage suit séparément les heures humaines, le temps agent et les capacités acceptées (définitions : PD-0.2, §0). `PROJECT_STATE.md` suit la consommation réelle ; un dépassement de 50 % déclenche une revue de continuation sans attendre la fin de phase.
+La première tranche, les phases et leurs budgets sont ceux du plan directeur (§9). Le pilotage suit séparément les heures humaines, le temps agent et les capacités acceptées (définitions : PD-0.3, §0). `PROJECT_STATE.md` suit la consommation réelle ; un dépassement de 50 % déclenche une revue de continuation sans attendre la fin de phase.
 
 ## 5. Tâches, contexte, autonomie et orchestration
 
@@ -149,7 +154,7 @@ Escalade : après deux échecs aux mêmes tests, ou dès qu'une API Godot hors d
 
 Capacité de relecture : deux files actives à 10 h par semaine, trois à 20 h, quatre à 35 h. Le nombre de files se règle sur la relecture humaine, pas sur la puissance de calcul.
 
-Claude Code : `/clear` entre deux tâches ; `opusplan` pour les tâches de conception ; `CLAUDE.md` court. Modèle local : serveur local compatible et harnais d'agent avec appel d'outils, à choisir et vérifier en P2 ; packs autonomes uniquement.
+Claude Code : `/clear` entre deux tâches ; `opusplan` pour les tâches de conception ; `CLAUDE.md` court. Modèle local : serveur local compatible et harnais d'agent avec appel d'outils, choisis et vérifiés en T00, avant toute tâche confiée à Qwen ; packs autonomes uniquement.
 
 ## 6. Tests, fixtures, CI et preuves
 
@@ -180,7 +185,7 @@ Claude Code : `/clear` entre deux tâches ; `opusplan` pour les tâches de conce
 
 Un test headless ne valide pas l'interface. Un import sans erreur ne prouve pas que tous les scripts fonctionnent.
 
-**Fixtures**, petites et maison : appel simple, branche, signal, deux instances, retrait puis réinsertion, invocations imbriquées, réentrance signalée « non garantie », session tuée, bloc temporel, trace tronquée, source modifiée, syntaxe inconnue. Les jeux open source servent aux tests d'intégration et de mesure, à une révision épinglée. Une golden fixture n'est jamais régénérée pour masquer une régression.
+**Fixtures**, petites et maison : appel simple, branche, signal, deux instances, retrait puis réinsertion, invocations imbriquées, réentrance signalée « non garantie », commande reçue en réentrance, coupure pendant la collecte, réserve de contrôle pleine, plugin désactivé pendant une collecte, session tuée, bloc temporel, trace tronquée, source modifiée, syntaxe inconnue. Les jeux open source servent aux tests d'intégration et de mesure, à une révision épinglée. Une golden fixture n'est jamais régénérée pour masquer une régression.
 
 **Statuts de rapport** : exécuté et réussi, exécuté et échoué, non exécuté, non applicable. Une revue IA ne prouve pas qu'un test passe.
 
@@ -298,9 +303,9 @@ Mesures : temps, escalades, quota consommé
 2. T14, Sonnet : « Ajoute la réception côté éditeur. La façade débogueur (C-03) reçoit les lots envoyés par FlowTrace ; valide-les avec le codec existant ; range-les dans l'Event Store (C-06). Le critère est le scénario `tests/integration/two_instances` : séquences continues, pertes comptées, deux instances distinctes. Signale toute API non couverte par l'adaptateur 4.7. »
 3. Régression sur la préversion, Qwen puis escalade : « La CI non bloquante 4.8 échoue. Log, diff de la dernière fusion et façade concernée ci-dessous. Diagnostique, puis propose une correction limitée à la frontière de compatibilité. Si la cause est un changement de sémantique d'API, réponds ESCALADE avec ton analyse. »
 
-## 9. Vingt premières tâches
+## 9. Premières tâches
 
-Voir `docs/orchestration.md`.
+Voir `docs/orchestration.md` (OR-0.3), de T00 à T20.
 
 ## 10. Cohérence, décisions de démarrage et checklists
 
