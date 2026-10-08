@@ -71,7 +71,7 @@ TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
 5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S26.md, puis git add.
 6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S26-essai-editeur, puis relance la commande.
 
-TRAVAIL TECHNIQUE — début de la copie exacte du guide (rédigé pour le mode autonome)
+TRAVAIL TECHNIQUE — début (rédigé pour le mode autonome)
 Tu réalises l'essai PC5.6 du projet GODOT_DEV_MAPPER, sans humain : une session du banc d'essai jusqu'au store de l'éditeur réel, sous écran virtuel.
 CONTEXTE : docs/construction/etape-5.md (T14, PC5.6), rapport de S24 (procédure), docs/benches/<nom>.md, branche banc/<nom>-instrumentation.
 OBJECTIF
@@ -83,7 +83,7 @@ CONTRÔLES
 S26-a  tests/integration/run_editor_session.sh ; echo $?   → 0
 S26-b  GODOT="$B" tools/ci/run_all_checks.sh ; echo $?   → 0, CHECK editor OK ou IGNORÉ
 CONTRE-ÉPREUVE (CE) pour le vérificateur : faire ignorer les lots par la passerelle → S26-a échoue.
-TRAVAIL TECHNIQUE — fin de la copie exacte du guide
+TRAVAIL TECHNIQUE — fin
 
 CONTRÔLES DE LA FICHE
 S26-a  tests/integration/run_editor_session.sh; echo $?   → 0

@@ -77,7 +77,7 @@ TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
 5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S10.md, puis git add.
 6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S10-T05-spike01b, puis relance la commande.
 
-TRAVAIL TECHNIQUE — début de la copie exacte du guide (rédigé pour le mode autonome)
+TRAVAIL TECHNIQUE — début (rédigé pour le mode autonome)
 Tu conduis SPIKE-01b du projet GODOT_DEV_MAPPER, la partie éditeur du canal du débogueur. La partie jeu est établie : lis docs/spikes/SPIKE-01.md et spikes/spike01_debugger/.
 
 FAIT VÉRIFIÉ le 8 octobre 2026, dans un conteneur sans GPU :
@@ -104,7 +104,7 @@ Le critère des instances enregistrées avant le démarrage relève du runtime :
 - spikes/spike01_debugger/editor/run.sh : une commande qui rejoue tout et affiche une ligne par critère (PASS, FAIL, ou MESURÉ avec les chiffres pour le critère 6).
 - La section SPIKE-01b de docs/spikes/SPIKE-01.md : pour chaque critère, déclenchement, observation, chiffre, statut ; les limites (rendu logiciel, conteneur).
 - Une proposition KEEP, REWRITE ou DISCARD ; si nécessaire, le changement exact à faire au plan §6, dans le rapport, sans l'appliquer.
-TRAVAIL TECHNIQUE — fin de la copie exacte du guide
+TRAVAIL TECHNIQUE — fin
 
 CONTRÔLES DE LA FICHE
 S10-a  GODOT="$B" spikes/spike01_debugger/editor/run.sh   → cinq lignes PASS et une ligne MESURÉ

@@ -75,7 +75,7 @@ TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
 5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S34.md, puis git add.
 6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S34-T19-diagnostic, puis relance la commande.
 
-TRAVAIL TECHNIQUE — début de la copie exacte du guide (rédigé pour le mode autonome)
+TRAVAIL TECHNIQUE — début (rédigé pour le mode autonome)
 Tu mesures, par substitution, l'utilité du POC du projet GODOT_DEV_MAPPER. Tu n'as pas lu ENVELOPPE_SCELLEE.md et tu ne récupères pas la branche banc/<nom>-enveloppe avant la fin des trois diagnostics.
 
 PRÉPARE (fichiers autorisés : tools/harness/fake_editor.gd, tools/gdm_query.gd, docs/mesures/valeur-poc-substitution.md)
@@ -92,7 +92,7 @@ Ensuite seulement, récupère l'enveloppe, note l'heure, et note pour chaque bug
 RAPPORT dans docs/mesures/valeur-poc-substitution.md : le tableau de T19 adapté (colonnes : bug, branche, avec l'outil, préparation, exécutions, lectures, modifications, temps, cause proposée, confiance, cause exacte), puis une conclusion qualitative. Écris en tête : « Signal mesuré pour un agent, pas pour une personne ; la mesure humaine se fait à la recette. »
 
 CRITÈRE D'ARRÊT : l'outil a aidé sur un bug s'il a permis de trouver la cause exacte avec moins d'exécutions qu'au bug 2, ou là où le bug 2 n'a pas été trouvé. S'il n'a aidé ni sur le bug 1 ni sur le bug 3, écris rapports/ARRET.md (raison, preuves, ce qu'il faut de l'humain), pousse-le sur main et arrête-toi.
-TRAVAIL TECHNIQUE — fin de la copie exacte du guide
+TRAVAIL TECHNIQUE — fin
 
 CONTRÔLES DE LA FICHE
 S34-a  grep -c "pas pour une personne" docs/mesures/valeur-poc-substitution.md   → 1

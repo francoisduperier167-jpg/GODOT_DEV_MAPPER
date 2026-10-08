@@ -2,7 +2,7 @@
 
 Budget : 43 à 74 h humaines (39 à 68 h si AST Flow sert de backend statique) · Prérequis : revue T20 qui décide de continuer
 
-Le MVP est décrit phase par phase. Son découpage en tâches dépend des résultats du POC : le prompt de découpage, en fin de page, le produit au début de chaque phase, au format des fiches du POC. Chaque tâche suit ensuite les prompts universels de réalisation et de vérification.
+Le MVP est décrit phase par phase. Son découpage en tâches dépend des résultats du POC : le prompt de découpage, en fin de page, le produit au début de chaque phase, au format des fiches du POC. En mode autonome, un découpage provisoire existe déjà (`suivi/plan_phases.py`, fiches `suivi/S36.1-…` à `suivi/S41.7-…`) : le prompt de découpage sert à le revoir. Chaque tâche suit ensuite les prompts universels de réalisation et de vérification.
 
 ## Ordre et files
 

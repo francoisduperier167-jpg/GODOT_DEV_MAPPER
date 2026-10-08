@@ -71,7 +71,7 @@ TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
 5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S31.md, puis git add.
 6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S31-demonstration, puis relance la commande.
 
-TRAVAIL TECHNIQUE — début de la copie exacte du guide (rédigé pour le mode autonome)
+TRAVAIL TECHNIQUE — début (rédigé pour le mode autonome)
 Tu réalises la démonstration PC6.7 du projet GODOT_DEV_MAPPER, sans humain, sous écran virtuel.
 CONTEXTE : docs/construction/etape-6.md (PC6.7, T16, T17), rapports de S28 et S29 (procédures), tools/harness/editor_driver/ (S26).
 OBJECTIF
@@ -83,7 +83,7 @@ CONTRÔLES
 S31-a  tests/integration/run_demo.sh ; echo $?   → 0 et une ligne OPEN avec la ligne de l'ancrage
 S31-b  ls rapports/S31/*.png | wc -l   → au moins 4
 CONTRE-ÉPREUVE (CE) pour le vérificateur : faire ignorer le filtre d'instance au panneau → la capture des deux instances ne les distingue plus, et le test de projection échoue.
-TRAVAIL TECHNIQUE — fin de la copie exacte du guide
+TRAVAIL TECHNIQUE — fin
 
 CONTRÔLES DE LA FICHE
 S31-a  tests/integration/run_demo.sh; echo $?   → 0 et une ligne OPEN avec la ligne de l'ancrage

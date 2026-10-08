@@ -455,7 +455,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | P9 à P16 : V1 | CAP-12 à CAP-18, deux versions stables | 65–110 | 75–120 | 190–285 | Démonstrations CAP-12 à 18 |
 | **V1 cumulée** | | **129–198** | **143–234** | **345–528** | |
 
-À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. En mode autonome (D-09), le calendrier se compte en créneaux d'IA : POC en 6 à 9 jours, MVP vers le jour 15 à 29, V1 entre le jour 30 et le jour 56 (`docs/construction/sequence.md`). Ce sont des objectifs de travail, à recalibrer après le POC.
+À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. En mode autonome (D-09), le calendrier se compte en créneaux d'IA : POC en 7 à 10 jours, MVP vers le jour 17 à 26, V1 entre le jour 30 et le jour 44 (`docs/construction/sequence.md`). Ce sont des objectifs de travail, à recalibrer après le POC.
 
 **Mesure de valeur, élargie**
 

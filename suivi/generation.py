@@ -831,10 +831,72 @@ PHASES = [
 ]
 for sid, ph, fich, apres in PHASES:
     titre, points = points_phase(fich, ph)
-    unite(sid, f"{sid}-{ph}-decoupage", f"{ph} {titre} : découpage", "C", "V", apres, kind="phase",
-          phase=ph, fichier_phase=fich, creneaux=1, budget=budget_phase(fich, ph))
+    unite(sid, f"{sid}-{ph}-decoupage", f"{ph} {titre} : revue du découpage", "C", "V", apres, kind="phase",
+          phase=ph, phase_titre=titre, fichier_phase=fich, creneaux=1, budget=budget_phase(fich, ph))
     unite(f"{sid}.P", f"{sid}.P-{ph}-porte", f"Porte de {ph}" + (" et porte du MVP" if ph == "P8" else " et porte de la V1" if ph == "P16" else ""),
           "C", "V", [sid, f"{sid}.*"], kind="porte_phase", phase=ph, fichier_phase=fich, points=points)
+
+
+# ---- Découpage provisoire des phases (suivi/plan_phases.py), revu au début de chaque phase
+import plan_phases as PP
+
+PHASE_DE = {sid: (ph, fich) for sid, ph, fich, apres in PHASES}
+
+
+def conception_phase(sid):
+    ph, fich = PHASE_DE[sid]
+    return f"docs/construction/{'mvp' if fich == 'mvp.md' else 'v1'}-{ph}.md"
+
+
+def prompt_tache_phase(d, sid):
+    ph, fich = PHASE_DE[sid]
+    deps = [x for x in d["apres"] if x != sid]
+    L = [f"Tu réalises la tâche {d['id']} « {d['titre']} » de la phase {ph}, {U[sid]['phase_titre']}. Elle vient du découpage provisoire de la phase, revu par l'unité {sid}.",
+         "", "CONTEXTE À LIRE",
+         f"- {conception_phase(sid)} : document de la revue {sid} ; il fait foi s'il précise ou modifie cette tâche.",
+         f"- docs/construction/{fich}, section {ph}."]
+    L += [f"- {c}." for c in d["contexte"]]
+    if deps:
+        L.append("- Les rapports des tâches dont celle-ci dépend : " + ", ".join(f"rapports/{x}.md" for x in deps) + ".")
+    L += ["", "OBJECTIF"] + [f"- {x}" for x in d["faire"]]
+    L += ["", "FICHIERS AUTORISÉS"] + [f"- {x}" for x in d["fichiers"]]
+    L += ["", f"OBLIGATIONS DE LA PHASE {ph} (docs/construction/{fich})"] + [f"- {x}" for x in PP.PHASES_INFO[ph]["oblig"]]
+    L += ["", "RÈGLES DE LA TÂCHE",
+          "- Tests d'abord : écris ou active le test, montre son échec dans le rapport, puis écris le code.",
+          "- Un marqueur de tests/pending/ ne se supprime que si son test passe ensuite sans modification.",
+          "- Le module modifié respecte la table des dépendances du plan §4 : python3 tools/check_deps.py → 0.",
+          "- <nom> et <grand> désignent les bancs d'essai décrits dans docs/benches/ ; leurs copies vivent dans les branches banc/*, jamais sur main.",
+          "", "DÉROULÉ : les sous-étapes R de la fiche, dans l'ordre."]
+    return "\n".join(L)
+
+
+for _d in PP.TACHES:
+    _sid = _d["id"].split(".")[0]
+    _ph, _fich = PHASE_DE[_sid]
+    unite(_d["id"], f"{_d['id']}-{_d['nom']}", _d["titre"], _d["r"], _d["v"], _d["apres"], kind="tache",
+          phase=_ph, fichier_phase=_fich, phase_id=_sid, creneaux=_d["creneaux"],
+          faire=_d["faire"], fichiers=", ".join(("`" + x.split(" (", 1)[0] + "` (" + x.split(" (", 1)[1]) if " (" in x else f"`{x}`" for x in _d["fichiers"]) + ".",
+          R=_d["R"], controles=_d["controles"], ce=_d["ce"], coherence=_d["coherence"], recette=_d["recette"], fusion=_d["fusion"],
+          adapt=[f"Découpage provisoire, écrit avant le POC : si la revue {_sid} a modifié cette fiche, la fiche fait foi. Si un fait établi depuis rend la tâche impossible telle quelle : statut QUESTION, avec ce fait.",
+                 "Les commandes de contrôle supposent les outils du POC (runner, check_deps.py, validate_fixtures.py, fake_editor.gd, editor_driver). Si l'un a changé de nom ou d'option, utilise le nouveau et écris l'écart dans le rapport."])
+    U[_d["id"]]["prompt_perso"] = prompt_tache_phase(_d, _sid)
+
+
+def taches_de(sid):
+    return sorted([k for k in U if re.fullmatch(re.escape(sid) + r"\.\d+", k)], key=lambda k: int(k.split(".")[1]))
+
+
+def chaines_phase(sid):
+    """Sous-pistes d'une phase : chaque tâche prolonge la chaîne dont la dernière tâche est l'un de ses prérequis."""
+    chaines = []
+    for x in taches_de(sid):
+        for c in chaines:
+            if c[-1] in U[x]["apres"]:
+                c.append(x)
+                break
+        else:
+            chaines.append([x])
+    return chaines
 
 
 # ---------------------------------------------------------------- pistes autonomes
@@ -873,13 +935,28 @@ SECTIONS = [
       ("V.D", "Phase P14", ["S47", "S47.P"])], ["S49", "S49.P"]),
 ]
 
+def _avec_taches(ids):
+    out = []
+    for x in ids:
+        out.append(x)
+        if U[x]["kind"] == "phase":
+            out += taches_de(x)
+    return out
+
+
+SECTIONS = [(_t, _de, [(pid, nom, _avec_taches(ids)) for pid, nom, ids in _p], _avec_taches(_r)) for _t, _de, _p, _r in SECTIONS]
+
 PISTE = {}
 for _titre, _de, _pistes, _rdv in SECTIONS:
-    for _pid, _nom, _ids in _pistes:
-        for _k, _u in enumerate(_ids):
-            PISTE[_u] = dict(type="piste", id=_pid, nom=_nom, unites=_ids, rang=_k, section=_titre, de=_de, pistes=[p[0] for p in _pistes])
-    for _k, _u in enumerate(_rdv):
-        PISTE[_u] = dict(type="rdv", id="rendez-vous", nom=f"Rendez-vous {_de}", unites=_rdv, rang=_k, section=_titre, de=_de, pistes=[p[0] for p in _pistes])
+    _noms = [p[0] for p in _pistes]
+    for _pid, _nom, _ids in _pistes + [("rendez-vous", f"Rendez-vous {_de}", _rdv)]:
+        _typ = "rdv" if _pid == "rendez-vous" else "piste"
+        _princ = [x for x in _ids if not C.RE_SATELLITE.match(x)]
+        for _u in _ids:
+            if C.RE_SATELLITE.match(_u):
+                PISTE[_u] = dict(type="tache", groupe=_typ, id=_pid, nom=_nom, unites=_princ, phase_id=_u.split(".")[0], section=_titre, de=_de, pistes=_noms)
+            else:
+                PISTE[_u] = dict(type=_typ, id=_pid, nom=_nom, unites=_princ, rang=_princ.index(_u), section=_titre, de=_de, pistes=_noms)
 assert sorted(PISTE) == sorted(U), "chaque unité appartient à une seule piste ou à un rendez-vous"
 
 
@@ -933,6 +1010,11 @@ def note_groupe(ids, rdv):
 
 def texte_piste(u):
     p = PISTE[u["id"]]
+    if p["type"] == "tache":
+        sid = p["phase_id"]
+        ch = next(c for c in chaines_phase(sid) if u["id"] in c)
+        lieu = f"{p['id']} {p['nom']}" if p["groupe"] == "piste" else p["nom"]
+        return f"{lieu} : tâche de la phase {u['phase']}, entre {sid} et {sid}.P ; sous-piste {' → '.join(ch)}"
     chaine = " → ".join(p["unites"])
     if p["type"] == "rdv":
         return f"Rendez-vous {p['de']} : {chaine}"
@@ -941,6 +1023,18 @@ def texte_piste(u):
 
 def phrase_piste(u):
     p = PISTE[u["id"]]
+    if p["type"] == "tache":
+        sid = p["phase_id"]
+        chs = chaines_phase(sid)
+        ch = next(c for c in chs if u["id"] in c)
+        autres = [" → ".join(c) for c in chs if c is not ch]
+        s = [f"Cette tâche appartient à la phase {u['phase']}, entre sa revue {sid} et sa porte {sid}.P.",
+             f"Elle attend {', '.join(u['apres'])}.",
+             f"Sa sous-piste : {' → '.join(ch)}, à faire à la suite."]
+        if autres:
+            s.append(f"Les autres sous-pistes de la phase ({' ; '.join(autres)}) avancent en même temps, chacune dès que ses propres prérequis sont cochés.")
+        s.append("Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre.")
+        return " ".join(s)
     ids, k = p["unites"], p["rang"]
     autres = [x for x in deps_reelles(u["id"]) if x not in ids]
     s = []
@@ -989,6 +1083,8 @@ def rendre(u):
         L.append(f"| Fiche de conception | `docs/construction/etape-{u['etape']}.md`, points de contrôle |")
     elif kind in ("phase", "porte_phase"):
         L.append(f"| Fiche de conception | `docs/construction/{u['fichier_phase']}`, section {u['phase']} |")
+    elif u.get("phase_id"):
+        L.append(f"| Fiche de conception | `{conception_phase(u['phase_id'])}` (revue {u['phase_id']}), puis `docs/construction/{u['fichier_phase']}`, section {u['phase']} |")
     L.append(f"| Estimation | {u['creneaux']} créneau{'x' if u['creneaux'] > 1 else ''} |\n")
     L.append("**Séquentiel ou indépendant.** " + phrase_piste(u) + "\n")
 
@@ -1128,8 +1224,10 @@ def rendre_tache(u, br):
         L.append("")
     L.append("## Prompt de réalisation\n")
     p = bloc_entete(u, br) + "\n" + GODOT + "\n\n" + REGLES.replace("{id}", u["id"]).replace("{f}", u["f"]) + "\n\n" + trace(u, br) + "\n\n"
-    p += DEBUT_GUIDE + (f" (docs/construction/{g[0]}, {g[1]})" if g and g[2] is not None and not u.get("prompt_perso") else " (rédigé pour le mode autonome)") + "\n"
-    p += tech + "\n" + FIN_GUIDE + "\n\n"
+    if g and g[2] is not None and not u.get("prompt_perso"):
+        p += DEBUT_GUIDE + f" (docs/construction/{g[0]}, {g[1]})\n" + tech + "\n" + FIN_GUIDE + "\n\n"
+    else:
+        p += "TRAVAIL TECHNIQUE — début (rédigé pour le mode autonome)\n" + tech + "\nTRAVAIL TECHNIQUE — fin\n\n"
     if ctrls:
         p += "CONTRÔLES DE LA FICHE\n" + "\n".join(ligne_ctrl(c) for c in ctrls) + "\n"
         if u.get("ce"):
@@ -1212,49 +1310,61 @@ def rendre_porte(u, br):
 
 def rendre_phase(u, br):
     ph, fich = u["phase"], u["fichier_phase"]
+    sid = u["id"]
     dec = prompt_decoupage()
     if fich == "v1.md":
         dec = dec.replace("docs/construction/mvp.md", "docs/construction/v1.md").replace("docs/construction/mvp-{Px}.md", "docs/construction/v1-{Px}.md")
         dec = dec.rstrip("\n") + "\n- Toute tâche qui produit une explication, une comparaison ou une suggestion inclut un contrôle qui vérifie que chaque affirmation affichée renvoie à une preuve.\n"
     dec = dec.replace("{Px}", ph).rstrip("\n")
-    conc = f"docs/construction/{'mvp' if fich == 'mvp.md' else 'v1'}-{ph}.md"
+    conc = conception_phase(sid)
+    ts = taches_de(sid)
+    hmin, hmax = u["budget"][0], u["budget"][1]
+    liste = ", ".join(ts)
     L = ["## Ce qu'il faut faire\n",
-         f"- Découper la phase {ph} en 4 à 12 tâches avec le prompt de découpage de `docs/construction/{fich}`, en tenant compte des résultats du POC et des phases précédentes.",
-         f"- Écrire `{conc}` (conception) et une fiche d'exécution par tâche, `suivi/{u['id']}.<k>-<nom>.md`, à partir de `suivi/_modele-tache.md`.",
-         "- Donner à chaque tâche ses prérequis réels : une tâche qui ne dépend que de la fin du découpage peut avancer en même temps que les autres. Les tâches qui s'enchaînent forment une sous-piste ; le tableau de bord les regroupe seul.",
-         f"- Écrire dans le rapport les lignes à ajouter à `SUIVI.md`, entre **{u['id']}** et **{u['id']}.P**, dans la piste {PISTE[u['id']]['id'] if PISTE[u['id']]['type'] == 'piste' else 'du rendez-vous'}, au format des autres lignes.",
+         f"- Revoir le découpage provisoire de la phase {ph} : {len(ts)} tâches ({liste}), écrites avant le POC d'après `docs/construction/{fich}` et le plan directeur.",
+         "- Le confronter aux résultats du POC (`docs/revues/revue-poc.md`), aux décisions (`docs/DECISIONS.md`), aux spikes, aux mesures et aux rapports des phases précédentes.",
+         f"- Pour chaque tâche : la garder, la préciser (fiche modifiée), la retirer, ou la remplacer ; ajouter les tâches manquantes depuis `suivi/_modele-tache.md`. Total dans le budget de la phase : {hmin} à {hmax} h humaines.",
+         f"- Écrire `{conc}` : objectif, obligations, méthodologie, points de contrôle et cheminement d'amélioration de la phase, précisés par les résultats ; tableau des tâches retenues, avec la raison de chaque changement.",
+         f"- Écrire dans le rapport les changements à porter dans `SUIVI.md` : lignes ajoutées sous **{sid}**, lignes retirées, prérequis modifiés ; ou « aucun changement ».",
          "\n## Fichiers autorisés\n",
-         f"`{conc}`, `suivi/{u['id']}.*-*.md` (sauf la porte {u['id']}.P), `rapports/{u['id']}*.md`.\n"]
+         f"`{conc}`, `suivi/{sid}.*-*.md` (fiches des tâches de la phase, sauf la porte {sid}.P), `rapports/{sid}*.md`.\n",
+         "## Tâches du découpage provisoire\n"]
+    for x in ts:
+        L.append(f"- **{x}** · {U[x]['titre']} · réalise IA {ROLE[U[x]['r']]} · vérifie IA {ROLE[U[x]['v']]} · après {', '.join(U[x]['apres'])} · `suivi/{U[x]['f']}.md`")
+    L.append("")
     p = bloc_entete(u, br) + "\n" + REGLES.replace("{id}", u["id"]).replace("{f}", u["f"]) + "\n\n" + trace(u, br) + "\n\n"
     p += DEBUT_GUIDE + f" (docs/construction/{fich}, prompt de découpage)\n" + dec + "\n" + FIN_GUIDE + "\n\n"
     p += ("ADAPTATIONS DU MODE AUTONOME\n"
+          f"- Le découpage existe déjà : les fiches suivi/{sid}.1-… à suivi/{ts[-1]}-…, listées dans cette fiche. Tu le revois au lieu de partir de zéro ; le document à produire reste celui du guide, {conc}.\n"
           f"- Budget : traduis les heures humaines de la phase en créneaux d'IA avec le ratio observé au POC (docs/revues/revue-poc.md).\n"
-          f"- Pour chaque tâche, crée suivi/{u['id']}.<k>-<nom>.md en copiant suivi/_modele-tache.md et en remplissant toutes ses sections : prompt de réalisation complet (avec PRISE et TRACE OBLIGATOIRE), sous-étapes R, contrôles, prompt de vérification, sous-étapes V et F, chacune avec son « ⟶ cocher ».\n"
-          f"- Prérequis : {u['id']} pour toute tâche, plus les tâches de la phase dont elle dépend vraiment. Évite que deux tâches indépendantes modifient le même fichier.\n"
+          "- Tu gardes une tâche telle quelle si rien ne la contredit. Tu la modifies si un résultat l'exige (décision de spike, contrat révisé, outil renommé, mesure), en le citant.\n"
+          "- Une tâche ajoutée : nouvelle fiche suivi/" + sid + ".<k>-<nom>.md depuis suivi/_modele-tache.md, toutes sections remplies, sous-étapes au format « ⟶ cocher ». Une tâche retirée : sa fiche reste, avec la raison en tête ; le vérificateur retire sa ligne de SUIVI.md à la fusion.\n"
+          f"- Prérequis : {sid} pour toute tâche, plus les tâches de la phase dont elle dépend vraiment. Évite que deux tâches indépendantes modifient le même fichier.\n"
           "- Répartition : réalisation par IA 2, sauf contrat, protocole, façade ou format persisté (IA 1) ; vérification par IA 3, sauf ces mêmes sujets (IA 1, ou IA 3 si IA 1 est l'auteur).\n"
-          f"- Écris dans le rapport les lignes SUIVI.md à insérer ; le vérificateur les insère à la fusion, sous le verrou de main.\n"
-          "- Contrôle final : python3 suivi/outil.py verifier → OK, une fois les lignes insérées (le vérificateur le relance après insertion).\n\n")
+          "- Contrôle final : python3 suivi/outil.py verifier → OK, une fois SUIVI.md mis à jour à la fusion.\n\n")
     p += f"SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche ; après chacune, git add puis python3 suivi/outil.py cocher {u['id']} R<k> --ia <n>.\n\n" + bloc_fin(u, br)
-    R = ["Lire la section de la phase, `docs/revues/revue-poc.md`, `PROJECT_STATE.md`, `SUIVI.md` et les rapports des phases précédentes.",
+    R = ["Lire `docs/revues/revue-poc.md`, `docs/DECISIONS.md`, `docs/spikes/`, `PROJECT_STATE.md` et les rapports des phases précédentes ; noter les faits qui touchent la phase.",
+         f"Relire chaque fiche du découpage provisoire ({liste}) et décider : garder, préciser, retirer ou remplacer, avec la raison.",
+         "Appliquer les décisions aux fiches ; créer les fiches des tâches ajoutées.",
          f"Écrire `{conc}`.",
-         f"Créer une fiche `suivi/{u['id']}.<k>-<nom>.md` par tâche, depuis `suivi/_modele-tache.md`, toutes sections remplies.",
-         "Écrire dans le rapport les lignes à insérer dans `SUIVI.md`, avec leurs prérequis."]
+         "Écrire dans le rapport les changements à porter dans `SUIVI.md`, ou « aucun changement »."]
     u["R"] = R
     L += ["## Prompt de réalisation\n", "```text\n" + p + "\n```\n", "## Sous-étapes de réalisation\n",
           f"Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil.py cocher {u['id']} R<k> --ia <n>` (coche, signe, commite, pousse).\n",
           f"- [ ] {r0(u, br)}"]
     L += [f"- [ ] {ligne_r(u, i, x)}" for i, x in enumerate(R, 1)]
-    L.append(f"- [ ] R{len(R) + 1} Contrôles finaux : chaque fiche créée a toutes ses sections ; « Statut : TERMINÉ » dans le rapport ⟶ cocher {u['id']} R{len(R) + 1}\n")
-    ins = f"   Dans ../fusion-{u['f']} : insère dans SUIVI.md, entre {u['id']} et {u['id']}.P, les lignes données par le rapport ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2."
-    L += ["## Prompt de vérification\n", "```text\n" + verif_prompt(u, br, [], "Vérifie le découpage : budget de la phase respecté, chaque tâche avec au moins une contre-épreuve, prérequis réels et sans cycle, aucune paire de tâches indépendantes sur le même fichier, sous-étapes au format « ⟶ cocher ».", fusion_extra=ins) + "\n```\n",
+    L.append(f"- [ ] R{len(R) + 1} Contrôles finaux : chaque fiche gardée, modifiée ou ajoutée a toutes ses sections ; budget respecté ; « Statut : TERMINÉ » dans le rapport ⟶ cocher {u['id']} R{len(R) + 1}\n")
+    ins = f"   Dans ../fusion-{u['f']} : porte dans SUIVI.md les changements du rapport (lignes ajoutées sous {sid}, retirées, prérequis) ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2."
+    L += ["## Prompt de vérification\n", "```text\n" + verif_prompt(u, br, [], "Vérifie la revue : chaque changement cite le fait qui l'impose ; budget de la phase respecté ; chaque fiche gardée, modifiée ou ajoutée a toutes ses sections et au moins une contre-épreuve ; prérequis réels et sans cycle ; aucune paire de tâches indépendantes sur le même fichier.", fusion_extra=ins) + "\n```\n",
           "## Sous-étapes de vérification\n",
           f"Dans `../verif-{u['f']}`, après chaque sous-étape : `git add` du verdict, puis `python3 suivi/outil.py cocher {u['id']} V<k> --ia <n>`.\n"]
-    L += [f"- [ ] {x}" for x in lignes_v(u, br, ["Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait.",
-                                                 "Chaque fiche créée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis, sous-étapes au format « ⟶ cocher ».",
+    L += [f"- [ ] {x}" for x in lignes_v(u, br, ["Chaque changement cite le fait du POC ou d'une phase précédente qui l'impose.",
+                                                 "Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait.",
+                                                 "Chaque fiche gardée, modifiée ou ajoutée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis, sous-étapes au format « ⟶ cocher ».",
                                                  "Prérequis réels, sans cycle ; tâches indépendantes sans fichier commun."])]
     L += ["\n## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)\n",
           f"F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-{u['f']}`, par `python3 suivi/outil.py cocher {u['id']} F<k> --ia <n>` (commit local).\n"]
-    u["fusion"] = [f"Lignes des tâches insérées dans `SUIVI.md`, entre **{u['id']}** et **{u['id']}.P**, dans la même piste ; `python3 suivi/outil.py verifier` → OK"]
+    u["fusion"] = [f"Changements du rapport portés dans `SUIVI.md` (lignes ajoutées sous **{sid}**, retirées, prérequis) ; `python3 suivi/outil.py verifier` → OK"]
     L += [f"- [ ] {x}" for x in lignes_f(u, br, u["fusion"])] + [""]
     return L
 
@@ -1310,19 +1420,9 @@ def ligne_suivi(u):
 
 def ligne_a_creer(u):
     hmin, hmax, tmin, tmax = u["budget"]
-    return (f"  - Tâches à créer au découpage : {tmin} à {tmax} (budget de la phase : {hmin} à {hmax} h humaines). "
-            f"Les lignes {u['id']}.1, {u['id']}.2… s'insèrent ici, sous cette ligne.")
-
-
-def estimation_blocs():
-    """Unités attendues par bloc : unités déjà listées, plus les tâches que créeront les découpages."""
-    out = {}
-    for titre, de, pistes, rdv in SECTIONS:
-        ids = [x for _, _, l in pistes for x in l] + rdv
-        tmin = sum(U[x]["budget"][2] for x in ids if U[x]["kind"] == "phase")
-        tmax = sum(U[x]["budget"][3] for x in ids if U[x]["kind"] == "phase")
-        out[titre] = (len(ids), tmin, tmax)
-    return out
+    n = len(taches_de(u["id"]))
+    return (f"  - Découpage provisoire : {n} tâches, {u['id']}.1 à {u['id']}.{n}, revues par {u['id']} au début de la phase "
+            f"(budget de la phase : {hmin} à {hmax} h humaines). Une tâche ajoutée par la revue s'insère avec elles.")
 
 
 def rendre_suivi():
@@ -1334,14 +1434,15 @@ def rendre_suivi():
          "**Accès simultané.** Toutes les IA peuvent lire ce fichier en même temps, sur `origin/main`. Aucune ne le modifie à la main : il ne change que par `fusionner` (ligne cochée), `correction` (porte KO) et l'insertion des tâches d'une phase, toujours sous le verrou de `main` (`verrou/main`), une IA à la fois. Détail : `docs/construction/sequence.md`, §3.\n",
          "**Contrôle de cohérence** : `python3 suivi/outil.py verifier`.\n",
          "## Vue d'ensemble\n",
-         "Les sections MVP et V1 ne listent encore que le découpage et la porte de chaque phase : le découpage crée les tâches de la phase, 4 à 12 chacune selon son budget, d'après les résultats du POC. La colonne « Unités » compte ces tâches à venir.\n",
+         "Le MVP et la V1 sont découpés en tâches dès maintenant, d'après `mvp.md`, `v1.md` et le plan directeur (`suivi/plan_phases.py`). Ce découpage est provisoire : au début de chaque phase, son unité de revue le confronte aux résultats du POC et des phases précédentes, et garde, modifie, retire ou ajoute des tâches. Les tâches d'une phase se font entre sa revue et sa porte ; celles qui ne s'attendent pas avancent en même temps.\n",
          "| Section | Pistes autonomes, qui avancent en même temps | Rendez-vous | Unités |", "| --- | --- | --- | --- |"]
-    est = estimation_blocs()
     for titre, de, pistes, rdv in SECTIONS:
-        ps = " · ".join(f"**{pid}** {nom} : {' → '.join(ids)}" for pid, nom, ids in pistes)
-        n, tmin, tmax = est[titre]
-        nb = f"{n}" if not tmax else f"{n + tmin} à {n + tmax} ({n} listées, {tmin} à {tmax} tâches à créer)"
-        L.append(f"| {titre} | {ps} | {' → '.join(rdv)} | {nb} |")
+        def court(ids):
+            return " → ".join(x if not C.RE_SATELLITE.match(x) else "" for x in ids if not C.RE_SATELLITE.match(x))
+        ps = " · ".join(f"**{pid}** {nom} : {court(ids)}" for pid, nom, ids in pistes)
+        n = sum(len(ids) for _, _, ids in pistes) + len(rdv)
+        nt = sum(1 for _, _, ids in pistes for x in ids if C.RE_SATELLITE.match(x)) + sum(1 for x in rdv if C.RE_SATELLITE.match(x))
+        L.append(f"| {titre} | {ps} | {court(rdv)} | {n}" + (f", dont {nt} tâches de phase" if nt else "") + " |")
     L.append("")
     L.append("```mermaid\nflowchart TB")
     for k, (titre, de, pistes, rdv) in enumerate(SECTIONS):
@@ -1349,12 +1450,16 @@ def rendre_suivi():
         L.append("    direction LR")
         for pid, nom, ids in pistes:
             L.append(f'    subgraph P{pid.replace(".", "")}["{pid} {nom}"]')
-            L.append("      " + " --> ".join(x.replace(".", "_") for x in ids))
+            L.append("      " + " --> ".join(x.replace(".", "_") for x in ids if not C.RE_SATELLITE.match(x)))
             L.append("    end")
-        L.append("    " + " --> ".join(x.replace(".", "_") for x in rdv))
+        L.append("    " + " --> ".join(x.replace(".", "_") for x in rdv if not C.RE_SATELLITE.match(x)))
         L.append("  end")
     for uid in U:
+        if C.RE_SATELLITE.match(uid):
+            continue
         for d in deps_reelles(uid):
+            if C.RE_SATELLITE.match(d):
+                continue
             p, q = PISTE[uid], PISTE[d]
             if p["unites"] is q["unites"] and p["unites"].index(uid) == q["unites"].index(d) + 1:
                 continue
@@ -1591,10 +1696,14 @@ def verifier():
 
 def generer(force=False):
     SUIVI_DIR.mkdir(exist_ok=True)
+    actuel = C.lire_suivi(SUIVI_MD.read_text(encoding="utf-8"))["unites"] if SUIVI_MD.exists() else {}
     for uid, u in U.items():
         p = SUIVI_DIR / f"{u['f']}.md"
         if p.exists() and "- [x]" in p.read_text(encoding="utf-8") and not force:
             print(f"conservée (cases cochées) : {p.name}")
+            continue
+        if p.exists() and u.get("phase_id") and actuel.get(u["phase_id"], {}).get("coche") and not force:
+            print(f"conservée (découpage revu par {u['phase_id']}) : {p.name}")
             continue
         p.write_text(rendre(u), encoding="utf-8")
     (SUIVI_DIR / "_modele-tache.md").write_text(MODELE_TACHE, encoding="utf-8")

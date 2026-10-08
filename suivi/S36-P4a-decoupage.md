@@ -1,4 +1,4 @@
-# S36 — P4a Évaluations : rendu et backend statique : découpage
+# S36 — P4a Évaluations : rendu et backend statique : revue du découpage
 
 > Fiche d'exécution du mode autonome. Chaque case se coche avec `python3 suivi/outil.py cocher S36 <sous-étape> --ia <n>`, juste après la sous-étape : la commande vérifie l'ordre et l'identité de l'IA, signe la case (IA, date, heure UTC), commite et pousse. Une sous-étape non cochée par cette commande est considérée comme non faite. Règles : `docs/construction/sequence.md`. Avancement : `SUIVI.md` et `suivi/tableau.html`.
 
@@ -8,7 +8,7 @@
 | Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
 | Piste | M.A Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P (unité 1 sur 6) |
 | Commence après | S35 (cochée dans `SUIVI.md`) |
-| Indépendante de | S39, S39.P, S40, S40.P |
+| Indépendante de | S39, S39.P, S40, S40.P, S39.1, S39.2, S39.3, S39.4, S39.5, S39.6, S39.7, S39.8, S39.9, S39.10, et 7 autres (voir SUIVI.md) |
 | Branche | `tache/S36-P4a-decoupage` |
 | Fiche de conception | `docs/construction/mvp.md`, section P4a |
 | Estimation | 1 créneau |
@@ -17,19 +17,28 @@
 
 ## Ce qu'il faut faire
 
-- Découper la phase P4a en 4 à 12 tâches avec le prompt de découpage de `docs/construction/mvp.md`, en tenant compte des résultats du POC et des phases précédentes.
-- Écrire `docs/construction/mvp-P4a.md` (conception) et une fiche d'exécution par tâche, `suivi/S36.<k>-<nom>.md`, à partir de `suivi/_modele-tache.md`.
-- Donner à chaque tâche ses prérequis réels : une tâche qui ne dépend que de la fin du découpage peut avancer en même temps que les autres. Les tâches qui s'enchaînent forment une sous-piste ; le tableau de bord les regroupe seul.
-- Écrire dans le rapport les lignes à ajouter à `SUIVI.md`, entre **S36** et **S36.P**, dans la piste M.A, au format des autres lignes.
+- Revoir le découpage provisoire de la phase P4a : 5 tâches (S36.1, S36.2, S36.3, S36.4, S36.5), écrites avant le POC d'après `docs/construction/mvp.md` et le plan directeur.
+- Le confronter aux résultats du POC (`docs/revues/revue-poc.md`), aux décisions (`docs/DECISIONS.md`), aux spikes, aux mesures et aux rapports des phases précédentes.
+- Pour chaque tâche : la garder, la préciser (fiche modifiée), la retirer, ou la remplacer ; ajouter les tâches manquantes depuis `suivi/_modele-tache.md`. Total dans le budget de la phase : 6 à 12 h humaines.
+- Écrire `docs/construction/mvp-P4a.md` : objectif, obligations, méthodologie, points de contrôle et cheminement d'amélioration de la phase, précisés par les résultats ; tableau des tâches retenues, avec la raison de chaque changement.
+- Écrire dans le rapport les changements à porter dans `SUIVI.md` : lignes ajoutées sous **S36**, lignes retirées, prérequis modifiés ; ou « aucun changement ».
 
 ## Fichiers autorisés
 
-`docs/construction/mvp-P4a.md`, `suivi/S36.*-*.md` (sauf la porte S36.P), `rapports/S36*.md`.
+`docs/construction/mvp-P4a.md`, `suivi/S36.*-*.md` (fiches des tâches de la phase, sauf la porte S36.P), `rapports/S36*.md`.
+
+## Tâches du découpage provisoire
+
+- **S36.1** · Étalon des relations attendues sur le banc d'essai · réalise IA 3 · vérifie IA 1 · après S36 · `suivi/S36.1-etalon-relations.md`
+- **S36.2** · SPIKE-03, rendu du graphe : GraphEdit, canevas ou hybride · réalise IA 1 · vérifie IA 3 · après S36 · `suivi/S36.2-spike03-rendu.md`
+- **S36.3** · SPIKE-04, extraction maison des relations d'appel · réalise IA 2 · vérifie IA 1 · après S36.1 · `suivi/S36.3-spike04-maison.md`
+- **S36.4** · SPIKE-04, évaluation de GDScript AST Flow · réalise IA 1 · vérifie IA 3 · après S36.1 · `suivi/S36.4-spike04-astflow.md`
+- **S36.5** · Décisions de rendu et de backend statique · réalise IA 1 · vérifie IA 3 · après S36.2, S36.3, S36.4 · `suivi/S36.5-decisions-p4a.md`
 
 ## Prompt de réalisation
 
 ```text
-Tu réalises l'unité S36 « P4a Évaluations : rendu et backend statique : découpage » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Tu réalises l'unité S36 « P4a Évaluations : rendu et backend statique : revue du découpage » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
 Réalisation prévue : IA 1 (conception) ; vérification : IA 3 (vérification). Ton numéro d'IA est celui que te donne le prompt de créneau : tu le passes à --ia, et il signe chaque case que tu coches.
 
 AVANT TOUT, depuis ton clone principal du dépôt
@@ -76,12 +85,13 @@ RÈGLES
 TRAVAIL TECHNIQUE — fin de la copie exacte du guide
 
 ADAPTATIONS DU MODE AUTONOME
+- Le découpage existe déjà : les fiches suivi/S36.1-… à suivi/S36.5-…, listées dans cette fiche. Tu le revois au lieu de partir de zéro ; le document à produire reste celui du guide, docs/construction/mvp-P4a.md.
 - Budget : traduis les heures humaines de la phase en créneaux d'IA avec le ratio observé au POC (docs/revues/revue-poc.md).
-- Pour chaque tâche, crée suivi/S36.<k>-<nom>.md en copiant suivi/_modele-tache.md et en remplissant toutes ses sections : prompt de réalisation complet (avec PRISE et TRACE OBLIGATOIRE), sous-étapes R, contrôles, prompt de vérification, sous-étapes V et F, chacune avec son « ⟶ cocher ».
+- Tu gardes une tâche telle quelle si rien ne la contredit. Tu la modifies si un résultat l'exige (décision de spike, contrat révisé, outil renommé, mesure), en le citant.
+- Une tâche ajoutée : nouvelle fiche suivi/S36.<k>-<nom>.md depuis suivi/_modele-tache.md, toutes sections remplies, sous-étapes au format « ⟶ cocher ». Une tâche retirée : sa fiche reste, avec la raison en tête ; le vérificateur retire sa ligne de SUIVI.md à la fusion.
 - Prérequis : S36 pour toute tâche, plus les tâches de la phase dont elle dépend vraiment. Évite que deux tâches indépendantes modifient le même fichier.
 - Répartition : réalisation par IA 2, sauf contrat, protocole, façade ou format persisté (IA 1) ; vérification par IA 3, sauf ces mêmes sujets (IA 1, ou IA 3 si IA 1 est l'auteur).
-- Écris dans le rapport les lignes SUIVI.md à insérer ; le vérificateur les insère à la fusion, sous le verrou de main.
-- Contrôle final : python3 suivi/outil.py verifier → OK, une fois les lignes insérées (le vérificateur le relance après insertion).
+- Contrôle final : python3 suivi/outil.py verifier → OK, une fois SUIVI.md mis à jour à la fusion.
 
 SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche ; après chacune, git add puis python3 suivi/outil.py cocher S36 R<k> --ia <n>.
 
@@ -107,16 +117,17 @@ FORMAT DE rapports/S36.md (créé par prendre ; tu le complètes)
 Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil.py cocher S36 R<k> --ia <n>` (coche, signe, commite, pousse).
 
 - [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S36 --ia <n>` (prérequis cochés dans `SUIVI.md` : S35 ; branche `tache/S36-P4a-decoupage` créée ou reprise ; `rapports/S36.md` au statut EN COURS) ⟶ cochée par `prendre`
-- [ ] R1 Lire la section de la phase, `docs/revues/revue-poc.md`, `PROJECT_STATE.md`, `SUIVI.md` et les rapports des phases précédentes. ⟶ cocher S36 R1
-- [ ] R2 Écrire `docs/construction/mvp-P4a.md`. ⟶ cocher S36 R2
-- [ ] R3 Créer une fiche `suivi/S36.<k>-<nom>.md` par tâche, depuis `suivi/_modele-tache.md`, toutes sections remplies. ⟶ cocher S36 R3
-- [ ] R4 Écrire dans le rapport les lignes à insérer dans `SUIVI.md`, avec leurs prérequis. ⟶ cocher S36 R4
-- [ ] R5 Contrôles finaux : chaque fiche créée a toutes ses sections ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S36 R5
+- [ ] R1 Lire `docs/revues/revue-poc.md`, `docs/DECISIONS.md`, `docs/spikes/`, `PROJECT_STATE.md` et les rapports des phases précédentes ; noter les faits qui touchent la phase. ⟶ cocher S36 R1
+- [ ] R2 Relire chaque fiche du découpage provisoire (S36.1, S36.2, S36.3, S36.4, S36.5) et décider : garder, préciser, retirer ou remplacer, avec la raison. ⟶ cocher S36 R2
+- [ ] R3 Appliquer les décisions aux fiches ; créer les fiches des tâches ajoutées. ⟶ cocher S36 R3
+- [ ] R4 Écrire `docs/construction/mvp-P4a.md`. ⟶ cocher S36 R4
+- [ ] R5 Écrire dans le rapport les changements à porter dans `SUIVI.md`, ou « aucun changement ». ⟶ cocher S36 R5
+- [ ] R6 Contrôles finaux : chaque fiche gardée, modifiée ou ajoutée a toutes ses sections ; budget respecté ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S36 R6
 
 ## Prompt de vérification
 
 ```text
-Tu vérifies l'unité S36 « P4a Évaluations : rendu et backend statique : découpage » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
+Tu vérifies l'unité S36 « P4a Évaluations : rendu et backend statique : revue du découpage » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
 
 PRISE, depuis ton clone principal
 python3 suivi/outil.py prendre S36 --ia <n> --verification
@@ -141,7 +152,7 @@ TRACE OBLIGATOIRE : après chaque sous-étape V, git add du fichier de verdict, 
    - dépendance interdite entre modules ; API sensible hors de la frontière de compatibilité ;
    - affirmation du rapport sans sortie qui la prouve.
 6. COHÉRENCE. Contrat et invariants concernés.
-Vérifie le découpage : budget de la phase respecté, chaque tâche avec au moins une contre-épreuve, prérequis réels et sans cycle, aucune paire de tâches indépendantes sur le même fichier, sous-étapes au format « ⟶ cocher ».
+Vérifie la revue : chaque changement cite le fait qui l'impose ; budget de la phase respecté ; chaque fiche gardée, modifiée ou ajoutée a toutes ses sections et au moins une contre-épreuve ; prérequis réels et sans cycle ; aucune paire de tâches indépendantes sur le même fichier.
 
 VERDICT dans rapports/S36-verif-<tentative>.md (créé par la prise) :
 - Verdict : ACCEPTÉE | REFUSÉE
@@ -154,7 +165,7 @@ SI ACCEPTÉE — FUSION, depuis ton clone principal
 1. python3 suivi/outil.py fusionner S36 --ia <n> --godot "$B"
    Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S36-P4a-decoupage, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
 2. cd ../fusion-S36-P4a-decoupage ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S36 F<k> --ia <n> (commit local, sans poussée).
-   Dans ../fusion-S36-P4a-decoupage : insère dans SUIVI.md, entre S36 et S36.P, les lignes données par le rapport ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2.
+   Dans ../fusion-S36-P4a-decoupage : porte dans SUIVI.md les changements du rapport (lignes ajoutées sous S36, retirées, prérequis) ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2.
 3. python3 suivi/outil.py publier S36 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
 SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
 ```
@@ -165,17 +176,18 @@ Dans `../verif-S36-P4a-decoupage`, après chaque sous-étape : `git add` du verd
 
 - [ ] V1 Prise en charge : `python3 suivi/outil.py prendre S36 --ia <n> --verification` (pas un auteur ; copie neuve `../verif-S36-P4a-decoupage` sur `origin/tache/S36-P4a-decoupage` ; verdict EN COURS) ⟶ cochée par `prendre`
 - [ ] V2 Traçabilité : chaque case R cochée porte une signature « — IA n · date » et un commit sur la branche (`git log --oneline origin/main..HEAD`) ⟶ cocher S36 V2
-- [ ] V3 Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait. ⟶ cocher S36 V3
-- [ ] V4 Chaque fiche créée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis, sous-étapes au format « ⟶ cocher ». ⟶ cocher S36 V4
-- [ ] V5 Prérequis réels, sans cycle ; tâches indépendantes sans fichier commun. ⟶ cocher S36 V5
-- [ ] V6 Verdict écrit dans `rapports/S36-verif-<tentative>.md` ⟶ cocher S36 V6 --verdict ACCEPTÉE ou --verdict REFUSÉE
+- [ ] V3 Chaque changement cite le fait du POC ou d'une phase précédente qui l'impose. ⟶ cocher S36 V3
+- [ ] V4 Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait. ⟶ cocher S36 V4
+- [ ] V5 Chaque fiche gardée, modifiée ou ajoutée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis, sous-étapes au format « ⟶ cocher ». ⟶ cocher S36 V5
+- [ ] V6 Prérequis réels, sans cycle ; tâches indépendantes sans fichier commun. ⟶ cocher S36 V6
+- [ ] V7 Verdict écrit dans `rapports/S36-verif-<tentative>.md` ⟶ cocher S36 V7 --verdict ACCEPTÉE ou --verdict REFUSÉE
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
 F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S36-P4a-decoupage`, par `python3 suivi/outil.py cocher S36 F<k> --ia <n>` (commit local).
 
 - [ ] F1 Fusion : `python3 suivi/outil.py fusionner S36 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S36-P4a-decoupage`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S36** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
-- [ ] F2 Lignes des tâches insérées dans `SUIVI.md`, entre **S36** et **S36.P**, dans la même piste ; `python3 suivi/outil.py verifier` → OK ⟶ cocher S36 F2
+- [ ] F2 Changements du rapport portés dans `SUIVI.md` (lignes ajoutées sous **S36**, retirées, prérequis) ; `python3 suivi/outil.py verifier` → OK ⟶ cocher S36 F2
 - [ ] F3 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S36 F3
 - [ ] F4 Publication : `python3 suivi/outil.py publier S36 --ia <n>` (verifier OK, `main` poussée, branche `tache/S36-P4a-decoupage` supprimée, verrou rendu) ⟶ cochée par `publier`
 

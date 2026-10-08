@@ -1,4 +1,4 @@
-# S42 — P9 Timeline du Game Flow : découpage
+# S42 — P9 Timeline du Game Flow : revue du découpage
 
 > Fiche d'exécution du mode autonome. Chaque case se coche avec `python3 suivi/outil.py cocher S42 <sous-étape> --ia <n>`, juste après la sous-étape : la commande vérifie l'ordre et l'identité de l'IA, signe la case (IA, date, heure UTC), commite et pousse. Une sous-étape non cochée par cette commande est considérée comme non faite. Règles : `docs/construction/sequence.md`. Avancement : `SUIVI.md` et `suivi/tableau.html`.
 
@@ -8,7 +8,7 @@
 | Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
 | Piste | V.A Phases P9, P12, P13, P15 : S42 → S42.P → S45 → S45.P → S46 → S46.P → S48 → S48.P (unité 1 sur 8) |
 | Commence après | S41.P (cochée dans `SUIVI.md`) |
-| Indépendante de | S43, S43.P, S44, S44.P, S47, S47.P |
+| Indépendante de | S43, S43.P, S44, S44.P, S47, S47.P, S43.1, S43.2, S43.3, S43.4, S43.5, S43.6, S44.1, S44.2, et 13 autres (voir SUIVI.md) |
 | Branche | `tache/S42-P9-decoupage` |
 | Fiche de conception | `docs/construction/v1.md`, section P9 |
 | Estimation | 1 créneau |
@@ -17,19 +17,30 @@
 
 ## Ce qu'il faut faire
 
-- Découper la phase P9 en 4 à 12 tâches avec le prompt de découpage de `docs/construction/v1.md`, en tenant compte des résultats du POC et des phases précédentes.
-- Écrire `docs/construction/v1-P9.md` (conception) et une fiche d'exécution par tâche, `suivi/S42.<k>-<nom>.md`, à partir de `suivi/_modele-tache.md`.
-- Donner à chaque tâche ses prérequis réels : une tâche qui ne dépend que de la fin du découpage peut avancer en même temps que les autres. Les tâches qui s'enchaînent forment une sous-piste ; le tableau de bord les regroupe seul.
-- Écrire dans le rapport les lignes à ajouter à `SUIVI.md`, entre **S42** et **S42.P**, dans la piste V.A, au format des autres lignes.
+- Revoir le découpage provisoire de la phase P9 : 7 tâches (S42.1, S42.2, S42.3, S42.4, S42.5, S42.6, S42.7), écrites avant le POC d'après `docs/construction/v1.md` et le plan directeur.
+- Le confronter aux résultats du POC (`docs/revues/revue-poc.md`), aux décisions (`docs/DECISIONS.md`), aux spikes, aux mesures et aux rapports des phases précédentes.
+- Pour chaque tâche : la garder, la préciser (fiche modifiée), la retirer, ou la remplacer ; ajouter les tâches manquantes depuis `suivi/_modele-tache.md`. Total dans le budget de la phase : 8 à 12 h humaines.
+- Écrire `docs/construction/v1-P9.md` : objectif, obligations, méthodologie, points de contrôle et cheminement d'amélioration de la phase, précisés par les résultats ; tableau des tâches retenues, avec la raison de chaque changement.
+- Écrire dans le rapport les changements à porter dans `SUIVI.md` : lignes ajoutées sous **S42**, lignes retirées, prérequis modifiés ; ou « aucun changement ».
 
 ## Fichiers autorisés
 
-`docs/construction/v1-P9.md`, `suivi/S42.*-*.md` (sauf la porte S42.P), `rapports/S42*.md`.
+`docs/construction/v1-P9.md`, `suivi/S42.*-*.md` (fiches des tâches de la phase, sauf la porte S42.P), `rapports/S42*.md`.
+
+## Tâches du découpage provisoire
+
+- **S42.1** · Contrat C-12 : timeline et corrélation à travers await · réalise IA 1 · vérifie IA 3 · après S42 · `suivi/S42.1-contrat-c12-timeline.md`
+- **S42.2** · Fixtures d'occurrences entrelacées · réalise IA 3 · vérifie IA 2 · après S42.1 · `suivi/S42.2-fixtures-timeline.md`
+- **S42.3** · Projection timeline · réalise IA 2 · vérifie IA 3 · après S42.2 · `suivi/S42.3-projection-timeline.md`
+- **S42.4** · Regroupement par niveau et zoom sémantique · réalise IA 2 · vérifie IA 3 · après S42.3 · `suivi/S42.4-zoom-semantique.md`
+- **S42.5** · Vue timeline · réalise IA 2 · vérifie IA 3 · après S42.4 · `suivi/S42.5-vue-timeline.md`
+- **S42.6** · Corrélation à travers await, côté jeu et côté éditeur · réalise IA 2 · vérifie IA 1 · après S42.1 · `suivi/S42.6-await-runtime.md`
+- **S42.7** · Essai de la timeline sur le banc d'essai · réalise IA 3 · vérifie IA 2 · après S42.5, S42.6 · `suivi/S42.7-essai-timeline.md`
 
 ## Prompt de réalisation
 
 ```text
-Tu réalises l'unité S42 « P9 Timeline du Game Flow : découpage » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Tu réalises l'unité S42 « P9 Timeline du Game Flow : revue du découpage » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
 Réalisation prévue : IA 1 (conception) ; vérification : IA 3 (vérification). Ton numéro d'IA est celui que te donne le prompt de créneau : tu le passes à --ia, et il signe chaque case que tu coches.
 
 AVANT TOUT, depuis ton clone principal du dépôt
@@ -77,12 +88,13 @@ RÈGLES
 TRAVAIL TECHNIQUE — fin de la copie exacte du guide
 
 ADAPTATIONS DU MODE AUTONOME
+- Le découpage existe déjà : les fiches suivi/S42.1-… à suivi/S42.7-…, listées dans cette fiche. Tu le revois au lieu de partir de zéro ; le document à produire reste celui du guide, docs/construction/v1-P9.md.
 - Budget : traduis les heures humaines de la phase en créneaux d'IA avec le ratio observé au POC (docs/revues/revue-poc.md).
-- Pour chaque tâche, crée suivi/S42.<k>-<nom>.md en copiant suivi/_modele-tache.md et en remplissant toutes ses sections : prompt de réalisation complet (avec PRISE et TRACE OBLIGATOIRE), sous-étapes R, contrôles, prompt de vérification, sous-étapes V et F, chacune avec son « ⟶ cocher ».
+- Tu gardes une tâche telle quelle si rien ne la contredit. Tu la modifies si un résultat l'exige (décision de spike, contrat révisé, outil renommé, mesure), en le citant.
+- Une tâche ajoutée : nouvelle fiche suivi/S42.<k>-<nom>.md depuis suivi/_modele-tache.md, toutes sections remplies, sous-étapes au format « ⟶ cocher ». Une tâche retirée : sa fiche reste, avec la raison en tête ; le vérificateur retire sa ligne de SUIVI.md à la fusion.
 - Prérequis : S42 pour toute tâche, plus les tâches de la phase dont elle dépend vraiment. Évite que deux tâches indépendantes modifient le même fichier.
 - Répartition : réalisation par IA 2, sauf contrat, protocole, façade ou format persisté (IA 1) ; vérification par IA 3, sauf ces mêmes sujets (IA 1, ou IA 3 si IA 1 est l'auteur).
-- Écris dans le rapport les lignes SUIVI.md à insérer ; le vérificateur les insère à la fusion, sous le verrou de main.
-- Contrôle final : python3 suivi/outil.py verifier → OK, une fois les lignes insérées (le vérificateur le relance après insertion).
+- Contrôle final : python3 suivi/outil.py verifier → OK, une fois SUIVI.md mis à jour à la fusion.
 
 SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche ; après chacune, git add puis python3 suivi/outil.py cocher S42 R<k> --ia <n>.
 
@@ -108,16 +120,17 @@ FORMAT DE rapports/S42.md (créé par prendre ; tu le complètes)
 Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil.py cocher S42 R<k> --ia <n>` (coche, signe, commite, pousse).
 
 - [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S42 --ia <n>` (prérequis cochés dans `SUIVI.md` : S41.P ; branche `tache/S42-P9-decoupage` créée ou reprise ; `rapports/S42.md` au statut EN COURS) ⟶ cochée par `prendre`
-- [ ] R1 Lire la section de la phase, `docs/revues/revue-poc.md`, `PROJECT_STATE.md`, `SUIVI.md` et les rapports des phases précédentes. ⟶ cocher S42 R1
-- [ ] R2 Écrire `docs/construction/v1-P9.md`. ⟶ cocher S42 R2
-- [ ] R3 Créer une fiche `suivi/S42.<k>-<nom>.md` par tâche, depuis `suivi/_modele-tache.md`, toutes sections remplies. ⟶ cocher S42 R3
-- [ ] R4 Écrire dans le rapport les lignes à insérer dans `SUIVI.md`, avec leurs prérequis. ⟶ cocher S42 R4
-- [ ] R5 Contrôles finaux : chaque fiche créée a toutes ses sections ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S42 R5
+- [ ] R1 Lire `docs/revues/revue-poc.md`, `docs/DECISIONS.md`, `docs/spikes/`, `PROJECT_STATE.md` et les rapports des phases précédentes ; noter les faits qui touchent la phase. ⟶ cocher S42 R1
+- [ ] R2 Relire chaque fiche du découpage provisoire (S42.1, S42.2, S42.3, S42.4, S42.5, S42.6, S42.7) et décider : garder, préciser, retirer ou remplacer, avec la raison. ⟶ cocher S42 R2
+- [ ] R3 Appliquer les décisions aux fiches ; créer les fiches des tâches ajoutées. ⟶ cocher S42 R3
+- [ ] R4 Écrire `docs/construction/v1-P9.md`. ⟶ cocher S42 R4
+- [ ] R5 Écrire dans le rapport les changements à porter dans `SUIVI.md`, ou « aucun changement ». ⟶ cocher S42 R5
+- [ ] R6 Contrôles finaux : chaque fiche gardée, modifiée ou ajoutée a toutes ses sections ; budget respecté ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S42 R6
 
 ## Prompt de vérification
 
 ```text
-Tu vérifies l'unité S42 « P9 Timeline du Game Flow : découpage » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
+Tu vérifies l'unité S42 « P9 Timeline du Game Flow : revue du découpage » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
 
 PRISE, depuis ton clone principal
 python3 suivi/outil.py prendre S42 --ia <n> --verification
@@ -142,7 +155,7 @@ TRACE OBLIGATOIRE : après chaque sous-étape V, git add du fichier de verdict, 
    - dépendance interdite entre modules ; API sensible hors de la frontière de compatibilité ;
    - affirmation du rapport sans sortie qui la prouve.
 6. COHÉRENCE. Contrat et invariants concernés.
-Vérifie le découpage : budget de la phase respecté, chaque tâche avec au moins une contre-épreuve, prérequis réels et sans cycle, aucune paire de tâches indépendantes sur le même fichier, sous-étapes au format « ⟶ cocher ».
+Vérifie la revue : chaque changement cite le fait qui l'impose ; budget de la phase respecté ; chaque fiche gardée, modifiée ou ajoutée a toutes ses sections et au moins une contre-épreuve ; prérequis réels et sans cycle ; aucune paire de tâches indépendantes sur le même fichier.
 
 VERDICT dans rapports/S42-verif-<tentative>.md (créé par la prise) :
 - Verdict : ACCEPTÉE | REFUSÉE
@@ -155,7 +168,7 @@ SI ACCEPTÉE — FUSION, depuis ton clone principal
 1. python3 suivi/outil.py fusionner S42 --ia <n> --godot "$B"
    Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S42-P9-decoupage, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
 2. cd ../fusion-S42-P9-decoupage ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S42 F<k> --ia <n> (commit local, sans poussée).
-   Dans ../fusion-S42-P9-decoupage : insère dans SUIVI.md, entre S42 et S42.P, les lignes données par le rapport ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2.
+   Dans ../fusion-S42-P9-decoupage : porte dans SUIVI.md les changements du rapport (lignes ajoutées sous S42, retirées, prérequis) ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2.
 3. python3 suivi/outil.py publier S42 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
 SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
 ```
@@ -166,17 +179,18 @@ Dans `../verif-S42-P9-decoupage`, après chaque sous-étape : `git add` du verdi
 
 - [ ] V1 Prise en charge : `python3 suivi/outil.py prendre S42 --ia <n> --verification` (pas un auteur ; copie neuve `../verif-S42-P9-decoupage` sur `origin/tache/S42-P9-decoupage` ; verdict EN COURS) ⟶ cochée par `prendre`
 - [ ] V2 Traçabilité : chaque case R cochée porte une signature « — IA n · date » et un commit sur la branche (`git log --oneline origin/main..HEAD`) ⟶ cocher S42 V2
-- [ ] V3 Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait. ⟶ cocher S42 V3
-- [ ] V4 Chaque fiche créée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis, sous-étapes au format « ⟶ cocher ». ⟶ cocher S42 V4
-- [ ] V5 Prérequis réels, sans cycle ; tâches indépendantes sans fichier commun. ⟶ cocher S42 V5
-- [ ] V6 Verdict écrit dans `rapports/S42-verif-<tentative>.md` ⟶ cocher S42 V6 --verdict ACCEPTÉE ou --verdict REFUSÉE
+- [ ] V3 Chaque changement cite le fait du POC ou d'une phase précédente qui l'impose. ⟶ cocher S42 V3
+- [ ] V4 Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait. ⟶ cocher S42 V4
+- [ ] V5 Chaque fiche gardée, modifiée ou ajoutée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis, sous-étapes au format « ⟶ cocher ». ⟶ cocher S42 V5
+- [ ] V6 Prérequis réels, sans cycle ; tâches indépendantes sans fichier commun. ⟶ cocher S42 V6
+- [ ] V7 Verdict écrit dans `rapports/S42-verif-<tentative>.md` ⟶ cocher S42 V7 --verdict ACCEPTÉE ou --verdict REFUSÉE
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
 F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S42-P9-decoupage`, par `python3 suivi/outil.py cocher S42 F<k> --ia <n>` (commit local).
 
 - [ ] F1 Fusion : `python3 suivi/outil.py fusionner S42 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S42-P9-decoupage`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S42** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
-- [ ] F2 Lignes des tâches insérées dans `SUIVI.md`, entre **S42** et **S42.P**, dans la même piste ; `python3 suivi/outil.py verifier` → OK ⟶ cocher S42 F2
+- [ ] F2 Changements du rapport portés dans `SUIVI.md` (lignes ajoutées sous **S42**, retirées, prérequis) ; `python3 suivi/outil.py verifier` → OK ⟶ cocher S42 F2
 - [ ] F3 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S42 F3
 - [ ] F4 Publication : `python3 suivi/outil.py publier S42 --ia <n>` (verifier OK, `main` poussée, branche `tache/S42-P9-decoupage` supprimée, verrou rendu) ⟶ cochée par `publier`
 

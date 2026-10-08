@@ -85,7 +85,7 @@ L'étape de fusion est aussi l'étape d'intégration : `run_all_checks.sh` y est
 | `mvp.md` | Phases P4a à P8, avec leur prompt de découpage |
 | `v1.md` | Phases P9 à P16, avec leur prompt de découpage |
 
-Le POC est détaillé tâche par tâche. Le MVP et la V1 sont décrits phase par phase : leur découpage en tâches dépend des résultats du POC, et un prompt dédié le produit au moment voulu.
+Le POC est détaillé tâche par tâche. Le MVP et la V1 sont décrits phase par phase. En mode autonome, ils sont aussi découpés en tâches dès le départ (`suivi/plan_phases.py`, fiches `suivi/S36.1-…` et suivantes) ; au début de chaque phase, le prompt de découpage sert à revoir ce découpage provisoire à la lumière des résultats du POC.
 
 ## Statuts d'une tâche
 
