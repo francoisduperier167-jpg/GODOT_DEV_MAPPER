@@ -141,6 +141,9 @@ select.btn { padding-right: 8px; }
 .sous { border-left: 2px solid var(--bord, var(--t1b)); margin: 2px 0 2px 10px; padding-left: 10px; display: grid; gap: 6px; }
 .sous > .titre-sous { font-size: .78rem; color: var(--muted); }
 .sous .sous-pistes { display: flex; flex-wrap: wrap; gap: 8px; }
+.sous.prevu { border-left-style: dashed; padding-block: 6px; }
+.sous.prevu .titre-sous { font-size: .82rem; }
+.sous.prevu b { color: var(--ink); font-weight: 600; }
 .sous .sous-piste { flex: 1 1 200px; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 6px; display: grid; gap: 6px; background: var(--surface-2); }
 
 /* cartes d'unité */
@@ -252,6 +255,7 @@ var RE_LIGNE = /^- \[( |x)\] \*\*(S\d\d(?:\.[0-9A-Za-z]+)?)\*\* · (.*?) · réa
 var RE_FAIT = /fait le (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC/;
 var RE_ETAPE = /^- \[( |x)\] ((?:Rc|R|V|F)\d+(?:\.\d+)?) (.*)$/;
 var RE_SIGNE = / — IA ([123]) · (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC(?: · (ACCEPTÉE|REFUSÉE))?$/;
+var RE_ESTIME = /^  - Tâches à créer au découpage : (\d+) à (\d+) \(budget de la phase : (\d+) à (\d+) h/;
 
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 function md(s) { return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>"); }
@@ -260,9 +264,10 @@ function stem(p) { return p.replace(/^suivi\//, "").replace(/\.md$/, ""); }
 
 /* ---------- lecture, comme suivi/commun.py ---------- */
 function lireSuivi(t) {
-  var sections = [], unites = {}, ordre = [], sec = null, grp = null;
+  var sections = [], unites = {}, ordre = [], sec = null, grp = null, der = null;
   t.split("\n").forEach(function (l) {
     var m;
+    if (der && (m = RE_ESTIME.exec(l))) { unites[der].estime = { tmin: +m[1], tmax: +m[2], hmin: +m[3], hmax: +m[4] }; return; }
     if ((m = RE_SECTION.exec(l))) { sec = { titre: m[1].trim(), groupes: [] }; sections.push(sec); grp = null; return; }
     if (sec && (m = RE_PISTE.exec(l))) { grp = { type: "piste", id: m[1], nom: m[2].trim(), note: (m[3] || "").trim(), unites: [] }; sec.groupes.push(grp); return; }
     if (sec && (m = RE_RDV.exec(l))) { grp = { type: "rdv", id: "rdv", nom: (m[1] || "").trim(), note: (m[2] || "").trim(), unites: [] }; sec.groupes.push(grp); return; }
@@ -271,7 +276,7 @@ function lireSuivi(t) {
       var f = RE_FAIT.exec(m[8]);
       unites[m[2]] = { id: m[2], coche: m[1] === "x", titre: m[3], r: +m[4], v: +m[5], apres: m[6].trim() === "—" ? [] : m[6].split(",").map(function (x) { return x.trim(); }),
         fiche: m[7], fait: f ? f[1] : null, groupe: grp };
-      ordre.push(m[2]);
+      ordre.push(m[2]); der = m[2];
       if (grp) grp.unites.push(m[2]);
     }
   });
@@ -284,6 +289,17 @@ function depsReelles(S, uid) {
     else out.push(d);
   });
   return out;
+}
+function taches(S, uid) { var re = new RegExp("^" + uid.replace(".", "\\.") + "\\.\\d+$"); return S.ordre.filter(function (x) { return re.test(x); }); }
+function aCreer(S, ids) {
+  var r = { tmin: 0, tmax: 0, mil: 0 };
+  ids.forEach(function (uid) { var e = S.unites[uid].estime; if (e && !taches(S, uid).length) { r.tmin += e.tmin; r.tmax += e.tmax; r.mil += (e.tmin + e.tmax) / 2; } });
+  return r;
+}
+function prevu(S, uid) {
+  var e = S.unites[uid].estime;
+  if (!e || taches(S, uid).length) return "";
+  return '<div class="lien"></div><div class="sous prevu"><div class="titre-sous"><b>' + e.tmin + " à " + e.tmax + " tâches à créer</b> par ce découpage (budget de la phase : " + e.hmin + " à " + e.hmax + " h). Elles apparaîtront ici, rangées en sous-pistes.</div></div>";
 }
 function manquants(S, uid) { return depsReelles(S, uid).filter(function (d) { return !S.unites[d] || !S.unites[d].coche; }); }
 function lireEtapes(t) {
@@ -408,6 +424,7 @@ function suiteVerticale(M, ids) {
     }
     if (html.length) html.push('<div class="lien"></div>');
     html.push(carte(M, uid, ids));
+    html.push(prevu(M.S, uid));
     i++;
   }
   return html.join("");
@@ -417,12 +434,13 @@ function rendreSections(M) {
   M.S.sections.forEach(function (sec) {
     var ids = []; sec.groupes.forEach(function (g) { ids = ids.concat(g.unites); });
     var faites = ids.filter(function (u) { return M.u[u].e === "faite"; }).length;
-    var c = [0, 0, 0, 0, 0], tot = ids.reduce(function (a, u) { return a + M.u[u].p; }, 0) / Math.max(1, ids.length);
+    var ac = aCreer(M.S, ids);
+    var c = [0, 0, 0, 0, 0], tot = ids.reduce(function (a, u) { return a + M.u[u].p; }, 0) / Math.max(1, ids.length + ac.mil);
     for (var k = 0; k < 5; k++) c[k] = Math.max(0, Math.min(1, tot - k));
-    var fini = faites === ids.length;
+    var fini = faites === ids.length && !ac.tmax;
     var pistes = sec.groupes.filter(function (g) { return g.type === "piste"; }), rdv = sec.groupes.filter(function (g) { return g.type === "rdv"; });
     var h = '<details class="section"' + (fini ? "" : " open") + "><summary><h2>" + esc(sec.titre) + "</h2>" + barre(c, "moyenne") +
-      '<span class="compteur">' + faites + " / " + ids.length + " faites · " + pistes.length + " piste" + (pistes.length > 1 ? "s" : "") + " autonome" + (pistes.length > 1 ? "s" : "") + "</span>" + (fini ? '<span class="fini">Terminée</span>' : "") + "</summary>";
+      '<span class="compteur">' + faites + " / " + ids.length + " faites" + (ac.tmax ? " · + " + ac.tmin + " à " + ac.tmax + " tâches à créer" : "") + " · " + pistes.length + " piste" + (pistes.length > 1 ? "s" : "") + " autonome" + (pistes.length > 1 ? "s" : "") + "</span>" + (fini ? '<span class="fini">Terminée</span>' : "") + "</summary>";
     h += '<div class="pistes">' + pistes.map(function (g) {
       t = t % 4 + 1;
       return '<section class="piste" data-t="' + t + '"><header><div class="nom"><span class="id">PISTE ' + esc(g.id) + "</span><strong>" + esc(g.nom) + '</strong></div><div class="note">' + esc(g.note) + " · " +
@@ -433,7 +451,9 @@ function rendreSections(M) {
       while (i < U.length) {
         if (/^S\d\d\.\d+$/.test(U[i])) { var j = i; while (j < U.length && /^S\d\d\.\d+$/.test(U[j])) j++; parts.push('<div class="sous" style="flex:1 1 100%"><div class="titre-sous">Tâches de la phase</div><div class="sous-pistes">' + sousPistes(M, U.slice(i, j)).map(function (c) { return '<div class="sous-piste">' + c.map(function (x) { return carte(M, x, U); }).join("") + "</div>"; }).join("") + "</div></div>"); i = j; continue; }
         if (parts.length) parts.push('<span class="fleche" aria-hidden="true">→</span>');
-        parts.push(carte(M, U[i], U)); i++;
+        parts.push(carte(M, U[i], U));
+        if (prevu(M.S, U[i])) parts.push('<div class="sous prevu" style="flex:1 1 100%"><div class="titre-sous">' + prevu(M.S, U[i]).replace(/^.*?<div class="titre-sous">/, "").replace(/<\/div><\/div>$/, "") + "</div></div>");
+        i++;
       }
       h += '<section class="rdv"><header><strong>Rendez-vous ' + esc(g.nom) + '</strong><span class="note source">' + esc(g.note) + '</span></header><div class="suite-h">' + parts.join("") + "</div></section>";
     });
@@ -469,9 +489,10 @@ function commande(x, n) {
   }
 }
 function rendreTete(M) {
-  var ids = M.S.ordre, tot = ids.reduce(function (a, u) { return a + M.u[u].p; }, 0) / Math.max(1, ids.length), c = [];
+  var ids = M.S.ordre, ac = aCreer(M.S, ids), tot = ids.reduce(function (a, u) { return a + M.u[u].p; }, 0) / Math.max(1, ids.length + ac.mil), c = [];
   for (var k = 0; k < 5; k++) c.push(Math.max(0, Math.min(1, tot - k)));
-  document.getElementById("global").innerHTML = '<div class="pct">' + Math.round(tot * 20) + " %</div>" + barre(c, "grande") + '<div class="source">' + ids.filter(function (u) { return M.u[u].e === "faite"; }).length + " unités faites sur " + ids.length + "</div>";
+  document.getElementById("global").innerHTML = '<div class="pct">' + Math.round(tot * 20) + " %</div>" + barre(c, "grande") + '<div class="source">' + ids.filter(function (u) { return M.u[u].e === "faite"; }).length + " unités faites sur " + ids.length + " listées" +
+    (ac.tmax ? ", plus " + ac.tmin + " à " + ac.tmax + " tâches que créeront les découpages" : "") + "</div>";
   var cpt = {}; ids.forEach(function (u) { cpt[M.u[u].e] = (cpt[M.u[u].e] || 0) + 1; });
   document.getElementById("compte").innerHTML = ["faite", "en_cours", "en_verification", "a_verifier", "a_fusionner", "refusee", "bloquee", "abandonnee", "verif_abandonnee", "prete", "attente"].filter(function (e) { return cpt[e]; }).map(function (e) { return '<span class="puce e-' + e + '">' + esc(LIB[e]) + " · " + cpt[e] + "</span>"; }).join("");
   document.getElementById("prochaines").innerHTML = [1, 2, 3].map(function (n) {

@@ -174,12 +174,14 @@ Un créneau vérifie une unité et en réalise une autre. Une unité consomme 1 
 | Bloc | Unités | Créneaux | Fin estimée |
 | --- | --- | --- | --- |
 | POC, S01 à S35 | 35 | 35 à 53 | Jour 6 à 9 |
-| MVP, S36 à S41.P | 53 à 77, découpages et portes compris | 53 à 115 | Jour 15 à 28 |
-| V1, S42 à S49.P | 81 à 126, découpages et portes compris | 81 à 189 | Jour 29 à 60 |
+| MVP, S36 à S41.P | 55 à 79 : 12 découpages et portes, plus 43 à 67 tâches créées par les découpages | 55 à 119 | Jour 15 à 29 |
+| V1, S42 à S49.P | 89 à 106 : 16 découpages et portes, plus 73 à 90 tâches créées par les découpages | 89 à 159 | Jour 30 à 56 |
+
+`SUIVI.md` ne liste au départ que le découpage et la porte de chaque phase du MVP et de la V1 : leurs tâches dépendent des résultats du POC, et le découpage les crée. Le nombre de tâches d'une phase suit son budget dans `mvp.md` et `v1.md` : au moins une tâche par heure humaine, puisqu'une tâche demande au plus une heure de relecture, entre 4 et 12 tâches. `SUIVI.md` et le tableau de bord affichent ces tâches à venir sous chaque découpage, et le pourcentage global les compte.
 
 Les pistes autonomes ne raccourcissent pas ce calendrier quand les IA passent l'une après l'autre. Elles évitent les créneaux perdus : quand l'unité suivante d'une piste attend une autre IA, l'IA de service en prend une dans une autre piste. Si tu fais tourner deux ou trois IA en même temps, chacune peut tenir une piste différente ; le verrou de `main` n'est tenu que le temps d'une fusion.
 
-Trente jours couvrent le POC et le MVP dans tous les cas, et la V1 seulement dans le cas le plus favorable. Deux limites ne dépendent pas des IA : la sortie de Godot 4.8 stable, nécessaire à la porte de la V1, et les quotas d'usage de chaque IA, à mesurer dès la première semaine.
+Trente jours couvrent le POC et le MVP, de justesse dans le cas le plus lent. La V1 n'y tient pas à six créneaux par jour : elle finit entre le jour 30 et le jour 56. Pour la rapprocher, il faut plus de créneaux par jour, par exemple trois IA qui travaillent en même temps sur des pistes différentes au lieu de passer l'une après l'autre. Deux limites ne dépendent pas des IA : la sortie de Godot 4.8 stable, nécessaire à la porte de la V1, et les quotas d'usage de chaque IA, à mesurer dès la première semaine.
 
 **Pour suivre l'avancement**, ouvre `suivi/tableau.html` (depuis une copie du dépôt) et clique « Actualiser » : la page relit `SUIVI.md` et les branches sur GitHub. Chaque unité y a cinq carrés : prise en charge, réalisation, contrôles et rapport, vérification, fusion, qui passent du rouge au vert. `python3 suivi/outil.py tableau` régénère l'instantané embarqué dans la page.
 

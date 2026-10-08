@@ -75,6 +75,17 @@ def prompt_decoupage():
     return m.group(1)
 
 
+def budget_phase(fichier, phase):
+    """Heures humaines de la phase (tableau « Ordre » du guide) et nombre de tâches attendu au découpage.
+
+    Une tâche demande au plus 1 h de relecture humaine (prompt de découpage) : il faut au moins autant de
+    tâches que d'heures, dans la fourchette de 4 à 12 tâches qu'impose ce même prompt.
+    """
+    m = re.search(r"^\| " + re.escape(phase) + r" [^|]*\| [^|]*\| (\d+)–(\d+)", _lire(fichier), re.M)
+    hmin, hmax = int(m.group(1)), int(m.group(2))
+    return hmin, hmax, min(12, max(4, hmin)), min(12, max(4, hmax))
+
+
 def points_phase(fichier, phase):
     s = _lire(fichier)
     m = re.search(r"^## " + re.escape(phase) + r" — (.*)$", s, re.M)
@@ -821,7 +832,7 @@ PHASES = [
 for sid, ph, fich, apres in PHASES:
     titre, points = points_phase(fich, ph)
     unite(sid, f"{sid}-{ph}-decoupage", f"{ph} {titre} : découpage", "C", "V", apres, kind="phase",
-          phase=ph, fichier_phase=fich, creneaux=1)
+          phase=ph, fichier_phase=fich, creneaux=1, budget=budget_phase(fich, ph))
     unite(f"{sid}.P", f"{sid}.P-{ph}-porte", f"Porte de {ph}" + (" et porte du MVP" if ph == "P8" else " et porte de la V1" if ph == "P16" else ""),
           "C", "V", [sid, f"{sid}.*"], kind="porte_phase", phase=ph, fichier_phase=fich, points=points)
 
@@ -1297,6 +1308,23 @@ def ligne_suivi(u):
     return f"- [ ] **{u['id']}** · {u['titre']} · réalise IA {ROLE[u['r']]} · vérifie IA {ROLE[u['v']]} · après {apres} · fiche `suivi/{u['f']}.md`"
 
 
+def ligne_a_creer(u):
+    hmin, hmax, tmin, tmax = u["budget"]
+    return (f"  - Tâches à créer au découpage : {tmin} à {tmax} (budget de la phase : {hmin} à {hmax} h humaines). "
+            f"Les lignes {u['id']}.1, {u['id']}.2… s'insèrent ici, sous cette ligne.")
+
+
+def estimation_blocs():
+    """Unités attendues par bloc : unités déjà listées, plus les tâches que créeront les découpages."""
+    out = {}
+    for titre, de, pistes, rdv in SECTIONS:
+        ids = [x for _, _, l in pistes for x in l] + rdv
+        tmin = sum(U[x]["budget"][2] for x in ids if U[x]["kind"] == "phase")
+        tmax = sum(U[x]["budget"][3] for x in ids if U[x]["kind"] == "phase")
+        out[titre] = (len(ids), tmin, tmax)
+    return out
+
+
 def rendre_suivi():
     L = ["# Suivi de la construction\n",
          "Liste de progression du mode autonome, et seule source de l'avancement. Une ligne par unité ; elle est cochée seulement à la fusion, sur `main`, par `python3 suivi/outil.py fusionner`. Le détail de chaque unité (ce qu'il faut faire, prompts, sous-étapes à cocher et à signer) est dans sa fiche `suivi/`. Règles : `docs/construction/sequence.md`.\n",
@@ -1306,10 +1334,14 @@ def rendre_suivi():
          "**Accès simultané.** Toutes les IA peuvent lire ce fichier en même temps, sur `origin/main`. Aucune ne le modifie à la main : il ne change que par `fusionner` (ligne cochée), `correction` (porte KO) et l'insertion des tâches d'une phase, toujours sous le verrou de `main` (`verrou/main`), une IA à la fois. Détail : `docs/construction/sequence.md`, §3.\n",
          "**Contrôle de cohérence** : `python3 suivi/outil.py verifier`.\n",
          "## Vue d'ensemble\n",
-         "| Section | Pistes autonomes, qui avancent en même temps | Rendez-vous |", "| --- | --- | --- |"]
+         "Les sections MVP et V1 ne listent encore que le découpage et la porte de chaque phase : le découpage crée les tâches de la phase, 4 à 12 chacune selon son budget, d'après les résultats du POC. La colonne « Unités » compte ces tâches à venir.\n",
+         "| Section | Pistes autonomes, qui avancent en même temps | Rendez-vous | Unités |", "| --- | --- | --- | --- |"]
+    est = estimation_blocs()
     for titre, de, pistes, rdv in SECTIONS:
         ps = " · ".join(f"**{pid}** {nom} : {' → '.join(ids)}" for pid, nom, ids in pistes)
-        L.append(f"| {titre} | {ps} | {' → '.join(rdv)} |")
+        n, tmin, tmax = est[titre]
+        nb = f"{n}" if not tmax else f"{n + tmin} à {n + tmax} ({n} listées, {tmin} à {tmax} tâches à créer)"
+        L.append(f"| {titre} | {ps} | {' → '.join(rdv)} | {nb} |")
     L.append("")
     L.append("```mermaid\nflowchart TB")
     for k, (titre, de, pistes, rdv) in enumerate(SECTIONS):
@@ -1335,13 +1367,13 @@ def rendre_suivi():
             for uid in ids:
                 L.append(ligne_suivi(U[uid]))
                 if U[uid]["kind"] == "phase":
-                    L.append(f"  - Les tâches {uid}.1, {uid}.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.")
+                    L.append(ligne_a_creer(U[uid]))
             L.append("")
         L.append(f"### Rendez-vous {de} — {note_groupe(rdv, True)}\n")
         for uid in rdv:
             L.append(ligne_suivi(U[uid]))
             if U[uid]["kind"] == "phase":
-                L.append(f"  - Les tâches {uid}.1, {uid}.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.")
+                L.append(ligne_a_creer(U[uid]))
         L.append("")
     L.append("## Recette finale, pour toi\n")
     rec = ["Décisions « adoptées par défaut » de `docs/DECISIONS.md` confirmées ou changées",

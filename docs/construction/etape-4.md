@@ -25,7 +25,7 @@ Implémenter le socle (codec, modèle, Event Store) et le runtime (façades, Flo
 - **Rouge, vert, vérification.** On active les tests (ils échouent), on implémente, on les fait passer, puis le vérificateur intervient dans sa propre copie de travail.
 - **Deux files en parallèle**, chacune dans ses copies de travail : file A pour le socle, file B pour le runtime. IA 2 réalise. IA 1 vérifie T12, T13a et T13b (façades et protocole) ; IA 3 vérifie T09, T10, T11 et T13c.
 - **Banc de test sans éditeur.** T13b transforme le récepteur de SPIKE-01a en `tools/harness/fake_editor.gd`. Les tests d'intégration du runtime le réutilisent, en CI comme en local.
-- **SPIKE-06.** Chaque tâche note tentatives, escalades et temps dans son rapport. À la fusion, tu les reportes dans `PROJECT_STATE.md`. À la fin de l'étape, on calcule le taux de réussite au premier essai par IAèle.
+- **SPIKE-06.** Chaque tâche note tentatives, escalades et temps dans son rapport. À la fusion, tu les reportes dans `PROJECT_STATE.md`. À la fin de l'étape, on calcule le taux de réussite au premier essai par IA.
 - **Budget.** 4 à 7 h est un objectif favorable : il suppose des contrats clairs et peu de reprises. Le découpage de T13 et la règle QUESTION allégée servent à le tenir. Au-delà de 50 % de dépassement, revue de continuation.
 
 ## Points de contrôle

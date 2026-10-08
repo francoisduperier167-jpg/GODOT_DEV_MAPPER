@@ -14,18 +14,20 @@ Liste de progression du mode autonome, et seule source de l'avancement. Une lign
 
 ## Vue d'ensemble
 
-| Section | Pistes autonomes, qui avancent en même temps | Rendez-vous |
-| --- | --- | --- |
-| Étape 0 — Décisions et environnement | **0.A** Décisions et règles : S01 → S02 | S03 |
-| Étape 1 — Fondations | **1.A** Socle du dépôt : S04 → S05 → S06 · **1.B** Banc d'essai : choix et copie : S07 → S08 | S09 |
-| Étape 2 — Spikes | **2.A** SPIKE-01b, éditeur sous écran virtuel : S10 · **2.B** SPIKE-02, compatibilité : S11 | S12 |
-| Étape 3 — Contrats | **3.A** Contrats : S13 → S14 | S15 |
-| Étape 4 — Implémentation sous contrat | **4.A** Format, modèle et store : S16 → S17 → S18 · **4.B** Façades, FlowTrace et mesures : S19 → S20 → S21 → S22 | S23 |
-| Étape 5 — Intégration | **5.A** Réception éditeur et essai : S24 → S26 · **5.B** Instrumentation du banc : S25 | S27 |
-| Étape 6 — Interface et robustesse | **6.A** Panneau et chemin observé : S28 → S29 → S31 · **6.B** Robustesse : S30 | S32 |
-| Étape 7 — Valeur et revue | **7.A** Bugs injectés et mesure de valeur : S33 → S34 | S35 |
-| MVP — phases P4a à P8 | **M.A** Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P · **M.B** Phases P6, P7 : S39 → S39.P → S40 → S40.P | S41 → S41.P |
-| V1 — phases P9 à P16 | **V.A** Phases P9, P12, P13, P15 : S42 → S42.P → S45 → S45.P → S46 → S46.P → S48 → S48.P · **V.B** Phase P10 : S43 → S43.P · **V.C** Phase P11 : S44 → S44.P · **V.D** Phase P14 : S47 → S47.P | S49 → S49.P |
+Les sections MVP et V1 ne listent encore que le découpage et la porte de chaque phase : le découpage crée les tâches de la phase, 4 à 12 chacune selon son budget, d'après les résultats du POC. La colonne « Unités » compte ces tâches à venir.
+
+| Section | Pistes autonomes, qui avancent en même temps | Rendez-vous | Unités |
+| --- | --- | --- | --- |
+| Étape 0 — Décisions et environnement | **0.A** Décisions et règles : S01 → S02 | S03 | 3 |
+| Étape 1 — Fondations | **1.A** Socle du dépôt : S04 → S05 → S06 · **1.B** Banc d'essai : choix et copie : S07 → S08 | S09 | 6 |
+| Étape 2 — Spikes | **2.A** SPIKE-01b, éditeur sous écran virtuel : S10 · **2.B** SPIKE-02, compatibilité : S11 | S12 | 3 |
+| Étape 3 — Contrats | **3.A** Contrats : S13 → S14 | S15 | 3 |
+| Étape 4 — Implémentation sous contrat | **4.A** Format, modèle et store : S16 → S17 → S18 · **4.B** Façades, FlowTrace et mesures : S19 → S20 → S21 → S22 | S23 | 8 |
+| Étape 5 — Intégration | **5.A** Réception éditeur et essai : S24 → S26 · **5.B** Instrumentation du banc : S25 | S27 | 4 |
+| Étape 6 — Interface et robustesse | **6.A** Panneau et chemin observé : S28 → S29 → S31 · **6.B** Robustesse : S30 | S32 | 5 |
+| Étape 7 — Valeur et revue | **7.A** Bugs injectés et mesure de valeur : S33 → S34 | S35 | 3 |
+| MVP — phases P4a à P8 | **M.A** Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P · **M.B** Phases P6, P7 : S39 → S39.P → S40 → S40.P | S41 → S41.P | 55 à 79 (12 listées, 43 à 67 tâches à créer) |
+| V1 — phases P9 à P16 | **V.A** Phases P9, P12, P13, P15 : S42 → S42.P → S45 → S45.P → S46 → S46.P → S48 → S48.P · **V.B** Phase P10 : S43 → S43.P · **V.C** Phase P11 : S44 → S44.P · **V.D** Phase P14 : S47 → S47.P | S49 → S49.P | 89 à 106 (16 listées, 73 à 90 tâches à créer) |
 
 ```mermaid
 flowchart TB
@@ -299,28 +301,28 @@ flowchart TB
 ### Piste M.A · Phases P4a, P4b, P5 — démarre après S35
 
 - [ ] **S36** · P4a Évaluations : rendu et backend statique : découpage · réalise IA 1 · vérifie IA 3 · après S35 · fiche `suivi/S36-P4a-decoupage.md`
-  - Les tâches S36.1, S36.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 6 à 12 (budget de la phase : 6 à 12 h humaines). Les lignes S36.1, S36.2… s'insèrent ici, sous cette ligne.
 - [ ] **S36.P** · Porte de P4a · réalise IA 1 · vérifie IA 3 · après S36, S36.* · fiche `suivi/S36.P-P4a-porte.md`
 - [ ] **S37** · P4b Backend statique et inventaire (CAP-08, CAP-09) : découpage · réalise IA 1 · vérifie IA 3 · après S36.P · fiche `suivi/S37-P4b-decoupage.md`
-  - Les tâches S37.1, S37.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 8 à 12 (budget de la phase : 8 à 14 h humaines). Les lignes S37.1, S37.2… s'insèrent ici, sous cette ligne.
 - [ ] **S37.P** · Porte de P4b · réalise IA 1 · vérifie IA 3 · après S37, S37.* · fiche `suivi/S37.P-P4b-porte.md`
 - [ ] **S38** · P5 Navigation et arborescence res:// (CAP-10) : découpage · réalise IA 1 · vérifie IA 3 · après S37.P · fiche `suivi/S38-P5-decoupage.md`
-  - Les tâches S38.1, S38.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 8 à 12 (budget de la phase : 8 à 13 h humaines). Les lignes S38.1, S38.2… s'insèrent ici, sous cette ligne.
 - [ ] **S38.P** · Porte de P5 · réalise IA 1 · vérifie IA 3 · après S38, S38.* · fiche `suivi/S38.P-P5-porte.md`
 
 ### Piste M.B · Phases P6, P7 — démarre après S35
 
 - [ ] **S39** · P6 Historique, persistance, protocole MVP (CAP-11, CAP-07 complet) : découpage · réalise IA 1 · vérifie IA 3 · après S35 · fiche `suivi/S39-P6-decoupage.md`
-  - Les tâches S39.1, S39.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 10 à 12 (budget de la phase : 10 à 16 h humaines). Les lignes S39.1, S39.2… s'insèrent ici, sous cette ligne.
 - [ ] **S39.P** · Porte de P6 · réalise IA 1 · vérifie IA 3 · après S39, S39.* · fiche `suivi/S39.P-P6-porte.md`
 - [ ] **S40** · P7 Logique et Game Flow annoté (CAP-12 annoté) : découpage · réalise IA 1 · vérifie IA 3 · après S39.P · fiche `suivi/S40-P7-decoupage.md`
-  - Les tâches S40.1, S40.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 5 à 9 (budget de la phase : 5 à 9 h humaines). Les lignes S40.1, S40.2… s'insèrent ici, sous cette ligne.
 - [ ] **S40.P** · Porte de P7 · réalise IA 1 · vérifie IA 3 · après S40, S40.* · fiche `suivi/S40.P-P7-porte.md`
 
 ### Rendez-vous du MVP — attend S38.P, S40.P
 
 - [ ] **S41** · P8 Compatibilité MVP et stabilisation (CAP-13) : découpage · réalise IA 1 · vérifie IA 3 · après S38.P, S40.P · fiche `suivi/S41-P8-decoupage.md`
-  - Les tâches S41.1, S41.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 6 à 10 (budget de la phase : 6 à 10 h humaines). Les lignes S41.1, S41.2… s'insèrent ici, sous cette ligne.
 - [ ] **S41.P** · Porte de P8 et porte du MVP · réalise IA 1 · vérifie IA 3 · après S41, S41.* · fiche `suivi/S41.P-P8-porte.md`
 
 ## V1 — phases P9 à P16
@@ -328,40 +330,40 @@ flowchart TB
 ### Piste V.A · Phases P9, P12, P13, P15 — démarre après S41.P
 
 - [ ] **S42** · P9 Timeline du Game Flow : découpage · réalise IA 1 · vérifie IA 3 · après S41.P · fiche `suivi/S42-P9-decoupage.md`
-  - Les tâches S42.1, S42.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 8 à 12 (budget de la phase : 8 à 12 h humaines). Les lignes S42.1, S42.2… s'insèrent ici, sous cette ligne.
 - [ ] **S42.P** · Porte de P9 · réalise IA 1 · vérifie IA 3 · après S42, S42.* · fiche `suivi/S42.P-P9-porte.md`
 - [ ] **S45** · P12 Attendu contre observé : découpage · réalise IA 1 · vérifie IA 3 · après S42.P, S43.P · fiche `suivi/S45-P12-decoupage.md`
-  - Les tâches S45.1, S45.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 10 à 12 (budget de la phase : 10 à 16 h humaines). Les lignes S45.1, S45.2… s'insèrent ici, sous cette ligne.
 - [ ] **S45.P** · Porte de P12 · réalise IA 1 · vérifie IA 3 · après S45, S45.* · fiche `suivi/S45.P-P12-porte.md`
 - [ ] **S46** · P13 Diagnostic, Explain, Tune : découpage · réalise IA 1 · vérifie IA 3 · après S44.P, S45.P · fiche `suivi/S46-P13-decoupage.md`
-  - Les tâches S46.1, S46.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 12 à 12 (budget de la phase : 14 à 22 h humaines). Les lignes S46.1, S46.2… s'insèrent ici, sous cette ligne.
 - [ ] **S46.P** · Porte de P13 · réalise IA 1 · vérifie IA 3 · après S46, S46.* · fiche `suivi/S46.P-P13-porte.md`
 - [ ] **S48** · P15 AI Snapshot : découpage · réalise IA 1 · vérifie IA 3 · après S46.P · fiche `suivi/S48-P15-decoupage.md`
-  - Les tâches S48.1, S48.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 5 à 8 (budget de la phase : 5 à 8 h humaines). Les lignes S48.1, S48.2… s'insèrent ici, sous cette ligne.
 - [ ] **S48.P** · Porte de P15 · réalise IA 1 · vérifie IA 3 · après S48, S48.* · fiche `suivi/S48.P-P15-porte.md`
 
 ### Piste V.B · Phase P10 — démarre après S41.P
 
 - [ ] **S43** · P10 Instances et comparaison : découpage · réalise IA 1 · vérifie IA 3 · après S41.P · fiche `suivi/S43-P10-decoupage.md`
-  - Les tâches S43.1, S43.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 8 à 12 (budget de la phase : 8 à 12 h humaines). Les lignes S43.1, S43.2… s'insèrent ici, sous cette ligne.
 - [ ] **S43.P** · Porte de P10 · réalise IA 1 · vérifie IA 3 · après S43, S43.* · fiche `suivi/S43.P-P10-porte.md`
 
 ### Piste V.C · Phase P11 — démarre après S41.P
 
 - [ ] **S44** · P11 Data Flow : origine et usages d'un paramètre : découpage · réalise IA 1 · vérifie IA 3 · après S41.P · fiche `suivi/S44-P11-decoupage.md`
-  - Les tâches S44.1, S44.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 12 à 12 (budget de la phase : 12 à 20 h humaines). Les lignes S44.1, S44.2… s'insèrent ici, sous cette ligne.
 - [ ] **S44.P** · Porte de P11 · réalise IA 1 · vérifie IA 3 · après S44, S44.* · fiche `suivi/S44.P-P11-porte.md`
 
 ### Piste V.D · Phase P14 — démarre après S41.P
 
 - [ ] **S47** · P14 Performance corrélée : découpage · réalise IA 1 · vérifie IA 3 · après S41.P · fiche `suivi/S47-P14-decoupage.md`
-  - Les tâches S47.1, S47.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 6 à 10 (budget de la phase : 6 à 10 h humaines). Les lignes S47.1, S47.2… s'insèrent ici, sous cette ligne.
 - [ ] **S47.P** · Porte de P14 · réalise IA 1 · vérifie IA 3 · après S47, S47.* · fiche `suivi/S47.P-P14-porte.md`
 
 ### Rendez-vous de la V1 — attend S47.P, S48.P
 
 - [ ] **S49** · P16 Durcissement et documentation : découpage · réalise IA 1 · vérifie IA 3 · après S47.P, S48.P · fiche `suivi/S49-P16-decoupage.md`
-  - Les tâches S49.1, S49.2… s'insèrent ici, sous cette ligne, à la fusion du découpage.
+  - Tâches à créer au découpage : 12 à 12 (budget de la phase : 12 à 20 h humaines). Les lignes S49.1, S49.2… s'insèrent ici, sous cette ligne.
 - [ ] **S49.P** · Porte de P16 et porte de la V1 · réalise IA 1 · vérifie IA 3 · après S49, S49.* · fiche `suivi/S49.P-P16-porte.md`
 
 ## Recette finale, pour toi
