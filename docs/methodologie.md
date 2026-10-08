@@ -6,9 +6,9 @@ Changements depuis MC-0.4 : état des entrées mis à jour ; `REGLES_AGENTS.md` 
 
 Changements depuis MC-0.3 : copies de travail isolées ; fichiers partagés réservés à la fusion ; QUESTION réservée aux changements de contrat, de périmètre ou d'interface publique ; validation des formats en deux niveaux.
 
-Changements depuis MC-0.2 : hiérarchie des sources ; documents historiques marqués ; environnement de Qwen vérifié en T00 ; fixtures du protocole de session.
+Changements depuis MC-0.2 : hiérarchie des sources ; documents historiques marqués ; environnement d'une IA locale vérifié en T00 ; fixtures du protocole de session.
 
-Changements depuis MC-0.1 : unités de pilotage en heures ; spikes réordonnés ; compatibilité allégée avant la preuve de valeur ; quatre modèles ; fixtures de cycle de vie ; dossier runtime autonome dans le contrôle de dépendances.
+Changements depuis MC-0.1 : unités de pilotage en heures ; spikes réordonnés ; compatibilité allégée avant la preuve de valeur ; plusieurs IA ; fixtures de cycle de vie ; dossier runtime autonome dans le contrôle de dépendances.
 
 La partie 9, les vingt premières tâches et le déroulé pas à pas, est dans `docs/orchestration.md` (OR-0.5), qui sert de backlog vivant. En mode autonome (D-09), l'ordre d'exécution est celui de `docs/construction/sequence.md`.
 
@@ -59,7 +59,7 @@ Un test peut être faux, un contrat peut devoir évoluer : une contradiction ouv
 | `docs/TEST_PLAN.md` | Stratégie, commandes vérifiées | Oui | Nouvelle catégorie de test |
 | `PROJECT_STATE.md` | État réel, budget consommé, mesures, dette | Non | Fin de tâche |
 | `docs/adr/` | Décisions | Oui, une fois acceptées | Décision |
-| `REGLES_AGENTS.md` | Règles courtes pour les agents, 150 lignes au plus ; `CLAUDE.md` et `GEMINI.md` en sont des copies produites par `tools/sync_rules.sh` | Oui | Correction répétée deux fois |
+| `REGLES_AGENTS.md` | Règles courtes pour les agents, 150 lignes au plus ; `AGENTS.md` et les fichiers de contexte listés en tête de `tools/sync_rules.sh` en sont des copies produites par ce script | Oui | Correction répétée deux fois |
 
 Au POC, SPEC, ARCHITECTURE et CONTRACTS peuvent tenir dans un même fichier. On extrait DATA_MODEL, RUNTIME_PROTOCOL ou GRAPH_MODEL quand un contrat devient stable ou que CONTRACTS dépasse environ 400 lignes. Une définition n'existe qu'à un seul endroit.
 
@@ -142,25 +142,25 @@ Un mandat couvre les étapes mécaniques de son périmètre. Une validation huma
 
 Chaque pack cite ses révisions ; un résumé ne remplace pas la lecture du dépôt quand elle est possible.
 
-**Orchestration des modèles**
+**Répartition entre les IA**
 
 | Travail | Niveau | Lieu |
 | --- | --- | --- |
-| Cadrage, ADR, contrats, protocole, ports de compatibilité | Grand modèle (Claude Opus 5.5) et validation humaine | Distant |
+| Cadrage, ADR, contrats, protocole, ports de compatibilité | IA 1 et validation humaine | Distant |
 | Spikes, interprétation des mesures | Grand modèle | Distant, Godot local |
-| Implémentation sous contrat validé avec tests fournis | Modèle local (Qwen3.8-27B) | Local |
-| Tests, fixtures, sérialisation, adaptateurs, documentation | Modèle local | Local |
-| Interface éditeur | Modèle intermédiaire (Sonnet), retouches locales | Distant puis local |
-| Lecture des jeux open source ; relecture croisée des diffs de Sonnet | Gemini | Distant |
+| Implémentation sous contrat validé avec tests fournis | IA 2 (ou une IA locale, si tu en installes une) | Local |
+| Tests, fixtures, sérialisation, adaptateurs, documentation | IA 2 | Local |
+| Interface éditeur | IA 2 | Distant puis local |
+| Lecture des jeux open source ; relecture croisée des diffs | IA 3 | Distant |
 | Débogage difficile, revue transverse | Grand modèle | Distant |
-| Tri des échecs CI sur une préversion | Modèle local ; grand modèle si une sémantique d'API change | Local puis distant |
+| Tri des échecs CI sur une préversion | IA 2 ; IA 1 si une sémantique d'API change | Local puis distant |
 | Tests, lint, mesures | Outils sans IA | Local et CI |
 
 Escalade : après deux échecs aux mêmes tests, ou dès qu'une API Godot hors du pack devient nécessaire, la tâche monte d'un niveau. Un diff local qui touche un format persisté, le protocole, un port de compatibilité ou une frontière de module est relu par le grand modèle avant fusion.
 
 Capacité de relecture : deux files actives à 10 h par semaine, trois à 20 h, quatre à 35 h. Le nombre de files se règle sur la relecture humaine, pas sur la puissance de calcul.
 
-Claude Code : `/clear` entre deux tâches ; `opusplan` pour les tâches de conception ; `CLAUDE.md` court. Modèle local : serveur local compatible et harnais d'agent avec appel d'outils, choisis et vérifiés en T00, avant toute tâche confiée à Qwen ; packs autonomes uniquement.
+Pour chaque IA : nouvelle conversation entre deux tâches ; fichier de contexte court, copié de `REGLES_AGENTS.md`. IA locale, si tu en ajoutes une : serveur local compatible et harnais d'agent avec appel d'outils, choisis et vérifiés en T00, avant toute tâche qui lui est confiée ; packs autonomes uniquement.
 
 ## 6. Tests, fixtures, CI et preuves
 
@@ -305,9 +305,9 @@ Mesures : temps, escalades, quota consommé
 
 **Exemples de micro-prompts, conditionnels**
 
-1. T09, Qwen : « Implémente le codec de l'enveloppe C-04 v1 : encodage dans `addons/godot_dev_mapper_runtime/envelope.gd`, décodage et validation dans `protocol/`. Contrat complet ci-dessous. Fais passer `tests/contract/test_envelope.gd` : identifiants 64 bits encodés en chaîne sans perte, lot invalide rejeté avec un code d'erreur, champ inconnu ignoré. N'utilise aucune API hors des types fondamentaux. Si une API te manque, réponds BLOQUÉ. »
-2. T14, Sonnet : « Ajoute la réception côté éditeur. La façade débogueur (C-03) reçoit les lots envoyés par FlowTrace ; valide-les avec le codec existant ; range-les dans l'Event Store (C-06). Le critère est le scénario `tests/integration/two_instances` : séquences continues, pertes comptées, deux instances distinctes. Signale toute API non couverte par l'adaptateur 4.7. »
-3. Régression sur la préversion, Qwen puis escalade : « La CI non bloquante 4.8 échoue. Log, diff de la dernière fusion et façade concernée ci-dessous. Diagnostique, puis propose une correction limitée à la frontière de compatibilité. Si la cause est un changement de sémantique d'API, réponds ESCALADE avec ton analyse. »
+1. T09, IA 2 : « Implémente le codec de l'enveloppe C-04 v1 : encodage dans `addons/godot_dev_mapper_runtime/envelope.gd`, décodage et validation dans `protocol/`. Contrat complet ci-dessous. Fais passer `tests/contract/test_envelope.gd` : identifiants 64 bits encodés en chaîne sans perte, lot invalide rejeté avec un code d'erreur, champ inconnu ignoré. N'utilise aucune API hors des types fondamentaux. Si une API te manque, réponds BLOQUÉ. »
+2. T14, IA 2 : « Ajoute la réception côté éditeur. La façade débogueur (C-03) reçoit les lots envoyés par FlowTrace ; valide-les avec le codec existant ; range-les dans l'Event Store (C-06). Le critère est le scénario `tests/integration/two_instances` : séquences continues, pertes comptées, deux instances distinctes. Signale toute API non couverte par l'adaptateur 4.7. »
+3. Régression sur la préversion, IA 2 puis escalade : « La CI non bloquante 4.8 échoue. Log, diff de la dernière fusion et façade concernée ci-dessous. Diagnostique, puis propose une correction limitée à la frontière de compatibilité. Si la cause est un changement de sémantique d'API, réponds ESCALADE avec ton analyse. »
 
 ## 9. Premières tâches
 

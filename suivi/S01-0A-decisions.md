@@ -1,18 +1,19 @@
 # S01 — 0.A Dossier de décisions
 
-> Fiche d'exécution du mode autonome. Coche chaque case dès qu'elle est faite et prouvée, puis commite et pousse : une autre IA doit pouvoir reprendre à la première case non cochée. Règles : `docs/construction/sequence.md`. Avancement global : `SUIVI.md`.
+> Fiche d'exécution du mode autonome. Chaque case se coche avec `python3 suivi/outil.py cocher S01 <sous-étape> --ia <n>`, juste après la sous-étape : la commande vérifie l'ordre et l'identité de l'IA, signe la case (IA, date, heure UTC), commite et pousse. Une sous-étape non cochée par cette commande est considérée comme non faite. Règles : `docs/construction/sequence.md`. Avancement : `SUIVI.md` et `suivi/tableau.html`.
 
 | Champ | Valeur |
 | --- | --- |
-| Réalise | Concepteur |
-| Vérifie | Vérificateur (jamais l'auteur) |
+| Réalise | IA 1 (conception) |
+| Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
+| Piste | 0.A Décisions et règles : S01 → S02 (unité 1 sur 2) |
 | Commence après | rien : peut commencer tout de suite |
 | Indépendante de | aucune |
 | Branche | `tache/S01-0A-decisions` |
 | Fiche de conception | `docs/construction/etape-0.md`, section 0.A |
 | Estimation | 1 créneau |
 
-**Séquentiel ou indépendant.** Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité elle-même peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
+**Séquentiel ou indépendant.** Cette unité est la 1re de la piste 0.A « Décisions et règles », dont les unités se font à la suite. Les autres pistes de la section (aucune) avancent en même temps, chacune de son côté. S02 l'attendra. Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
 
 ## Ce qu'il faut faire
 
@@ -26,7 +27,7 @@
 
 `docs/DECISIONS.md`
 
-Toujours autorisés en plus : `rapports/S01*.md` et les cases de cette fiche.
+Toujours autorisés en plus : `rapports/S01*.md` et les cases de cette fiche (par `cocher`).
 
 ## Contrôles propres à cette fiche
 
@@ -38,12 +39,14 @@ Toujours autorisés en plus : `rapports/S01*.md` et les cases de cette fiche.
 ## Prompt de réalisation
 
 ```text
-Tu es <ton nom d'IA>, au rôle Concepteur. Tu réalises l'unité S01 « 0.A Dossier de décisions » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Tu réalises l'unité S01 « 0.A Dossier de décisions » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Réalisation prévue : IA 1 (conception) ; vérification : IA 3 (vérification). Ton numéro d'IA est celui que te donne le prompt de créneau : tu le passes à --ia, et il signe chaque case que tu coches.
 
-AVANT TOUT
-1. git fetch origin. Lis REGLES_AGENTS.md s'il existe, puis la fiche suivi/S01-0A-decisions.md.
-2. Si la branche origin/tache/S01-0A-decisions existe : reprends-la, relis rapports/S01.md et commence à la première sous-étape R non cochée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
-3. Sinon : crée tache/S01-0A-decisions depuis main (aucun prérequis).
+AVANT TOUT, depuis ton clone principal du dépôt
+1. Lis REGLES_AGENTS.md s'il existe, puis cette fiche : suivi/S01-0A-decisions.md.
+2. python3 suivi/outil.py prendre S01 --ia <n>
+   - « PRISE » ou « REPRISE » : tu es sur la branche tache/S01-0A-decisions ; commence à la sous-étape affichée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
+   - « REFUSÉ » : l'unité n'est pas pour toi maintenant (déjà prise par une autre IA, autre IA prévue) : reviens au prompt de créneau et choisis autre chose.
 
 GODOT
 - Si tools/ci/fetch_godot.sh existe : B=$(tools/ci/fetch_godot.sh 4.7.2-stable)
@@ -60,9 +63,18 @@ RÈGLES NON NÉGOCIABLES
 - Avant d'utiliser une API Godot dont tu n'es pas certain en 4.7.2, écris un script de trois lignes qui l'appelle et exécute-le. Une API non vérifiée n'entre pas dans le code.
 - Tu n'affaiblis jamais un test ou un contrôle pour le faire passer.
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée : tu colles sa sortie réelle dans le rapport.
-- Tu coches une case seulement quand elle est faite et prouvée. Tu commites et tu pousses après chaque case cochée.
-- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status.
+- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status. Tu ne pousses jamais avec --force.
 - Deux échecs au même contrôle : statut ESCALADE, avec ton diagnostic.
+- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre.
+
+TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
+1. git add <les fichiers de la sous-étape> (jamais git add -A).
+2. python3 suivi/outil.py cocher S01 <sous-étape> --ia <n>
+   La commande vérifie l'ordre des cases et ton identité, coche la case dans suivi/S01-0A-decisions.md, la signe (IA, date, heure UTC), commite et pousse sur tache/S01-0A-decisions.
+3. Une sous-étape faite mais non cochée par cette commande est considérée comme non faite : l'IA suivante la refera. Tu ne coches jamais une case à la main.
+4. Tu ne modifies jamais SUIVI.md : il ne change qu'à la fusion, sous le verrou de main. Plusieurs IA le lisent en même temps ; aucune ne l'écrit hors de ce verrou.
+5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S01.md, puis git add.
+6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S01-0A-decisions, puis relance la commande.
 
 TRAVAIL TECHNIQUE — début de la copie exacte du guide (docs/construction/etape-0.md, 0.A)
 Tu prépares les décisions de démarrage du projet GODOT_DEV_MAPPER. Tu ne décides rien.
@@ -83,15 +95,15 @@ ADAPTATIONS DU MODE AUTONOME
 - Le prompt du guide dit « Tu ne décides rien » et laisse toutes les lignes « proposée ». En mode autonome, tu inscris ensuite les statuts de la fiche : « adoptée par défaut » n'est pas « validée », la confirmation se fait à la recette.
 - Ajoute D-09, absente du prompt du guide : mode d'exécution autonome, fiches `suivi/`, recette humaine finale.
 
-SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche, et coche chacune.
+SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche ; après chacune, git add puis python3 suivi/outil.py cocher S01 R<k> --ia <n>.
 
 FIN DE CRÉNEAU, même si l'unité n'est pas finie
-- Coche dans suivi/S01-0A-decisions.md les sous-étapes faites et prouvées ; complète rapports/S01.md (sorties, section « Passation ») ; commite ; git push origin tache/S01-0A-decisions.
-- Ne laisse aucune modification non poussée.
+- Chaque sous-étape faite est cochée par `cocher`. Complète rapports/S01.md (sorties, « Passation » en cinq lignes au plus), git add, git commit, git push origin HEAD:tache/S01-0A-decisions.
+- git status ne montre aucune modification non commitée ; rien ne reste non poussé.
 
-FORMAT DE rapports/S01.md
+FORMAT DE rapports/S01.md (créé par prendre ; tu le complètes)
 - Statut : EN COURS | TERMINÉ | QUESTION | ESCALADE
-- Auteur : <ton nom d'IA> · Tentative : n · Créneaux utilisés : n
+- Auteurs : IA n (écrit par `prendre`) · Tentative : n · Créneaux utilisés : n
 - Fichiers modifiés : liste
 - Contrôles : pour chacun, commande, code de sortie, 10 dernières lignes de sortie
 - Contre-épreuves faites : liste
@@ -104,27 +116,34 @@ FORMAT DE rapports/S01.md
 
 ## Sous-étapes de réalisation
 
-- [ ] R0 Prise en charge : `git fetch origin` ; aucun prérequis ; branche `origin/tache/S01-0A-decisions` absente, ou sans commit depuis deux créneaux, ou dernier verdict REFUSÉE ; créer ou reprendre la branche ; `rapports/S01.md` avec « Statut : EN COURS » et « Auteur » ; commit ; push.
-- [ ] R1 Lire `docs/plan-directeur.md` (§0 et §10), `docs/spikes/SPIKE-01.md`, `docs/construction/etape-0.md` (0.A) et `docs/construction/sequence.md`.
-- [ ] R2 Écrire `docs/DECISIONS.md` : en-tête de statut, puis le tableau D-01 à D-09 avec toutes ses colonnes.
-- [ ] R3 Appliquer les statuts de la section « Ce qu'il faut faire ».
-- [ ] R4 Écrire dans le rapport la liste « Pour la recette » : chaque décision adoptée par défaut, une par ligne.
-- [ ] R5 Contrôles finaux : S01-a, S01-b, S01-c exécutés dans une copie propre, sorties collées dans le rapport ; `tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK ; « Statut : TERMINÉ » ; commit ; push.
+Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil.py cocher S01 R<k> --ia <n>` (coche, signe, commite, pousse).
+
+- [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S01 --ia <n>` (aucun prérequis ; branche `tache/S01-0A-decisions` créée ou reprise ; `rapports/S01.md` au statut EN COURS) ⟶ cochée par `prendre`
+- [ ] R1 Lire `docs/plan-directeur.md` (§0 et §10), `docs/spikes/SPIKE-01.md`, `docs/construction/etape-0.md` (0.A) et `docs/construction/sequence.md`. ⟶ cocher S01 R1
+- [ ] R2 Écrire `docs/DECISIONS.md` : en-tête de statut, puis le tableau D-01 à D-09 avec toutes ses colonnes. ⟶ cocher S01 R2
+- [ ] R3 Appliquer les statuts de la section « Ce qu'il faut faire ». ⟶ cocher S01 R3
+- [ ] R4 Écrire dans le rapport la liste « Pour la recette » : chaque décision adoptée par défaut, une par ligne. ⟶ cocher S01 R4
+- [ ] R5 Contrôles finaux : S01-a, S01-b, S01-c exécutés dans une copie propre, sorties collées dans le rapport ; `tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S01 R5
 
 ## Prompt de vérification
 
 ```text
-Tu es <ton nom d'IA>, au rôle Vérificateur, vérificateur indépendant de l'unité S01 « 0.A Dossier de décisions » du projet GODOT_DEV_MAPPER.
-Tu n'en es pas l'auteur : lis la ligne « Auteur » de rapports/S01.md ; si c'est toi, arrête-toi.
-Tu ne modifies aucun fichier de l'unité. Tu écris ton verdict et tu coches les sous-étapes V, sur la branche.
+Tu vérifies l'unité S01 « 0.A Dossier de décisions » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
 
-COPIE NEUVE : git fetch origin && git worktree add --detach ../verif-S01-0A-decisions origin/tache/S01-0A-decisions
+PRISE, depuis ton clone principal
+python3 suivi/outil.py prendre S01 --ia <n> --verification
+- « VÉRIFICATION PRISE » : copie neuve ../verif-S01-0A-decisions créée sur origin/tache/S01-0A-decisions, verdict EN COURS écrit, V1 cochée. cd ../verif-S01-0A-decisions : toute la vérification se fait dans ce dossier.
+- « REFUSÉ » : une autre IA vérifie déjà, tu es auteur, ou l'unité n'est pas terminée : reviens au prompt de créneau.
 GODOT : même procédure que le prompt de réalisation.
+Tu ne modifies aucun fichier de l'unité. Tu écris seulement ton verdict et tes cases V.
 
-1. PÉRIMÈTRE. git diff --name-only origin/main...origin/tache/S01-0A-decisions. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S01*.md et suivi/S01-0A-decisions.md. Tout autre fichier : refus.
-2. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : S01-a, S01-b, S01-c.
-3. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd.
-4. CONTOURNEMENTS. Cherche :
+TRACE OBLIGATOIRE : après chaque sous-étape V, git add du fichier de verdict, puis python3 suivi/outil.py cocher S01 <V…> --ia <n>. Pour la dernière : --verdict ACCEPTÉE ou --verdict REFUSÉE, identique à la ligne « Verdict » du fichier. Une sous-étape non cochée par cette commande est considérée comme non faite.
+
+1. TRAÇABILITÉ. Chaque case R cochée est signée « — IA n · date » et a son commit sur la branche (git log --oneline origin/main..HEAD). Case cochée sans travail prouvé dans le rapport : refus.
+2. PÉRIMÈTRE. git diff --name-only origin/main...HEAD. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S01*.md et suivi/S01-0A-decisions.md. Tout autre fichier : refus.
+3. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : S01-a, S01-b, S01-c.
+4. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd (jamais sur rapports/).
+5. CONTOURNEMENTS. Cherche :
    - test sans assertion, ou toujours vrai ;
    - test désactivé, renommé ou sorti du runner ;
    - valeur attendue recopiée depuis la sortie du code ;
@@ -133,36 +152,45 @@ GODOT : même procédure que le prompt de réalisation.
    - API Godot inventée ou non vérifiée ;
    - dépendance interdite entre modules ; API sensible hors de la frontière de compatibilité ;
    - affirmation du rapport sans sortie qui la prouve.
-5. COHÉRENCE. Les recommandations reprennent le plan §0 et §10 et `docs/construction/etape-0.md` ; D-09 reprend `docs/construction/sequence.md`.
+6. COHÉRENCE. Les recommandations reprennent le plan §0 et §10 et `docs/construction/etape-0.md` ; D-09 reprend `docs/construction/sequence.md`.
 
-VERDICT dans rapports/S01-verif-<tentative>.md :
+VERDICT dans rapports/S01-verif-<tentative>.md (créé par la prise) :
 - Verdict : ACCEPTÉE | REFUSÉE
 - Contrôles relancés : commande, code, attendu, obtenu
 - Contre-épreuves : sabotage, contrôle, détecté oui ou non
 - Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
 - Doutes non bloquants : liste courte
-Pousse le verdict sur la branche. Si ACCEPTÉE, fais les sous-étapes F de la fiche. Si REFUSÉE, arrête-toi : une IA au rôle de l'auteur reprendra.
+
+SI ACCEPTÉE — FUSION, depuis ton clone principal
+1. python3 suivi/outil.py fusionner S01 --ia <n> --godot "$B"
+   Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S01-0A-decisions, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
+2. cd ../fusion-S01-0A-decisions ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S01 F<k> --ia <n> (commit local, sans poussée).
+3. python3 suivi/outil.py publier S01 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
+SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
 ```
 
 ## Sous-étapes de vérification
 
-- [ ] V1 Prise en charge : pas l'auteur ; copie neuve `../verif-S01-0A-decisions` sur `origin/tache/S01-0A-decisions`.
-- [ ] V2 Périmètre : `git diff --name-only origin/main...origin/tache/S01-0A-decisions` ⊂ fichiers autorisés.
-- [ ] V3.1 Contrôle S01-a relancé, résultat conforme.
-- [ ] V3.2 Contrôle S01-b relancé, résultat conforme.
-- [ ] V3.3 Contrôle S01-c relancé, résultat conforme.
-- [ ] V4 Contre-épreuves (CE) appliquées et détectées, puis annulées.
-- [ ] V5 Contournements cherchés.
-- [ ] V6 Cohérence avec les contrats et les invariants.
-- [ ] V7 Verdict écrit dans `rapports/S01-verif-<tentative>.md` et poussé.
+Dans `../verif-S01-0A-decisions`, après chaque sous-étape : `git add` du verdict, puis `python3 suivi/outil.py cocher S01 V<k> --ia <n>`.
+
+- [ ] V1 Prise en charge : `python3 suivi/outil.py prendre S01 --ia <n> --verification` (pas un auteur ; copie neuve `../verif-S01-0A-decisions` sur `origin/tache/S01-0A-decisions` ; verdict EN COURS) ⟶ cochée par `prendre`
+- [ ] V2 Traçabilité : chaque case R cochée porte une signature « — IA n · date » et un commit sur la branche (`git log --oneline origin/main..HEAD`) ⟶ cocher S01 V2
+- [ ] V3 Périmètre : `git diff --name-only origin/main...HEAD` ⊂ fichiers autorisés. ⟶ cocher S01 V3
+- [ ] V4.1 Contrôle S01-a relancé, résultat conforme. ⟶ cocher S01 V4.1
+- [ ] V4.2 Contrôle S01-b relancé, résultat conforme. ⟶ cocher S01 V4.2
+- [ ] V4.3 Contrôle S01-c relancé, résultat conforme. ⟶ cocher S01 V4.3
+- [ ] V5 Contre-épreuves (CE) appliquées et détectées, puis annulées. ⟶ cocher S01 V5
+- [ ] V6 Contournements cherchés. ⟶ cocher S01 V6
+- [ ] V7 Cohérence avec les contrats et les invariants. ⟶ cocher S01 V7
+- [ ] V8 Verdict écrit dans `rapports/S01-verif-<tentative>.md` ⟶ cocher S01 V8 --verdict ACCEPTÉE ou --verdict REFUSÉE
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
-- [ ] F1 `git switch main && git pull --ff-only && git merge --no-ff origin/tache/S01-0A-decisions -m "Fusion S01 : 0.A Dossier de décisions"`.
-- [ ] F2 Sur `main` : `GODOT="$B" tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK. Sinon : `git reset --hard ORIG_HEAD`, verdict « REFUSÉE (fusion) » poussé sur la branche, et arrêt de la fusion.
-- [ ] F3 Dans `SUIVI.md`, cocher la ligne **S01** et compléter « fait le <date> · auteur <IA> · vérifié par <IA> · <n> créneaux ».
-- [ ] F4 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette.
-- [ ] F5 Cocher les sous-étapes F de cette fiche ; `git commit` ; `git push origin main` (en cas de refus : `git pull --rebase`, puis push).
+F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S01-0A-decisions`, par `python3 suivi/outil.py cocher S01 F<k> --ia <n>` (commit local).
+
+- [ ] F1 Fusion : `python3 suivi/outil.py fusionner S01 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S01-0A-decisions`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S01** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F2 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S01 F2
+- [ ] F3 Publication : `python3 suivi/outil.py publier S01 --ia <n>` (verifier OK, `main` poussée, branche `tache/S01-0A-decisions` supprimée, verrou rendu) ⟶ cochée par `publier`
 
 ## Pour la recette
 

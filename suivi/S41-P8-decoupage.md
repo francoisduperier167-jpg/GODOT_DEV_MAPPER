@@ -1,25 +1,26 @@
 # S41 — P8 Compatibilité MVP et stabilisation (CAP-13) : découpage
 
-> Fiche d'exécution du mode autonome. Coche chaque case dès qu'elle est faite et prouvée, puis commite et pousse : une autre IA doit pouvoir reprendre à la première case non cochée. Règles : `docs/construction/sequence.md`. Avancement global : `SUIVI.md`.
+> Fiche d'exécution du mode autonome. Chaque case se coche avec `python3 suivi/outil.py cocher S41 <sous-étape> --ia <n>`, juste après la sous-étape : la commande vérifie l'ordre et l'identité de l'IA, signe la case (IA, date, heure UTC), commite et pousse. Une sous-étape non cochée par cette commande est considérée comme non faite. Règles : `docs/construction/sequence.md`. Avancement : `SUIVI.md` et `suivi/tableau.html`.
 
 | Champ | Valeur |
 | --- | --- |
-| Réalise | Concepteur |
-| Vérifie | Vérificateur (jamais l'auteur) |
+| Réalise | IA 1 (conception) |
+| Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
+| Piste | Rendez-vous du MVP : S41 → S41.P |
 | Commence après | S38.P, S40.P (cochées dans `SUIVI.md`) |
 | Indépendante de | aucune |
 | Branche | `tache/S41-P8-decoupage` |
 | Fiche de conception | `docs/construction/mvp.md`, section P8 |
 | Estimation | 1 créneau |
 
-**Séquentiel ou indépendant.** Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité elle-même peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
+**Séquentiel ou indépendant.** Cette unité appartient au rendez-vous du MVP : elle attend la fin des pistes M.A, M.B. Concrètement, elle attend S38.P, S40.P. S41.P l'attendra. Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
 
 ## Ce qu'il faut faire
 
 - Découper la phase P8 en 4 à 12 tâches avec le prompt de découpage de `docs/construction/mvp.md`, en tenant compte des résultats du POC et des phases précédentes.
 - Écrire `docs/construction/mvp-P8.md` (conception) et une fiche d'exécution par tâche, `suivi/S41.<k>-<nom>.md`, à partir de `suivi/_modele-tache.md`.
-- Donner à chaque tâche ses prérequis réels : une tâche qui ne dépend que de la fin du découpage peut avancer en même temps que les autres.
-- Écrire dans le rapport les lignes à ajouter à `SUIVI.md`, entre **S41** et **S41.P**, au format des autres lignes.
+- Donner à chaque tâche ses prérequis réels : une tâche qui ne dépend que de la fin du découpage peut avancer en même temps que les autres. Les tâches qui s'enchaînent forment une sous-piste ; le tableau de bord les regroupe seul.
+- Écrire dans le rapport les lignes à ajouter à `SUIVI.md`, entre **S41** et **S41.P**, dans la piste du rendez-vous, au format des autres lignes.
 
 ## Fichiers autorisés
 
@@ -28,12 +29,14 @@
 ## Prompt de réalisation
 
 ```text
-Tu es <ton nom d'IA>, au rôle Concepteur. Tu réalises l'unité S41 « P8 Compatibilité MVP et stabilisation (CAP-13) : découpage » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Tu réalises l'unité S41 « P8 Compatibilité MVP et stabilisation (CAP-13) : découpage » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Réalisation prévue : IA 1 (conception) ; vérification : IA 3 (vérification). Ton numéro d'IA est celui que te donne le prompt de créneau : tu le passes à --ia, et il signe chaque case que tu coches.
 
-AVANT TOUT
-1. git fetch origin. Lis REGLES_AGENTS.md s'il existe, puis la fiche suivi/S41-P8-decoupage.md.
-2. Si la branche origin/tache/S41-P8-decoupage existe : reprends-la, relis rapports/S41.md et commence à la première sous-étape R non cochée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
-3. Sinon : vérifie dans SUIVI.md, sur main, que S38.P, S40.P sont cochées, puis crée tache/S41-P8-decoupage depuis main.
+AVANT TOUT, depuis ton clone principal du dépôt
+1. Lis REGLES_AGENTS.md s'il existe, puis cette fiche : suivi/S41-P8-decoupage.md.
+2. python3 suivi/outil.py prendre S41 --ia <n>
+   - « PRISE » ou « REPRISE » : tu es sur la branche tache/S41-P8-decoupage ; commence à la sous-étape affichée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
+   - « REFUSÉ » : l'unité n'est pas pour toi maintenant (déjà prise par une autre IA, S38.P, S40.P non cochées, autre IA prévue) : reviens au prompt de créneau et choisis autre chose.
 
 RÈGLES NON NÉGOCIABLES
 - Tu ne modifies que les fichiers autorisés de la fiche, plus rapports/S41.md et les cases de suivi/S41-P8-decoupage.md. Si un autre fichier doit changer : statut QUESTION, avec la raison.
@@ -41,14 +44,23 @@ RÈGLES NON NÉGOCIABLES
 - Avant d'utiliser une API Godot dont tu n'es pas certain en 4.7.2, écris un script de trois lignes qui l'appelle et exécute-le. Une API non vérifiée n'entre pas dans le code.
 - Tu n'affaiblis jamais un test ou un contrôle pour le faire passer.
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée : tu colles sa sortie réelle dans le rapport.
-- Tu coches une case seulement quand elle est faite et prouvée. Tu commites et tu pousses après chaque case cochée.
-- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status.
+- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status. Tu ne pousses jamais avec --force.
 - Deux échecs au même contrôle : statut ESCALADE, avec ton diagnostic.
+- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre.
+
+TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
+1. git add <les fichiers de la sous-étape> (jamais git add -A).
+2. python3 suivi/outil.py cocher S41 <sous-étape> --ia <n>
+   La commande vérifie l'ordre des cases et ton identité, coche la case dans suivi/S41-P8-decoupage.md, la signe (IA, date, heure UTC), commite et pousse sur tache/S41-P8-decoupage.
+3. Une sous-étape faite mais non cochée par cette commande est considérée comme non faite : l'IA suivante la refera. Tu ne coches jamais une case à la main.
+4. Tu ne modifies jamais SUIVI.md : il ne change qu'à la fusion, sous le verrou de main. Plusieurs IA le lisent en même temps ; aucune ne l'écrit hors de ce verrou.
+5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S41.md, puis git add.
+6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S41-P8-decoupage, puis relance la commande.
 
 TRAVAIL TECHNIQUE — début de la copie exacte du guide (docs/construction/mvp.md, prompt de découpage)
 Tu découpes la phase P8 du projet GODOT_DEV_MAPPER en tâches exécutables, au format des fiches de docs/construction/etape-4.md.
 
-ENTRÉES : docs/plan-directeur.md (§3, capacités {CAP} ; §9, porte de la phase) ; docs/construction/mvp.md, section P8 ; docs/DECISIONS.md ; docs/spikes/ ; PROJECT_STATE.md (budget consommé, taux de réussite par modèle) ; docs/revues/revue-poc.md.
+ENTRÉES : docs/plan-directeur.md (§3, capacités {CAP} ; §9, porte de la phase) ; docs/construction/mvp.md, section P8 ; docs/DECISIONS.md ; docs/spikes/ ; PROJECT_STATE.md (budget consommé, taux de réussite par IAdèle) ; docs/revues/revue-poc.md.
 
 PRODUIS docs/construction/mvp-P8.md :
 - objectif, obligations, méthodologie, points de contrôle et cheminement d'amélioration de la phase, précisés par les résultats du POC ;
@@ -56,8 +68,8 @@ PRODUIS docs/construction/mvp-P8.md :
 
 RÈGLES
 - Une tâche tient en 1 à 3 h de travail agent et en 1 h de relecture humaine au plus.
-- Une tâche qui touche un format persisté, le protocole ou une façade est vérifiée par Opus.
-- Les contrats et leurs tests précèdent l'implémentation, comme à l'étape 3. Une tâche qui révise un contrat liste explicitement `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés ; Opus la réalise, Gemini la vérifie, tu la valides.
+- Une tâche qui touche un format persisté, le protocole ou une façade est vérifiée par IA 1.
+- Les contrats et leurs tests précèdent l'implémentation, comme à l'étape 3. Une tâche qui révise un contrat liste explicitement `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés ; IA 1 la réalise, IA 3 la vérifie, tu la valides.
 - Chaque tâche précise les marqueurs de `tests/pending/` qu'elle crée ou supprime, et les scripts de `tools/ci/checks.d/` qu'elle ajoute. Aucune ne modifie `PROJECT_STATE.md` ni `docs/DECISIONS.md`.
 - Le total reste dans le budget de la phase ({budget} h humaines). Sinon, tu signales le dépassement et proposes quoi retirer.
 - Ne réalise aucune tâche.
@@ -65,21 +77,21 @@ TRAVAIL TECHNIQUE — fin de la copie exacte du guide
 
 ADAPTATIONS DU MODE AUTONOME
 - Budget : traduis les heures humaines de la phase en créneaux d'IA avec le ratio observé au POC (docs/revues/revue-poc.md).
-- Pour chaque tâche, crée suivi/S41.<k>-<nom>.md en copiant suivi/_modele-tache.md et en remplissant toutes ses sections : prompt de réalisation complet, sous-étapes R, contrôles, prompt de vérification, sous-étapes V et F.
+- Pour chaque tâche, crée suivi/S41.<k>-<nom>.md en copiant suivi/_modele-tache.md et en remplissant toutes ses sections : prompt de réalisation complet (avec PRISE et TRACE OBLIGATOIRE), sous-étapes R, contrôles, prompt de vérification, sous-étapes V et F, chacune avec son « ⟶ cocher ».
 - Prérequis : S41 pour toute tâche, plus les tâches de la phase dont elle dépend vraiment. Évite que deux tâches indépendantes modifient le même fichier.
-- Rôles : réalisation par le développeur, sauf contrat, protocole, façade ou format persisté (concepteur) ; vérification par le vérificateur, sauf ces mêmes sujets (concepteur, ou vérificateur si le concepteur est l'auteur).
-- Écris dans le rapport les lignes SUIVI.md à insérer ; le vérificateur les insère à la fusion.
+- Répartition : réalisation par IA 2, sauf contrat, protocole, façade ou format persisté (IA 1) ; vérification par IA 3, sauf ces mêmes sujets (IA 1, ou IA 3 si IA 1 est l'auteur).
+- Écris dans le rapport les lignes SUIVI.md à insérer ; le vérificateur les insère à la fusion, sous le verrou de main.
 - Contrôle final : python3 suivi/outil.py verifier → OK, une fois les lignes insérées (le vérificateur le relance après insertion).
 
-SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche, et coche chacune.
+SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche ; après chacune, git add puis python3 suivi/outil.py cocher S41 R<k> --ia <n>.
 
 FIN DE CRÉNEAU, même si l'unité n'est pas finie
-- Coche dans suivi/S41-P8-decoupage.md les sous-étapes faites et prouvées ; complète rapports/S41.md (sorties, section « Passation ») ; commite ; git push origin tache/S41-P8-decoupage.
-- Ne laisse aucune modification non poussée.
+- Chaque sous-étape faite est cochée par `cocher`. Complète rapports/S41.md (sorties, « Passation » en cinq lignes au plus), git add, git commit, git push origin HEAD:tache/S41-P8-decoupage.
+- git status ne montre aucune modification non commitée ; rien ne reste non poussé.
 
-FORMAT DE rapports/S41.md
+FORMAT DE rapports/S41.md (créé par prendre ; tu le complètes)
 - Statut : EN COURS | TERMINÉ | QUESTION | ESCALADE
-- Auteur : <ton nom d'IA> · Tentative : n · Créneaux utilisés : n
+- Auteurs : IA n (écrit par `prendre`) · Tentative : n · Créneaux utilisés : n
 - Fichiers modifiés : liste
 - Contrôles : pour chacun, commande, code de sortie, 10 dernières lignes de sortie
 - Contre-épreuves faites : liste
@@ -92,27 +104,34 @@ FORMAT DE rapports/S41.md
 
 ## Sous-étapes de réalisation
 
-- [ ] R0 Prise en charge : `git fetch origin` ; S38.P, S40.P sont cochées dans `SUIVI.md` ; branche `origin/tache/S41-P8-decoupage` absente, ou sans commit depuis deux créneaux, ou dernier verdict REFUSÉE ; créer ou reprendre la branche ; `rapports/S41.md` avec « Statut : EN COURS » et « Auteur » ; commit ; push.
-- [ ] R1 Lire la section de la phase, `docs/revues/revue-poc.md`, `PROJECT_STATE.md`, `SUIVI.md` et les rapports des phases précédentes.
-- [ ] R2 Écrire `docs/construction/mvp-P8.md`.
-- [ ] R3 Créer une fiche `suivi/S41.<k>-<nom>.md` par tâche, depuis `suivi/_modele-tache.md`, toutes sections remplies.
-- [ ] R4 Écrire dans le rapport les lignes à insérer dans `SUIVI.md`, avec leurs prérequis.
-- [ ] R5 Contrôles finaux : chaque fiche créée a toutes ses sections ; « Statut : TERMINÉ » ; commit ; push.
+Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil.py cocher S41 R<k> --ia <n>` (coche, signe, commite, pousse).
+
+- [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S41 --ia <n>` (prérequis cochés dans `SUIVI.md` : S38.P, S40.P ; branche `tache/S41-P8-decoupage` créée ou reprise ; `rapports/S41.md` au statut EN COURS) ⟶ cochée par `prendre`
+- [ ] R1 Lire la section de la phase, `docs/revues/revue-poc.md`, `PROJECT_STATE.md`, `SUIVI.md` et les rapports des phases précédentes. ⟶ cocher S41 R1
+- [ ] R2 Écrire `docs/construction/mvp-P8.md`. ⟶ cocher S41 R2
+- [ ] R3 Créer une fiche `suivi/S41.<k>-<nom>.md` par tâche, depuis `suivi/_modele-tache.md`, toutes sections remplies. ⟶ cocher S41 R3
+- [ ] R4 Écrire dans le rapport les lignes à insérer dans `SUIVI.md`, avec leurs prérequis. ⟶ cocher S41 R4
+- [ ] R5 Contrôles finaux : chaque fiche créée a toutes ses sections ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S41 R5
 
 ## Prompt de vérification
 
 ```text
-Tu es <ton nom d'IA>, au rôle Vérificateur, vérificateur indépendant de l'unité S41 « P8 Compatibilité MVP et stabilisation (CAP-13) : découpage » du projet GODOT_DEV_MAPPER.
-Tu n'en es pas l'auteur : lis la ligne « Auteur » de rapports/S41.md ; si c'est toi, arrête-toi.
-Tu ne modifies aucun fichier de l'unité. Tu écris ton verdict et tu coches les sous-étapes V, sur la branche.
+Tu vérifies l'unité S41 « P8 Compatibilité MVP et stabilisation (CAP-13) : découpage » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
 
-COPIE NEUVE : git fetch origin && git worktree add --detach ../verif-S41-P8-decoupage origin/tache/S41-P8-decoupage
+PRISE, depuis ton clone principal
+python3 suivi/outil.py prendre S41 --ia <n> --verification
+- « VÉRIFICATION PRISE » : copie neuve ../verif-S41-P8-decoupage créée sur origin/tache/S41-P8-decoupage, verdict EN COURS écrit, V1 cochée. cd ../verif-S41-P8-decoupage : toute la vérification se fait dans ce dossier.
+- « REFUSÉ » : une autre IA vérifie déjà, tu es auteur, ou l'unité n'est pas terminée : reviens au prompt de créneau.
 GODOT : même procédure que le prompt de réalisation.
+Tu ne modifies aucun fichier de l'unité. Tu écris seulement ton verdict et tes cases V.
 
-1. PÉRIMÈTRE. git diff --name-only origin/main...origin/tache/S41-P8-decoupage. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S41*.md et suivi/S41-P8-decoupage.md. Tout autre fichier : refus.
-2. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : ceux de la fiche.
-3. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd.
-4. CONTOURNEMENTS. Cherche :
+TRACE OBLIGATOIRE : après chaque sous-étape V, git add du fichier de verdict, puis python3 suivi/outil.py cocher S41 <V…> --ia <n>. Pour la dernière : --verdict ACCEPTÉE ou --verdict REFUSÉE, identique à la ligne « Verdict » du fichier. Une sous-étape non cochée par cette commande est considérée comme non faite.
+
+1. TRAÇABILITÉ. Chaque case R cochée est signée « — IA n · date » et a son commit sur la branche (git log --oneline origin/main..HEAD). Case cochée sans travail prouvé dans le rapport : refus.
+2. PÉRIMÈTRE. git diff --name-only origin/main...HEAD. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S41*.md et suivi/S41-P8-decoupage.md. Tout autre fichier : refus.
+3. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : ceux de la fiche.
+4. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd (jamais sur rapports/).
+5. CONTOURNEMENTS. Cherche :
    - test sans assertion, ou toujours vrai ;
    - test désactivé, renommé ou sorti du runner ;
    - valeur attendue recopiée depuis la sortie du code ;
@@ -121,34 +140,44 @@ GODOT : même procédure que le prompt de réalisation.
    - API Godot inventée ou non vérifiée ;
    - dépendance interdite entre modules ; API sensible hors de la frontière de compatibilité ;
    - affirmation du rapport sans sortie qui la prouve.
-5. COHÉRENCE. Contrat et invariants concernés.
-Vérifie le découpage : budget de la phase respecté, chaque tâche avec au moins une contre-épreuve, prérequis réels et sans cycle, aucune paire de tâches indépendantes sur le même fichier. Après insertion des lignes dans SUIVI.md à la fusion : python3 suivi/outil.py verifier → OK.
+6. COHÉRENCE. Contrat et invariants concernés.
+Vérifie le découpage : budget de la phase respecté, chaque tâche avec au moins une contre-épreuve, prérequis réels et sans cycle, aucune paire de tâches indépendantes sur le même fichier, sous-étapes au format « ⟶ cocher ».
 
-VERDICT dans rapports/S41-verif-<tentative>.md :
+VERDICT dans rapports/S41-verif-<tentative>.md (créé par la prise) :
 - Verdict : ACCEPTÉE | REFUSÉE
 - Contrôles relancés : commande, code, attendu, obtenu
 - Contre-épreuves : sabotage, contrôle, détecté oui ou non
 - Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
 - Doutes non bloquants : liste courte
-Pousse le verdict sur la branche. Si ACCEPTÉE, fais les sous-étapes F de la fiche. Si REFUSÉE, arrête-toi : une IA au rôle de l'auteur reprendra.
+
+SI ACCEPTÉE — FUSION, depuis ton clone principal
+1. python3 suivi/outil.py fusionner S41 --ia <n> --godot "$B"
+   Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S41-P8-decoupage, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
+2. cd ../fusion-S41-P8-decoupage ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S41 F<k> --ia <n> (commit local, sans poussée).
+   Dans ../fusion-S41-P8-decoupage : insère dans SUIVI.md, entre S41 et S41.P, les lignes données par le rapport ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2.
+3. python3 suivi/outil.py publier S41 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
+SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
 ```
 
 ## Sous-étapes de vérification
 
-- [ ] V1 Prise en charge : pas l'auteur ; copie neuve sur `origin/tache/S41-P8-decoupage`.
-- [ ] V2 Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait.
-- [ ] V3 Chaque fiche créée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis.
-- [ ] V4 Prérequis réels, sans cycle ; tâches indépendantes sans fichier commun.
-- [ ] V5 Verdict écrit dans `rapports/S41-verif-<tentative>.md` et poussé.
+Dans `../verif-S41-P8-decoupage`, après chaque sous-étape : `git add` du verdict, puis `python3 suivi/outil.py cocher S41 V<k> --ia <n>`.
+
+- [ ] V1 Prise en charge : `python3 suivi/outil.py prendre S41 --ia <n> --verification` (pas un auteur ; copie neuve `../verif-S41-P8-decoupage` sur `origin/tache/S41-P8-decoupage` ; verdict EN COURS) ⟶ cochée par `prendre`
+- [ ] V2 Traçabilité : chaque case R cochée porte une signature « — IA n · date » et un commit sur la branche (`git log --oneline origin/main..HEAD`) ⟶ cocher S41 V2
+- [ ] V3 Budget de la phase respecté, ou dépassement signalé avec une proposition de retrait. ⟶ cocher S41 V3
+- [ ] V4 Chaque fiche créée : toutes les sections, au moins une contre-épreuve, fichiers autorisés précis, sous-étapes au format « ⟶ cocher ». ⟶ cocher S41 V4
+- [ ] V5 Prérequis réels, sans cycle ; tâches indépendantes sans fichier commun. ⟶ cocher S41 V5
+- [ ] V6 Verdict écrit dans `rapports/S41-verif-<tentative>.md` ⟶ cocher S41 V6 --verdict ACCEPTÉE ou --verdict REFUSÉE
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
-- [ ] F1 `git switch main && git pull --ff-only && git merge --no-ff origin/tache/S41-P8-decoupage -m "Fusion S41 : P8 Compatibilité MVP et stabilisation (CAP-13) : découpage"`.
-- [ ] F2 Sur `main` : `GODOT="$B" tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK. Sinon : `git reset --hard ORIG_HEAD`, verdict « REFUSÉE (fusion) » poussé sur la branche, et arrêt de la fusion.
-- [ ] F3 Dans `SUIVI.md`, cocher la ligne **S41** et compléter « fait le <date> · auteur <IA> · vérifié par <IA> · <n> créneaux ».
-- [ ] F4 Insérer dans `SUIVI.md`, entre **S41** et **S41.P**, les lignes des tâches données par le rapport ; `python3 suivi/outil.py verifier` → OK.
-- [ ] F5 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette.
-- [ ] F6 Cocher les sous-étapes F de cette fiche ; `git commit` ; `git push origin main` (en cas de refus : `git pull --rebase`, puis push).
+F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S41-P8-decoupage`, par `python3 suivi/outil.py cocher S41 F<k> --ia <n>` (commit local).
+
+- [ ] F1 Fusion : `python3 suivi/outil.py fusionner S41 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S41-P8-decoupage`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S41** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F2 Lignes des tâches insérées dans `SUIVI.md`, entre **S41** et **S41.P**, dans la même piste ; `python3 suivi/outil.py verifier` → OK ⟶ cocher S41 F2
+- [ ] F3 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S41 F3
+- [ ] F4 Publication : `python3 suivi/outil.py publier S41 --ia <n>` (verifier OK, `main` poussée, branche `tache/S41-P8-decoupage` supprimée, verrou rendu) ⟶ cochée par `publier`
 
 ## Pour la recette
 

@@ -25,8 +25,8 @@ En parallèle, le jeu de test est choisi et s'ouvre sur 4.7.2.
 ## Méthodologie
 
 - **File A, strictement séquentielle.** T01 crée le projet. T02 ajoute le runner et le contrôle de dépendances. T03 assemble tous les contrôles dans `tools/ci/run_all_checks.sh` et dans la CI. À la fin, une commande rejoue tout.
-- **File B.** T04, toi et Gemini.
-- **Modèles.** Qwen réalise, ou Sonnet si T00 a échoué. Gemini vérifie, sauf T03 que vérifie Opus (CI et versions).
+- **File B.** T04, toi et IA 3.
+- **Répartition.** IA 2 réalise. IA 3 vérifie, sauf T03 que vérifie IA 1 (CI et versions).
 - **Test d'abord.** Chaque tâche écrit sa contre-épreuve avant le code : on la voit échouer d'abord.
 
 ## Points de contrôle de l'étape
@@ -55,7 +55,7 @@ PC1.8 attend l'envoi sur GitHub. Tant que ta machine est indisponible, PC1.7 en 
 
 ## T01 — Squelette du dépôt et plugin activable
 
-Qwen · A1 · file A · dépend de T00 et de l'étape 0 · vérification : Gemini · contexte : plan §4 (modules, arborescence)
+IA 2 · A1 · file A · dépend de T00 et de l'étape 0 · vérification : IA 3 · contexte : plan §4 (modules, arborescence)
 
 Fichiers autorisés :
 - `project.godot`, `.gitignore` ;
@@ -94,7 +94,7 @@ Sabotage pour le vérificateur : `print(undefined_var)` dans `_enter_tree` ; T01
 
 ## T02 — Runner de tests et contrôle de dépendances
 
-Qwen · A1 · file A · dépend de T01 · vérification : Gemini · contexte : plan §4 (table des modules, API sensibles), méthodologie §3
+IA 2 · A1 · file A · dépend de T01 · vérification : IA 3 · contexte : plan §4 (table des modules, API sensibles), méthodologie §3
 
 Fichiers autorisés :
 - `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/pending/README.md`, `tests/README.md` ;
@@ -137,7 +137,7 @@ T02-g  (CE) ajoute temporairement un test test_pending_demo.gd en échec et son 
 
 ## T03 — Contrôle unique, lint et CI
 
-Qwen · A1 · file A · dépend de T01 et T02 · vérification : Opus · contexte : plan §4 (frontière de compatibilité), `docs/COMPATIBILITY.md`
+IA 2 · A1 · file A · dépend de T01 et T02 · vérification : IA 1 · contexte : plan §4 (frontière de compatibilité), `docs/COMPATIBILITY.md`
 
 Fichiers autorisés :
 - `addons/godot_dev_mapper/compat/versions.json` ;
@@ -184,11 +184,11 @@ L'envoi sur GitHub et PC1.8 viendront quand le dépôt sera poussé.
 
 ## T04 — Banc d'essai
 
-Toi et Gemini · A0, puis A1 pour la migration · file B · vérification : toi · contexte : plan §0 et §9, `docs/DECISIONS.md` (D-02)
+Toi et IA 3 · A0, puis A1 pour la migration · file B · vérification : toi · contexte : plan §0 et §9, `docs/DECISIONS.md` (D-02)
 
 Fichiers autorisés : `benches/benches.json`, `docs/benches/<nom>.md`, `tools/check_benches.py`. La copie de travail du jeu vit hors du dépôt, par exemple dans `../benches/<nom>`.
 
-Prompt de sélection, pour Gemini :
+Prompt de sélection, pour IA 3 :
 
 ```text
 Tu aides à choisir le banc d'essai du projet GODOT_DEV_MAPPER. Tu ne copies aucun fichier de jeu dans le dépôt.
@@ -203,7 +203,7 @@ Vérifie chaque fait dans le dépôt lui-même (fichier LICENSE, project.godot).
 Rapport : un tableau comparatif, puis ta recommandation et ses deux principales faiblesses.
 ```
 
-Tu choisis. Ensuite, prompt de préparation pour Qwen ou Sonnet :
+Tu choisis. Ensuite, prompt de préparation, pour IA 2 :
 
 ```text
 Tu prépares le banc d'essai retenu pour le projet GODOT_DEV_MAPPER : {nom}, dépôt {url}, révision {sha}.

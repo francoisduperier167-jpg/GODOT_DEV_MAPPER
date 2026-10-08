@@ -21,8 +21,8 @@ En parallèle, prouver que l'outil ne casse rien : jeu sans débogueur, redémar
 
 ## Méthodologie
 
-- **T16 et T17.** Sonnet réalise l'interface, Qwen les projections, Gemini vérifie. Les projections se testent avec des fixtures. Le panneau se vérifie en chargeant l'éditeur sans interface, puis visuellement sur ta machine, avec des captures d'écran jointes au rapport.
-- **T18.** Qwen réalise, Opus vérifie, car le cycle de vie touche au protocole. Les scénarios passent par le banc de test sans éditeur ; la désactivation dans l'éditeur réel attend ta machine.
+- **T16 et T17.** IA 2 réalise l'interface et les projections, IA 3 vérifie. Les projections se testent avec des fixtures. Le panneau se vérifie en chargeant l'éditeur sans interface, puis visuellement sur ta machine, avec des captures d'écran jointes au rapport.
+- **T18.** IA 2 réalise, IA 1 vérifie, car le cycle de vie touche au protocole. Les scénarios passent par le banc de test sans éditeur ; la désactivation dans l'éditeur réel attend ta machine.
 
 ## Points de contrôle
 
@@ -44,7 +44,7 @@ En parallèle, prouver que l'outil ne casse rien : jeu sans débogueur, redémar
 
 ## T16 — Panneau du POC
 
-Sonnet pour l'interface, Qwen pour la projection · A1 · file A · dépend de T10 et T14 · vérification : Gemini · pack de contexte EDITOR
+IA 2 · A1 · file A · dépend de T10 et T14 · vérification : IA 3 · pack de contexte EDITOR
 
 Fichiers autorisés : `addons/godot_dev_mapper/projections/journal_projection.gd`, `addons/godot_dev_mapper/ui/poc_panel.tscn`, `addons/godot_dev_mapper/ui/poc_panel.gd`, `addons/godot_dev_mapper/editor/` (ajout du panneau, aller-retour, horodatage de réception), `addons/godot_dev_mapper/plugin.gd` (ajout du panneau uniquement), `tests/unit/test_journal_projection.gd`, `tools/ci/checks.d/60-panel.sh`.
 
@@ -80,7 +80,7 @@ SUR MA MACHINE, plus tard (PC6.7) : la procédure pour les captures d'écran et 
 
 ## T17 — Chemin observé et ouverture du code
 
-Qwen pour la projection, Sonnet pour l'ouverture du code · A1 · file A · dépend de T15 et T16 · vérification : Gemini · packs de contexte CORE et EDITOR
+IA 2 · A1 · file A · dépend de T15 et T16 · vérification : IA 3 · packs de contexte CORE et EDITOR
 
 Fichiers autorisés : `addons/godot_dev_mapper/projections/observed_path.gd`, `addons/godot_dev_mapper/editor/source_opener.gd`, `addons/godot_dev_mapper/ui/poc_panel.gd` (affichage), `tests/unit/test_observed_path.gd`, `tests/unit/fixtures/observed_path/`.
 
@@ -110,7 +110,7 @@ SUR MA MACHINE, plus tard : un clic ouvre le bon fichier à la bonne ligne.
 
 ## T18 — Robustesse et cycle de vie
 
-Qwen · A1 · file B · dépend de T13b et T14 · vérification : Opus · pack de contexte RUNTIME
+IA 2 · A1 · file B · dépend de T13b et T14 · vérification : IA 1 · pack de contexte RUNTIME
 
 Fichiers autorisés : `tests/integration/run_lifecycle.sh`, `tools/harness/` (nouveaux scénarios), `tests/unit/test_session_controller.gd` (nouveaux cas), `tools/ci/checks.d/65-lifecycle.sh`. Pour corriger un défaut sans changer de contrat : `addons/godot_dev_mapper_runtime/flow_trace.gd` et `addons/godot_dev_mapper/editor/session_controller.gd`. Les tests de contrat restent intouchables ; une correction qui exigerait de changer un contrat passe par QUESTION.
 

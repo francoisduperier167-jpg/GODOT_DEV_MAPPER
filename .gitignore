@@ -3,3 +3,6 @@
 
 # Sorties des spikes
 *.out
+
+# Python
+__pycache__/

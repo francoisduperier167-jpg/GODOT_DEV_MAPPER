@@ -1,18 +1,19 @@
 # S35 — T20 Revue de continuation et décision
 
-> Fiche d'exécution du mode autonome. Coche chaque case dès qu'elle est faite et prouvée, puis commite et pousse : une autre IA doit pouvoir reprendre à la première case non cochée. Règles : `docs/construction/sequence.md`. Avancement global : `SUIVI.md`.
+> Fiche d'exécution du mode autonome. Chaque case se coche avec `python3 suivi/outil.py cocher S35 <sous-étape> --ia <n>`, juste après la sous-étape : la commande vérifie l'ordre et l'identité de l'IA, signe la case (IA, date, heure UTC), commite et pousse. Une sous-étape non cochée par cette commande est considérée comme non faite. Règles : `docs/construction/sequence.md`. Avancement : `SUIVI.md` et `suivi/tableau.html`.
 
 | Champ | Valeur |
 | --- | --- |
-| Réalise | Concepteur |
-| Vérifie | Vérificateur (jamais l'auteur) |
-| Commence après | S34 (cochées dans `SUIVI.md`) |
+| Réalise | IA 1 (conception) |
+| Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
+| Piste | Rendez-vous de l'étape 7 : S35 |
+| Commence après | S34 (cochée dans `SUIVI.md`) |
 | Indépendante de | aucune |
 | Branche | `tache/S35-T20-revue` |
 | Fiche de conception | `docs/construction/etape-7.md`, section T20 |
 | Estimation | 1 créneau |
 
-**Séquentiel ou indépendant.** Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité elle-même peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
+**Séquentiel ou indépendant.** Cette unité appartient au rendez-vous de l'étape 7 : elle attend la fin des pistes 7.A. Concrètement, elle attend S34. Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
 
 ## Ce qu'il faut faire
 
@@ -24,17 +25,19 @@
 
 `docs/revues/revue-poc.md`, `docs/plan-directeur.md` (amendement PD-0.6, statut « proposé »). À la fusion : la décision dans `docs/DECISIONS.md`.
 
-Toujours autorisés en plus : `rapports/S35*.md` et les cases de cette fiche.
+Toujours autorisés en plus : `rapports/S35*.md` et les cases de cette fiche (par `cocher`).
 
 ## Prompt de réalisation
 
 ```text
-Tu es <ton nom d'IA>, au rôle Concepteur. Tu réalises l'unité S35 « T20 Revue de continuation et décision » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Tu réalises l'unité S35 « T20 Revue de continuation et décision » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Réalisation prévue : IA 1 (conception) ; vérification : IA 3 (vérification). Ton numéro d'IA est celui que te donne le prompt de créneau : tu le passes à --ia, et il signe chaque case que tu coches.
 
-AVANT TOUT
-1. git fetch origin. Lis REGLES_AGENTS.md s'il existe, puis la fiche suivi/S35-T20-revue.md.
-2. Si la branche origin/tache/S35-T20-revue existe : reprends-la, relis rapports/S35.md et commence à la première sous-étape R non cochée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
-3. Sinon : vérifie dans SUIVI.md, sur main, que S34 est cochée, puis crée tache/S35-T20-revue depuis main.
+AVANT TOUT, depuis ton clone principal du dépôt
+1. Lis REGLES_AGENTS.md s'il existe, puis cette fiche : suivi/S35-T20-revue.md.
+2. python3 suivi/outil.py prendre S35 --ia <n>
+   - « PRISE » ou « REPRISE » : tu es sur la branche tache/S35-T20-revue ; commence à la sous-étape affichée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
+   - « REFUSÉ » : l'unité n'est pas pour toi maintenant (déjà prise par une autre IA, S34 non cochée, autre IA prévue) : reviens au prompt de créneau et choisis autre chose.
 
 GODOT
 - Si tools/ci/fetch_godot.sh existe : B=$(tools/ci/fetch_godot.sh 4.7.2-stable)
@@ -51,9 +54,18 @@ RÈGLES NON NÉGOCIABLES
 - Avant d'utiliser une API Godot dont tu n'es pas certain en 4.7.2, écris un script de trois lignes qui l'appelle et exécute-le. Une API non vérifiée n'entre pas dans le code.
 - Tu n'affaiblis jamais un test ou un contrôle pour le faire passer.
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée : tu colles sa sortie réelle dans le rapport.
-- Tu coches une case seulement quand elle est faite et prouvée. Tu commites et tu pousses après chaque case cochée.
-- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status.
+- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status. Tu ne pousses jamais avec --force.
 - Deux échecs au même contrôle : statut ESCALADE, avec ton diagnostic.
+- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre.
+
+TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
+1. git add <les fichiers de la sous-étape> (jamais git add -A).
+2. python3 suivi/outil.py cocher S35 <sous-étape> --ia <n>
+   La commande vérifie l'ordre des cases et ton identité, coche la case dans suivi/S35-T20-revue.md, la signe (IA, date, heure UTC), commite et pousse sur tache/S35-T20-revue.
+3. Une sous-étape faite mais non cochée par cette commande est considérée comme non faite : l'IA suivante la refera. Tu ne coches jamais une case à la main.
+4. Tu ne modifies jamais SUIVI.md : il ne change qu'à la fusion, sous le verrou de main. Plusieurs IA le lisent en même temps ; aucune ne l'écrit hors de ce verrou.
+5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S35.md, puis git add.
+6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S35-T20-revue, puis relance la commande.
 
 TRAVAIL TECHNIQUE — début de la copie exacte du guide (docs/construction/etape-7.md, T20)
 Tu prépares la revue de continuation du POC du projet GODOT_DEV_MAPPER. Tu ne décides pas : la décision est humaine.
@@ -62,14 +74,14 @@ ENTRÉES : PROJECT_STATE.md, docs/mesures/valeur-poc.md, docs/spikes/, les verdi
 
 PRODUIS docs/revues/revue-poc.md avec :
 1. Budgets : heures humaines et temps agent consommés par étape, contre le budget ; ratio global.
-2. Fiabilité : taux de réussite au premier essai, escalades et refus du vérificateur, par modèle.
+2. Fiabilité : taux de réussite au premier essai, escalades et refus du vérificateur, par IA.
 3. Signal d'utilité : lecture qualitative de T19, avec ses limites (trois bugs, une seule personne, durées indicatives).
 4. Risques : ceux du plan, mis à jour ; les nouveaux.
 5. Options : continuer, réduire, réorienter ou arrêter. Pour chacune : conditions, conséquences, budget restant estimé avec le ratio observé.
 6. Décisions à prendre :
    - SPIKE-03 (rendu) et SPIKE-04 (AST Flow ou extraction maison) au début du MVP ;
    - reprise d'AST Flow comme backend statique ;
-   - routage des modèles pour le MVP ;
+   - répartition des tâches entre les trois IA pour le MVP ;
    - besoin, ou non, d'une mesure de valeur plus large au MVP.
 7. Proposition d'amendement du plan (PD-0.6) : budgets recalibrés et décisions retenues. Le diff exact, sans l'appliquer.
 TRAVAIL TECHNIQUE — fin de la copie exacte du guide
@@ -79,15 +91,15 @@ ADAPTATIONS DU MODE AUTONOME
 - Budgets : en créneaux d'IA (estimation de `sequence.md` §8), et non en heures humaines.
 - SPIKE-04 : si la reprise d'AST Flow est recommandée, c'est une nouvelle dépendance, à décider par l'humain ; le MVP continue avec l'extraction maison en attendant.
 
-SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche, et coche chacune.
+SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche ; après chacune, git add puis python3 suivi/outil.py cocher S35 R<k> --ia <n>.
 
 FIN DE CRÉNEAU, même si l'unité n'est pas finie
-- Coche dans suivi/S35-T20-revue.md les sous-étapes faites et prouvées ; complète rapports/S35.md (sorties, section « Passation ») ; commite ; git push origin tache/S35-T20-revue.
-- Ne laisse aucune modification non poussée.
+- Chaque sous-étape faite est cochée par `cocher`. Complète rapports/S35.md (sorties, « Passation » en cinq lignes au plus), git add, git commit, git push origin HEAD:tache/S35-T20-revue.
+- git status ne montre aucune modification non commitée ; rien ne reste non poussé.
 
-FORMAT DE rapports/S35.md
+FORMAT DE rapports/S35.md (créé par prendre ; tu le complètes)
 - Statut : EN COURS | TERMINÉ | QUESTION | ESCALADE
-- Auteur : <ton nom d'IA> · Tentative : n · Créneaux utilisés : n
+- Auteurs : IA n (écrit par `prendre`) · Tentative : n · Créneaux utilisés : n
 - Fichiers modifiés : liste
 - Contrôles : pour chacun, commande, code de sortie, 10 dernières lignes de sortie
 - Contre-épreuves faites : liste
@@ -100,28 +112,35 @@ FORMAT DE rapports/S35.md
 
 ## Sous-étapes de réalisation
 
-- [ ] R0 Prise en charge : `git fetch origin` ; S34 est cochée dans `SUIVI.md` ; branche `origin/tache/S35-T20-revue` absente, ou sans commit depuis deux créneaux, ou dernier verdict REFUSÉE ; créer ou reprendre la branche ; `rapports/S35.md` avec « Statut : EN COURS » et « Auteur » ; commit ; push.
-- [ ] R1 Rassembler `SUIVI.md`, `PROJECT_STATE.md`, les verdicts, `docs/mesures/valeur-poc-substitution.md`, `docs/spikes/`.
-- [ ] R2 Écrire les sections 1 à 6 de la revue.
-- [ ] R3 Appliquer la règle de décision et l'écrire dans la revue.
-- [ ] R4 Écrire et appliquer l'amendement PD-0.6, au statut « proposé ».
-- [ ] R5 Si la décision est de s'arrêter : écrire `rapports/ARRET.md`.
-- [ ] R6 Contrôles finaux : T20-a, T20-b, T20-c, T20-d exécutés dans une copie propre, sorties collées dans le rapport ; `tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK ; « Statut : TERMINÉ » ; commit ; push.
+Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil.py cocher S35 R<k> --ia <n>` (coche, signe, commite, pousse).
+
+- [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S35 --ia <n>` (prérequis cochés dans `SUIVI.md` : S34 ; branche `tache/S35-T20-revue` créée ou reprise ; `rapports/S35.md` au statut EN COURS) ⟶ cochée par `prendre`
+- [ ] R1 Rassembler `SUIVI.md`, `PROJECT_STATE.md`, les verdicts, `docs/mesures/valeur-poc-substitution.md`, `docs/spikes/`. ⟶ cocher S35 R1
+- [ ] R2 Écrire les sections 1 à 6 de la revue. ⟶ cocher S35 R2
+- [ ] R3 Appliquer la règle de décision et l'écrire dans la revue. ⟶ cocher S35 R3
+- [ ] R4 Écrire et appliquer l'amendement PD-0.6, au statut « proposé ». ⟶ cocher S35 R4
+- [ ] R5 Si la décision est de s'arrêter : écrire `rapports/ARRET.md`. ⟶ cocher S35 R5
+- [ ] R6 Contrôles finaux : T20-a, T20-b, T20-c, T20-d exécutés dans une copie propre, sorties collées dans le rapport ; `tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S35 R6
 
 ## Prompt de vérification
 
 ```text
-Tu es <ton nom d'IA>, au rôle Vérificateur, vérificateur indépendant de l'unité S35 « T20 Revue de continuation et décision » du projet GODOT_DEV_MAPPER.
-Tu n'en es pas l'auteur : lis la ligne « Auteur » de rapports/S35.md ; si c'est toi, arrête-toi.
-Tu ne modifies aucun fichier de l'unité. Tu écris ton verdict et tu coches les sous-étapes V, sur la branche.
+Tu vérifies l'unité S35 « T20 Revue de continuation et décision » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
 
-COPIE NEUVE : git fetch origin && git worktree add --detach ../verif-S35-T20-revue origin/tache/S35-T20-revue
+PRISE, depuis ton clone principal
+python3 suivi/outil.py prendre S35 --ia <n> --verification
+- « VÉRIFICATION PRISE » : copie neuve ../verif-S35-T20-revue créée sur origin/tache/S35-T20-revue, verdict EN COURS écrit, V1 cochée. cd ../verif-S35-T20-revue : toute la vérification se fait dans ce dossier.
+- « REFUSÉ » : une autre IA vérifie déjà, tu es auteur, ou l'unité n'est pas terminée : reviens au prompt de créneau.
 GODOT : même procédure que le prompt de réalisation.
+Tu ne modifies aucun fichier de l'unité. Tu écris seulement ton verdict et tes cases V.
 
-1. PÉRIMÈTRE. git diff --name-only origin/main...origin/tache/S35-T20-revue. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S35*.md et suivi/S35-T20-revue.md. Tout autre fichier : refus.
-2. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : T20-a, T20-b, T20-c, T20-d.
-3. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd.
-4. CONTOURNEMENTS. Cherche :
+TRACE OBLIGATOIRE : après chaque sous-étape V, git add du fichier de verdict, puis python3 suivi/outil.py cocher S35 <V…> --ia <n>. Pour la dernière : --verdict ACCEPTÉE ou --verdict REFUSÉE, identique à la ligne « Verdict » du fichier. Une sous-étape non cochée par cette commande est considérée comme non faite.
+
+1. TRAÇABILITÉ. Chaque case R cochée est signée « — IA n · date » et a son commit sur la branche (git log --oneline origin/main..HEAD). Case cochée sans travail prouvé dans le rapport : refus.
+2. PÉRIMÈTRE. git diff --name-only origin/main...HEAD. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S35*.md et suivi/S35-T20-revue.md. Tout autre fichier : refus.
+3. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : T20-a, T20-b, T20-c, T20-d.
+4. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd (jamais sur rapports/).
+5. CONTOURNEMENTS. Cherche :
    - test sans assertion, ou toujours vrai ;
    - test désactivé, renommé ou sorti du runner ;
    - valeur attendue recopiée depuis la sortie du code ;
@@ -130,38 +149,47 @@ GODOT : même procédure que le prompt de réalisation.
    - API Godot inventée ou non vérifiée ;
    - dépendance interdite entre modules ; API sensible hors de la frontière de compatibilité ;
    - affirmation du rapport sans sortie qui la prouve.
-5. COHÉRENCE. Plan §9 (portes, critères d'arrêt) ; `sequence.md` §5 et §8.
+6. COHÉRENCE. Plan §9 (portes, critères d'arrêt) ; `sequence.md` §5 et §8.
 
-VERDICT dans rapports/S35-verif-<tentative>.md :
+VERDICT dans rapports/S35-verif-<tentative>.md (créé par la prise) :
 - Verdict : ACCEPTÉE | REFUSÉE
 - Contrôles relancés : commande, code, attendu, obtenu
 - Contre-épreuves : sabotage, contrôle, détecté oui ou non
 - Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
 - Doutes non bloquants : liste courte
-Pousse le verdict sur la branche. Si ACCEPTÉE, fais les sous-étapes F de la fiche. Si REFUSÉE, arrête-toi : une IA au rôle de l'auteur reprendra.
+
+SI ACCEPTÉE — FUSION, depuis ton clone principal
+1. python3 suivi/outil.py fusionner S35 --ia <n> --godot "$B"
+   Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S35-T20-revue, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
+2. cd ../fusion-S35-T20-revue ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S35 F<k> --ia <n> (commit local, sans poussée).
+3. python3 suivi/outil.py publier S35 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
+SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
 ```
 
 ## Sous-étapes de vérification
 
-- [ ] V1 Prise en charge : pas l'auteur ; copie neuve `../verif-S35-T20-revue` sur `origin/tache/S35-T20-revue`.
-- [ ] V2 Périmètre : `git diff --name-only origin/main...origin/tache/S35-T20-revue` ⊂ fichiers autorisés.
-- [ ] V3.1 Contrôle T20-a relancé, résultat conforme.
-- [ ] V3.2 Contrôle T20-b relancé, résultat conforme.
-- [ ] V3.3 Contrôle T20-c relancé, résultat conforme.
-- [ ] V3.4 Contrôle T20-d relancé, résultat conforme.
-- [ ] V4 Contre-épreuves (CE) appliquées et détectées, puis annulées.
-- [ ] V5 Contournements cherchés.
-- [ ] V6 Cohérence avec les contrats et les invariants.
-- [ ] V7 Verdict écrit dans `rapports/S35-verif-<tentative>.md` et poussé.
+Dans `../verif-S35-T20-revue`, après chaque sous-étape : `git add` du verdict, puis `python3 suivi/outil.py cocher S35 V<k> --ia <n>`.
+
+- [ ] V1 Prise en charge : `python3 suivi/outil.py prendre S35 --ia <n> --verification` (pas un auteur ; copie neuve `../verif-S35-T20-revue` sur `origin/tache/S35-T20-revue` ; verdict EN COURS) ⟶ cochée par `prendre`
+- [ ] V2 Traçabilité : chaque case R cochée porte une signature « — IA n · date » et un commit sur la branche (`git log --oneline origin/main..HEAD`) ⟶ cocher S35 V2
+- [ ] V3 Périmètre : `git diff --name-only origin/main...HEAD` ⊂ fichiers autorisés. ⟶ cocher S35 V3
+- [ ] V4.1 Contrôle T20-a relancé, résultat conforme. ⟶ cocher S35 V4.1
+- [ ] V4.2 Contrôle T20-b relancé, résultat conforme. ⟶ cocher S35 V4.2
+- [ ] V4.3 Contrôle T20-c relancé, résultat conforme. ⟶ cocher S35 V4.3
+- [ ] V4.4 Contrôle T20-d relancé, résultat conforme. ⟶ cocher S35 V4.4
+- [ ] V5 Contre-épreuves (CE) appliquées et détectées, puis annulées. ⟶ cocher S35 V5
+- [ ] V6 Contournements cherchés. ⟶ cocher S35 V6
+- [ ] V7 Cohérence avec les contrats et les invariants. ⟶ cocher S35 V7
+- [ ] V8 Verdict écrit dans `rapports/S35-verif-<tentative>.md` ⟶ cocher S35 V8 --verdict ACCEPTÉE ou --verdict REFUSÉE
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
-- [ ] F1 `git switch main && git pull --ff-only && git merge --no-ff origin/tache/S35-T20-revue -m "Fusion S35 : T20 Revue de continuation et décision"`.
-- [ ] F2 Sur `main` : `GODOT="$B" tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK. Sinon : `git reset --hard ORIG_HEAD`, verdict « REFUSÉE (fusion) » poussé sur la branche, et arrêt de la fusion.
-- [ ] F3 Dans `SUIVI.md`, cocher la ligne **S35** et compléter « fait le <date> · auteur <IA> · vérifié par <IA> · <n> créneaux ».
-- [ ] F4 Inscrire la décision du POC dans `docs/DECISIONS.md`, au statut « adoptée par défaut ».
-- [ ] F5 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette.
-- [ ] F6 Cocher les sous-étapes F de cette fiche ; `git commit` ; `git push origin main` (en cas de refus : `git pull --rebase`, puis push).
+F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S35-T20-revue`, par `python3 suivi/outil.py cocher S35 F<k> --ia <n>` (commit local).
+
+- [ ] F1 Fusion : `python3 suivi/outil.py fusionner S35 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S35-T20-revue`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S35** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F2 Inscrire la décision du POC dans `docs/DECISIONS.md`, au statut « adoptée par défaut ». ⟶ cocher S35 F2
+- [ ] F3 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S35 F3
+- [ ] F4 Publication : `python3 suivi/outil.py publier S35 --ia <n>` (verifier OK, `main` poussée, branche `tache/S35-T20-revue` supprimée, verrou rendu) ⟶ cochée par `publier`
 
 ## Pour la recette
 

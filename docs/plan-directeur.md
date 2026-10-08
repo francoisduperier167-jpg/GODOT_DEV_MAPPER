@@ -47,7 +47,7 @@ Ce document est une proposition. Une décision reste une proposition tant qu'ell
 | Moteur | Godot 4.7.2 stable, référence reproductible | Proposé (D-01) | CI bloquante sur 4.7.2 | Télécharger 4.7.2 depuis l'archive officielle |
 | Préversion | 4.8, au snapshot dev 7 du 29 septembre 2026, en gel des fonctionnalités | Connu | Contrôle séparé, non bloquant | Relancer sur chaque nouvelle préversion |
 | Langage analysé | GDScript uniquement | Connu | C#, GDExtension et sources absentes hors MVP | — |
-| Équipe | Un développeur ; Opus 5.5, Sonnet, Gemini, Qwen3.8-27B en local | Connu | Orchestration multi-modèles | Mesurer la réussite par modèle sur les dix premières tâches |
+| Équipe | Un développeur ; trois IA à tour de rôle, IA 1, IA 2 et IA 3, qu'il choisit | Connu | Orchestration de plusieurs IA | Mesurer la réussite par IA sur les dix premières tâches |
 | Disponibilité | Trois IA en rotation, deux créneaux chacune par jour, soit environ 12 h d'agent par jour ; présence humaine à la recette finale | Exprimé par l'utilisateur le 8 octobre 2026 (D-03, D-09) | Une seule file : une unité après l'autre (`docs/construction/sequence.md`) | Mesurer les créneaux consommés par unité sur le POC |
 | Bancs d'essai | Jeux open source disponibles | À lister (D-02) | Choix en T04 | Nom, dépôt, licences, version d'origine |
 | Instrumentation | Explicite, sur des copies de travail des jeux | Hypothèse | POC possible sans instrumentation automatique | — |
@@ -486,7 +486,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | 5 | Analyse statique trompeuse | Élevée | Moyen | Provenance, résolution, « non résolu » |
 | 6 | Saturation de la relecture humaine | Élevée | Moyen | Deux files à 10 h par semaine, petites tâches |
 | 7 | Rupture ciblée d'API entre versions | Moyenne | Moyen | Façade, CI 4.7.2, contrôle de la préversion |
-| 8 | Échecs des modèles sur les API Godot | Moyenne | Moyen | Packs autonomes, escalade, mesure par modèle |
+| 8 | Échecs des IA sur les API Godot | Moyenne | Moyen | Packs autonomes, escalade, mesure par IA |
 | 9 | Graphe illisible | Élevée | Moyen | Projections, expansion bornée, SPIKE-03 |
 | 10 | Outil tiers abandonné | Moyenne | Moyen | Façade, version épinglée, plan de sortie |
 | 11 | Licences des bancs d'essai | Faible | Moyen | Référencer sans copier |

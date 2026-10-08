@@ -23,9 +23,9 @@ Implémenter le socle (codec, modèle, Event Store) et le runtime (façades, Flo
 ## Méthodologie
 
 - **Rouge, vert, vérification.** On active les tests (ils échouent), on implémente, on les fait passer, puis le vérificateur intervient dans sa propre copie de travail.
-- **Deux files en parallèle**, chacune dans ses copies de travail : file A pour le socle, file B pour le runtime. Qwen réalise. Opus vérifie T12, T13a et T13b (façades et protocole) ; Gemini vérifie T09, T10, T11 et T13c.
+- **Deux files en parallèle**, chacune dans ses copies de travail : file A pour le socle, file B pour le runtime. IA 2 réalise. IA 1 vérifie T12, T13a et T13b (façades et protocole) ; IA 3 vérifie T09, T10, T11 et T13c.
 - **Banc de test sans éditeur.** T13b transforme le récepteur de SPIKE-01a en `tools/harness/fake_editor.gd`. Les tests d'intégration du runtime le réutilisent, en CI comme en local.
-- **SPIKE-06.** Chaque tâche note tentatives, escalades et temps dans son rapport. À la fusion, tu les reportes dans `PROJECT_STATE.md`. À la fin de l'étape, on calcule le taux de réussite au premier essai par modèle.
+- **SPIKE-06.** Chaque tâche note tentatives, escalades et temps dans son rapport. À la fusion, tu les reportes dans `PROJECT_STATE.md`. À la fin de l'étape, on calcule le taux de réussite au premier essai par IAèle.
 - **Budget.** 4 à 7 h est un objectif favorable : il suppose des contrats clairs et peu de reprises. Le découpage de T13 et la règle QUESTION allégée servent à le tenir. Au-delà de 50 % de dépassement, revue de continuation.
 
 ## Points de contrôle
@@ -37,18 +37,18 @@ Implémenter le socle (codec, modèle, Event Store) et le runtime (façades, Flo
 | PC4.3 | Session de bout en bout | Contrôle « integration » de `run_all_checks.sh` | Aucun trou, aucun lot après « stopped », bail déclenché à la coupure |
 | PC4.4 | Coûts mesurés | `docs/spikes/SPIKE-05.md` | Coûts actif et désactivé, côté appelant compris, avec méthode et chiffres |
 | PC4.5 | Contre-épreuves | Verdicts des vérificateurs | Toutes détectées |
-| PC4.6 | Fiabilité des modèles | `PROJECT_STATE.md` | Taux de réussite au premier essai par modèle |
+| PC4.6 | Fiabilité des IA | `PROJECT_STATE.md` | Taux de réussite au premier essai par IA |
 
 ## Cheminement d'amélioration
 
-- **Qwen sous 40 % de réussite après dix tâches.** Les tâches restantes passent à Sonnet, ou on les découpe plus finement.
+- **IA 2 sous 40 % de réussite après dix tâches.** On découpe les tâches restantes plus finement, ou tu changes l'IA qui tient le numéro 2.
 - **Chemin désactivé mesurable dans le temps de frame.** On applique les règles d'appel : `if FlowTrace.enabled:` devant les charges, clés en StringName littéraux. Puis T13c mesure à nouveau.
 - **Test d'intégration instable.** On compte en frames plutôt qu'en millisecondes, et on injecte une horloge factice dans les tests unitaires.
 - **Questions répétées sur un contrat.** On le signale à la rétro : le contrat a besoin d'un exemple.
 
 ## T09 — Codec et validateur de l'enveloppe (C-04)
 
-Qwen · A1 · file A · dépend de T08 · vérification : Gemini · pack de contexte RUNTIME
+IA 2 · A1 · file A · dépend de T08 · vérification : IA 3 · pack de contexte RUNTIME
 
 Fichiers autorisés : `addons/godot_dev_mapper_runtime/envelope.gd`, `addons/godot_dev_mapper/protocol/envelope_codec.gd`, les marqueurs T09 de `tests/pending/` (suppression seulement).
 
@@ -70,7 +70,7 @@ CONTRE-ÉPREUVE (CE) pour le vérificateur : passer la limite d'événements par
 
 ## T10 — Modèle minimal, graphe déclaré, clés de sonde (C-01, C-02, C-05)
 
-Qwen · A1 · file A · dépend de T07 et T09 · vérification : Gemini · pack de contexte CORE
+IA 2 · A1 · file A · dépend de T07 et T09 · vérification : IA 3 · pack de contexte CORE
 
 Fichiers autorisés : `addons/godot_dev_mapper/core/`, les marqueurs T10 de `tests/pending/` (suppression seulement).
 
@@ -92,7 +92,7 @@ CONTRE-ÉPREUVE (CE) pour le vérificateur : faire accepter au chargeur une clé
 
 ## T11 — Event Store minimal (C-06)
 
-Qwen · A1 · file A · dépend de T08 et T10 · vérification : Gemini · pack de contexte EDITOR
+IA 2 · A1 · file A · dépend de T08 et T10 · vérification : IA 3 · pack de contexte EDITOR
 
 Fichiers autorisés : `addons/godot_dev_mapper/store/`, les marqueurs T11 de `tests/pending/` (suppression seulement).
 
@@ -116,7 +116,7 @@ CONTRE-ÉPREUVES (CE) pour le vérificateur
 
 ## T12 — Façades de compatibilité et profil moteur (C-03)
 
-Qwen · A1 · file B · dépend de T06 et T08 · vérification : Opus · pack de contexte COMPAT
+IA 2 · A1 · file B · dépend de T06 et T08 · vérification : IA 1 · pack de contexte COMPAT
 
 Fichiers autorisés : `addons/godot_dev_mapper/compat/engine_facade.gd` et `engine_profile.gd`, `addons/godot_dev_mapper_runtime/runtime_facade.gd`, les marqueurs T12 de `tests/pending/` (suppression seulement).
 
@@ -138,7 +138,7 @@ CONTRE-ÉPREUVE (CE) pour le vérificateur : ajouter un appel à EngineDebugger 
 
 ## T13a — FlowTrace : runtime et protocole de session (C-07)
 
-Qwen · A1 · file B · dépend de T08, T09 et T12 · vérification : Opus · pack de contexte RUNTIME, plus `docs/spikes/SPIKE-01.md`
+IA 2 · A1 · file B · dépend de T08, T09 et T12 · vérification : IA 1 · pack de contexte RUNTIME, plus `docs/spikes/SPIKE-01.md`
 
 Fichiers autorisés : `addons/godot_dev_mapper_runtime/flow_trace.gd`, `tests/unit/test_flow_trace_internals.gd`, les marqueurs T13a de `tests/pending/` (suppression seulement).
 
@@ -172,7 +172,7 @@ CONTRE-ÉPREUVES (CE) pour le vérificateur
 
 ## T13b — Banc sans éditeur et scénarios de coupure
 
-Qwen · A1 · file B · dépend de T13a · vérification : Opus · pack de contexte RUNTIME
+IA 2 · A1 · file B · dépend de T13a · vérification : IA 1 · pack de contexte RUNTIME
 
 Fichiers autorisés : `tools/harness/fake_editor.gd`, `tools/harness/demo_game/`, `tests/integration/run_session.sh`, `tools/ci/checks.d/40-integration.sh`.
 
@@ -201,7 +201,7 @@ CONTRE-ÉPREUVE (CE) pour le vérificateur : dans le mini-jeu, envoyer un lot ap
 
 ## T13c — Mesures de performance (SPIKE-05)
 
-Qwen · A1 · file B · dépend de T13b · vérification : Gemini, qui relance la mesure · pack de contexte RUNTIME
+IA 2 · A1 · file B · dépend de T13b · vérification : IA 3, qui relance la mesure · pack de contexte RUNTIME
 
 Fichiers autorisés : `tools/bench/flow_trace_cost/`, `docs/spikes/SPIKE-05.md`.
 

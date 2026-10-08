@@ -1,24 +1,24 @@
 # Étape 0 — Décisions et environnement
 
-Tâches : 0.A dossier de décisions · 0.B squelettes et règles des agents · T00 environnement de Qwen · Budget : 2 à 4 h humaines · Prérequis : aucun
+Tâches : 0.A dossier de décisions · 0.B squelettes et règles des agents · T00 environnement d'une IA locale, facultatif · Budget : 2 à 4 h humaines · Prérequis : aucun
 
 ## Objectif
 
-Partir sur des décisions écrites et des agents qui fonctionnent. À la fin de l'étape, chaque décision bloquante a une réponse datée. Chaque agent lit les mêmes règles, au même endroit. Le modèle local a prouvé qu'il sait lire, écrire et exécuter une commande dans le dépôt.
+Partir sur des décisions écrites et des agents qui fonctionnent. À la fin de l'étape, chaque décision bloquante a une réponse datée. Chaque agent lit les mêmes règles, au même endroit. Si une IA locale est prévue, elle a prouvé qu'elle sait lire, écrire et exécuter une commande dans le dépôt.
 
 ## Obligations
 
 - Aucune ligne de code du plugin.
-- Un modèle prépare les décisions, toi seul les tranches : D-01, D-05 et D-07, plus une liste courte pour D-02.
-- Une seule source de règles pour les agents : `REGLES_AGENTS.md`. `CLAUDE.md` et `GEMINI.md` en sont des copies exactes, produites par un script ; le harnais de Qwen lit la même source.
+- Une IA prépare les décisions, toi seul les tranches : D-01, D-05 et D-07, plus une liste courte pour D-02.
+- Une seule source de règles pour les agents : `REGLES_AGENTS.md`. Les fichiers de contexte que lisent les IA (par défaut `AGENTS.md`, plus ceux que tu ajoutes à la liste en tête de `tools/sync_rules.sh`) en sont des copies exactes, produites par ce script.
 - Chaque document normatif commence par une ligne « Statut : proposé · date » ou « Statut : validé · date ».
 - Les squelettes extraient le plan sans le réécrire : une définition n'existe qu'à un seul endroit.
 
 ## Méthodologie
 
-1. Opus prépare `docs/DECISIONS.md` (0.A). Tu tranches et tu dates.
-2. Opus crée les squelettes et la source unique de règles (0.B). Gemini les relit pour y chercher contradictions et doublons avec le plan.
-3. Tu installes l'environnement de Qwen : un serveur local du modèle et un harnais d'agent capable d'appeler des outils. Tu le fais passer par la tâche jouet T00.
+1. IA 1 prépare `docs/DECISIONS.md` (0.A). Tu tranches et tu dates.
+2. IA 1 crée les squelettes et la source unique de règles (0.B). IA 3 les relit pour y chercher contradictions et doublons avec le plan.
+3. Facultatif : tu installes une IA locale, avec un serveur local du modèle et un harnais d'agent capable d'appeler des outils. Tu le fais passer par la tâche jouet T00.
 
 | Décision | Recommandation | Raison |
 | --- | --- | --- |
@@ -36,10 +36,10 @@ Partir sur des décisions écrites et des agents qui fonctionnent. À la fin de 
 | PC0.2 | Squelettes présents | `for f in docs/SPEC.md docs/ARCHITECTURE.md docs/CONTRACTS.md docs/COMPATIBILITY.md docs/TEST_PLAN.md PROJECT_STATE.md REGLES_AGENTS.md; do test -s "$f" \|\| echo "manque $f"; done` | Aucune sortie |
 | PC0.3 | Statut en tête des documents normatifs | `grep -L "^Statut" docs/SPEC.md docs/ARCHITECTURE.md docs/CONTRACTS.md docs/COMPATIBILITY.md docs/TEST_PLAN.md` | Aucune sortie |
 | PC0.4 | Copies des règles identiques | `tools/sync_rules.sh --check; echo $?` | 0 |
-| PC0.5 | (CE) Copie divergente détectée | `echo x >> CLAUDE.md; tools/sync_rules.sh --check; echo $?`, puis `tools/sync_rules.sh` | 1, puis rétabli |
+| PC0.5 | (CE) Copie divergente détectée | `echo x >> AGENTS.md; tools/sync_rules.sh --check; echo $?`, puis `tools/sync_rules.sh` | 1, puis rétabli |
 | PC0.6 | Règles courtes | `wc -l < REGLES_AGENTS.md` | 150 au plus |
-| PC0.7 | Qwen opérationnel | Rapport de T00, commandes relancées par toi | Mêmes codes et mêmes sorties |
-| PC0.8 | Relecture croisée | Rapport de Gemini sur les squelettes | Aucune contradiction ouverte |
+| PC0.7 | IA locale opérationnelle, si elle est prévue | Rapport de T00, commandes relancées par toi | Mêmes codes et mêmes sorties, ou « sans objet » |
+| PC0.8 | Relecture croisée | Rapport d'IA 3 sur les squelettes | Aucune contradiction ouverte |
 
 Les barres verticales sont échappées dans le tableau ; dans le terminal, on tape `|` sans antislash.
 
@@ -47,12 +47,12 @@ Les barres verticales sont échappées dans le tableau ; dans le terminal, on ta
 
 - **Décisions trop longues.** Si elles prennent plus d'une heure, c'est qu'on refait le plan. Adopte les recommandations et note les doutes pour la revue T20.
 - **Règles trop longues.** Si `REGLES_AGENTS.md` dépasse 150 lignes, déplace le détail dans le guide. Les règles ne contiennent que ce que les agents ratent vraiment.
-- **Qwen trop lent ou peu fiable.** Note le débit en tokens par seconde, la durée de la tâche jouet et les appels d'outil ratés. Au-delà de dix minutes, ou au premier appel d'outil inventé, confie T01 à T03 à Sonnet et réessaie Qwen sur une tâche de l'étape 4.
+- **IA locale trop lente ou peu fiable.** Note le débit en tokens par seconde, la durée de la tâche jouet et les appels d'outil ratés. Au-delà de dix minutes, ou au premier appel d'outil inventé, laisse T01 à T03 à IA 2 et réessaie l'IA locale sur une tâche de l'étape 4.
 - **Après coup.** À chaque erreur répétée deux fois par un agent, ajoute une ligne à `REGLES_AGENTS.md`, puis relance `tools/sync_rules.sh`.
 
 ## 0.A — Dossier de décisions
 
-Opus · A0 · contexte : plan §0 et §10, `docs/spikes/SPIKE-01.md`
+IA 1 · A0 · contexte : plan §0 et §10, `docs/spikes/SPIKE-01.md`
 
 ```text
 Tu prépares les décisions de démarrage du projet GODOT_DEV_MAPPER. Tu ne décides rien.
@@ -67,9 +67,9 @@ Ensuite, tu remplaces « proposée » par « validée » et la date, ligne par l
 
 ## 0.B — Squelettes et source unique de règles
 
-Opus · A1 · vérification : Gemini · contexte : plan, méthodologie, `docs/DECISIONS.md`, `docs/construction/README.md`
+IA 1 · A1 · vérification : IA 3 · contexte : plan, méthodologie, `docs/DECISIONS.md`, `docs/construction/README.md`
 
-Fichiers autorisés : `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/CONTRACTS.md`, `docs/COMPATIBILITY.md`, `docs/TEST_PLAN.md`, `PROJECT_STATE.md`, `REGLES_AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `tools/sync_rules.sh`.
+Fichiers autorisés : `docs/SPEC.md`, `docs/ARCHITECTURE.md`, `docs/CONTRACTS.md`, `docs/COMPATIBILITY.md`, `docs/TEST_PLAN.md`, `PROJECT_STATE.md`, `REGLES_AGENTS.md`, `AGENTS.md` et les autres fichiers de contexte listés en tête de `tools/sync_rules.sh`, `tools/sync_rules.sh`.
 
 ```text
 Tu crées les squelettes de documents du projet GODOT_DEV_MAPPER. Tu n'écris aucun code du plugin.
@@ -81,9 +81,9 @@ Sources : docs/plan-directeur.md, docs/methodologie.md, docs/DECISIONS.md, docs/
 - docs/CONTRACTS.md : une section par contrat C-01 à C-07, avec sept rubriques : objet, format ou API, exemples valides, exemples invalides, comportement en erreur, version, tests de contrat. Contenu : « à rédiger en T07 » ou « à rédiger en T08 ».
 - docs/COMPATIBILITY.md : fenêtre de support issue de D-01 et D-07.
 - docs/TEST_PLAN.md : types de tests, commandes de contrôle vérifiées (reprises du guide), principe des contre-épreuves.
-- PROJECT_STATE.md : tableau des tâches T00 à T20, T13 découpée en T13a, T13b et T13c, au statut « À faire », avec en tête la mention « mis à jour seulement à l'étape de fusion » ; budget de chaque étape ; mesures à tenir (heures humaines, temps agent, capacités acceptées, réussite par modèle).
+- PROJECT_STATE.md : tableau des tâches T00 à T20, T13 découpée en T13a, T13b et T13c, au statut « À faire », avec en tête la mention « mis à jour seulement à l'étape de fusion » ; budget de chaque étape ; mesures à tenir (heures humaines, temps agent, capacités acceptées, réussite par IA).
 - REGLES_AGENTS.md : 150 lignes au plus. Il contient les règles non négociables et le format de rapport du prompt universel de réalisation, les invariants INV-01 à INV-09 en une ligne chacun, et les commandes de contrôle.
-- tools/sync_rules.sh : copie REGLES_AGENTS.md vers CLAUDE.md et GEMINI.md. Avec --check, il compare sans rien écrire et renvoie 1 si une copie diffère.
+- tools/sync_rules.sh : copie REGLES_AGENTS.md vers chaque fichier de contexte de la liste écrite en tête du script (par défaut AGENTS.md seul ; on y ajoute le fichier que lit chaque IA utilisée). Avec --check, il compare sans rien écrire et renvoie 1 si une copie diffère.
 
 RÈGLES
 Chaque document normatif commence par « Statut : proposé · 8 octobre 2026 » (ou la date du jour). Une définition n'existe qu'à un seul endroit ; ailleurs, on y renvoie.
@@ -92,14 +92,14 @@ CONTRÔLES (exécute-les et colle les sorties)
 1. for f in docs/SPEC.md docs/ARCHITECTURE.md docs/CONTRACTS.md docs/COMPATIBILITY.md docs/TEST_PLAN.md PROJECT_STATE.md REGLES_AGENTS.md; do test -s "$f" || echo "manque $f"; done   → aucune sortie
 2. grep -L "^Statut" docs/SPEC.md docs/ARCHITECTURE.md docs/CONTRACTS.md docs/COMPATIBILITY.md docs/TEST_PLAN.md   → aucune sortie
 3. tools/sync_rules.sh && tools/sync_rules.sh --check; echo $?   → 0
-4. (CE) echo x >> CLAUDE.md; tools/sync_rules.sh --check; echo $?   → 1, puis tools/sync_rules.sh pour rétablir
+4. (CE) echo x >> AGENTS.md; tools/sync_rules.sh --check; echo $?   → 1, puis tools/sync_rules.sh pour rétablir
 5. wc -l < REGLES_AGENTS.md   → 150 au plus
 6. for c in C-01 C-02 C-03 C-04 C-05 C-06 C-07; do grep -c "^## $c" docs/CONTRACTS.md; done   → 1 pour chacun
 
 Rapport au format du prompt universel de réalisation.
 ```
 
-Prompt de relecture pour Gemini :
+Prompt de relecture, pour IA 3 :
 
 ```text
 Relis les squelettes créés à l'étape 0 du projet GODOT_DEV_MAPPER : docs/SPEC.md, docs/ARCHITECTURE.md, docs/CONTRACTS.md, docs/COMPATIBILITY.md, docs/TEST_PLAN.md, PROJECT_STATE.md, REGLES_AGENTS.md. Compare-les à docs/plan-directeur.md.
@@ -107,11 +107,11 @@ Cherche : une définition présente à deux endroits ; une règle du plan défor
 Ne modifie rien. Rapport : liste numérotée avec fichier, passage, écart, correction proposée ; « aucun écart » sinon.
 ```
 
-## T00 — Environnement de Qwen
+## T00 — Environnement d'une IA locale (facultatif)
 
-Toi, puis Qwen · contexte : ce fichier
+Toi, puis l'IA locale · contexte : ce fichier · seulement si tu veux ajouter une IA locale aux trois IA du projet
 
-**Ce que tu fais.** Installe un serveur local pour Qwen3.8-27B et un harnais d'agent qui sait lire, écrire et exécuter des commandes. Fais lire `REGLES_AGENTS.md` au harnais, au démarrage ou comme fichier de contexte, puis donne-lui la tâche jouet.
+**Ce que tu fais.** Installe un serveur local pour le modèle de ton choix et un harnais d'agent qui sait lire, écrire et exécuter des commandes. Fais lire `REGLES_AGENTS.md` au harnais, au démarrage ou comme fichier de contexte, puis donne-lui la tâche jouet.
 
 ```text
 Tâche jouet T00. Tu vérifies ton environnement dans le dépôt GODOT_DEV_MAPPER.
@@ -129,9 +129,9 @@ N'invente aucune sortie. Si une commande échoue, recopie l'erreur telle quelle 
 | ID | Contrôle | Attendu |
 | --- | --- | --- |
 | T00-a | Tu relances les deux commandes du rapport | Codes 0, `T00_OK` visible, sorties identiques au rapport |
-| T00-b | (CE) Tu demandes à Qwen d'ajouter une faute de syntaxe dans `hello.gd`, puis de relancer la première commande | Il rapporte le code 1 et l'erreur réelle, sans la masquer |
+| T00-b | (CE) Tu demandes à l'IA locale d'ajouter une faute de syntaxe dans `hello.gd`, puis de relancer la première commande | Il rapporte le code 1 et l'erreur réelle, sans la masquer |
 | T00-c | Mesures notées dans `PROJECT_STATE.md` | Débit en tokens par seconde, durée, appels d'outil ratés |
 
 Le dossier `sandbox/` n'est pas versionné : T01 l'ajoute au `.gitignore`.
 
-**Si T00 échoue**, T01 à T03 passent à Sonnet. La mise au point de Qwen reprend en parallèle de l'étape 1, sans retarder le projet.
+**Si T00 échoue, ou sans IA locale**, T01 à T03 reviennent à IA 2. La mise au point de l'IA locale reprend en parallèle de l'étape 1, sans retarder le projet.

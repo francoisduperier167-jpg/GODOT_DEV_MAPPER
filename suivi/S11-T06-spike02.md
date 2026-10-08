@@ -1,18 +1,19 @@
 # S11 — T06 SPIKE-02, frontière de compatibilité
 
-> Fiche d'exécution du mode autonome. Coche chaque case dès qu'elle est faite et prouvée, puis commite et pousse : une autre IA doit pouvoir reprendre à la première case non cochée. Règles : `docs/construction/sequence.md`. Avancement global : `SUIVI.md`.
+> Fiche d'exécution du mode autonome. Chaque case se coche avec `python3 suivi/outil.py cocher S11 <sous-étape> --ia <n>`, juste après la sous-étape : la commande vérifie l'ordre et l'identité de l'IA, signe la case (IA, date, heure UTC), commite et pousse. Une sous-étape non cochée par cette commande est considérée comme non faite. Règles : `docs/construction/sequence.md`. Avancement : `SUIVI.md` et `suivi/tableau.html`.
 
 | Champ | Valeur |
 | --- | --- |
-| Réalise | Concepteur |
-| Vérifie | Vérificateur (jamais l'auteur) |
-| Commence après | S06 (cochées dans `SUIVI.md`) |
+| Réalise | IA 1 (conception) |
+| Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
+| Piste | 2.B SPIKE-02, compatibilité : S11 (unité 1 sur 1) |
+| Commence après | S06 (cochée dans `SUIVI.md`) |
 | Indépendante de | S07, S08, S09, S10 |
 | Branche | `tache/S11-T06-spike02` |
 | Fiche de conception | `docs/construction/etape-2.md`, section T06 |
 | Estimation | 1 créneau |
 
-**Séquentiel ou indépendant.** Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité elle-même peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
+**Séquentiel ou indépendant.** Cette unité est la 1re de la piste 2.B « SPIKE-02, compatibilité », dont les unités se font à la suite. Les autres pistes de la section (2.A) avancent en même temps, chacune de son côté. Elle attend S06, hors de la piste. Les sous-étapes de cette fiche se font dans l'ordre, l'une après l'autre. L'unité peut avancer en même temps que toute unité de la ligne « Indépendante de » : aucune des deux n'attend l'autre, et elles ne modifient pas les mêmes fichiers.
 
 ## Ce qu'il faut faire
 
@@ -23,17 +24,19 @@
 
 `spikes/spike02_compat/`, `docs/spikes/SPIKE-02.md`. Les décisions sont reportées dans `docs/DECISIONS.md` à la fusion.
 
-Toujours autorisés en plus : `rapports/S11*.md` et les cases de cette fiche.
+Toujours autorisés en plus : `rapports/S11*.md` et les cases de cette fiche (par `cocher`).
 
 ## Prompt de réalisation
 
 ```text
-Tu es <ton nom d'IA>, au rôle Concepteur. Tu réalises l'unité S11 « T06 SPIKE-02, frontière de compatibilité » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Tu réalises l'unité S11 « T06 SPIKE-02, frontière de compatibilité » du projet GODOT_DEV_MAPPER (plugin pour Godot 4.7.2, GDScript), en mode autonome : aucun humain ne répondra pendant ton créneau.
+Réalisation prévue : IA 1 (conception) ; vérification : IA 3 (vérification). Ton numéro d'IA est celui que te donne le prompt de créneau : tu le passes à --ia, et il signe chaque case que tu coches.
 
-AVANT TOUT
-1. git fetch origin. Lis REGLES_AGENTS.md s'il existe, puis la fiche suivi/S11-T06-spike02.md.
-2. Si la branche origin/tache/S11-T06-spike02 existe : reprends-la, relis rapports/S11.md et commence à la première sous-étape R non cochée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
-3. Sinon : vérifie dans SUIVI.md, sur main, que S06 est cochée, puis crée tache/S11-T06-spike02 depuis main.
+AVANT TOUT, depuis ton clone principal du dépôt
+1. Lis REGLES_AGENTS.md s'il existe, puis cette fiche : suivi/S11-T06-spike02.md.
+2. python3 suivi/outil.py prendre S11 --ia <n>
+   - « PRISE » ou « REPRISE » : tu es sur la branche tache/S11-T06-spike02 ; commence à la sous-étape affichée. Ne refais pas ce qui est coché, sauf si un contrôle prouve que c'est faux.
+   - « REFUSÉ » : l'unité n'est pas pour toi maintenant (déjà prise par une autre IA, S06 non cochée, autre IA prévue) : reviens au prompt de créneau et choisis autre chose.
 
 GODOT
 - Si tools/ci/fetch_godot.sh existe : B=$(tools/ci/fetch_godot.sh 4.7.2-stable)
@@ -50,9 +53,18 @@ RÈGLES NON NÉGOCIABLES
 - Avant d'utiliser une API Godot dont tu n'es pas certain en 4.7.2, écris un script de trois lignes qui l'appelle et exécute-le. Une API non vérifiée n'entre pas dans le code.
 - Tu n'affaiblis jamais un test ou un contrôle pour le faire passer.
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée : tu colles sa sortie réelle dans le rapport.
-- Tu coches une case seulement quand elle est faite et prouvée. Tu commites et tu pousses après chaque case cochée.
-- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status.
+- Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status. Tu ne pousses jamais avec --force.
 - Deux échecs au même contrôle : statut ESCALADE, avec ton diagnostic.
+- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre.
+
+TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
+1. git add <les fichiers de la sous-étape> (jamais git add -A).
+2. python3 suivi/outil.py cocher S11 <sous-étape> --ia <n>
+   La commande vérifie l'ordre des cases et ton identité, coche la case dans suivi/S11-T06-spike02.md, la signe (IA, date, heure UTC), commite et pousse sur tache/S11-T06-spike02.
+3. Une sous-étape faite mais non cochée par cette commande est considérée comme non faite : l'IA suivante la refera. Tu ne coches jamais une case à la main.
+4. Tu ne modifies jamais SUIVI.md : il ne change qu'à la fusion, sous le verrou de main. Plusieurs IA le lisent en même temps ; aucune ne l'écrit hors de ce verrou.
+5. Avant de cocher la dernière sous-étape R : « Statut : TERMINÉ » dans rapports/S11.md, puis git add.
+6. Poussée refusée et non rattrapée par la commande : ne force jamais ; git pull --rebase origin tache/S11-T06-spike02, puis relance la commande.
 
 TRAVAIL TECHNIQUE — début de la copie exacte du guide (docs/construction/etape-2.md, T06)
 Tu conduis SPIKE-02 du projet GODOT_DEV_MAPPER. Tu travailles sans interface, sur Godot 4.7.2 et sur la préversion inscrite dans addons/godot_dev_mapper/compat/versions.json ; tools/ci/fetch_godot.sh fournit les deux binaires. Code jetable dans spikes/spike02_compat/ uniquement.
@@ -84,15 +96,15 @@ TRAVAIL TECHNIQUE — fin de la copie exacte du guide
 ADAPTATIONS DU MODE AUTONOME
 - Aucune : suis le travail technique tel quel.
 
-SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche, et coche chacune.
+SOUS-ÉTAPES : exécute dans l'ordre les sous-étapes R de la fiche ; après chacune, git add puis python3 suivi/outil.py cocher S11 R<k> --ia <n>.
 
 FIN DE CRÉNEAU, même si l'unité n'est pas finie
-- Coche dans suivi/S11-T06-spike02.md les sous-étapes faites et prouvées ; complète rapports/S11.md (sorties, section « Passation ») ; commite ; git push origin tache/S11-T06-spike02.
-- Ne laisse aucune modification non poussée.
+- Chaque sous-étape faite est cochée par `cocher`. Complète rapports/S11.md (sorties, « Passation » en cinq lignes au plus), git add, git commit, git push origin HEAD:tache/S11-T06-spike02.
+- git status ne montre aucune modification non commitée ; rien ne reste non poussé.
 
-FORMAT DE rapports/S11.md
+FORMAT DE rapports/S11.md (créé par prendre ; tu le complètes)
 - Statut : EN COURS | TERMINÉ | QUESTION | ESCALADE
-- Auteur : <ton nom d'IA> · Tentative : n · Créneaux utilisés : n
+- Auteurs : IA n (écrit par `prendre`) · Tentative : n · Créneaux utilisés : n
 - Fichiers modifiés : liste
 - Contrôles : pour chacun, commande, code de sortie, 10 dernières lignes de sortie
 - Contre-épreuves faites : liste
@@ -105,30 +117,37 @@ FORMAT DE rapports/S11.md
 
 ## Sous-étapes de réalisation
 
-- [ ] R0 Prise en charge : `git fetch origin` ; S06 est cochée dans `SUIVI.md` ; branche `origin/tache/S11-T06-spike02` absente, ou sans commit depuis deux créneaux, ou dernier verdict REFUSÉE ; créer ou reprendre la branche ; `rapports/S11.md` avec « Statut : EN COURS » et « Auteur » ; commit ; push.
-- [ ] R1 Obtenir les binaires 4.7.2-stable et 4.8-dev7 avec `tools/ci/fetch_godot.sh`.
-- [ ] R2 Q1 Détection de capacités : script, commande, sortie sur les deux versions.
-- [ ] R3 Q2 Isolation de compilation : `--check-only` et exécution réelle sur les deux versions.
-- [ ] R4 Q3 UID des scripts : fichier `.uid`, `ResourceLoader.get_resource_uid`, déplacement avec et sans `.uid`.
-- [ ] R5 Q4 Inventaire des API sensibles de `docs/ARCHITECTURE.md` : tableau par version.
-- [ ] R6 Écrire `spikes/spike02_compat/run.sh`.
-- [ ] R7 Écrire `docs/spikes/SPIKE-02.md` avec les deux décisions.
-- [ ] R8 Contrôles finaux : T06-a, T06-b, T06-c, T06-d exécutés dans une copie propre, sorties collées dans le rapport ; `tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK ; « Statut : TERMINÉ » ; commit ; push.
+Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil.py cocher S11 R<k> --ia <n>` (coche, signe, commite, pousse).
+
+- [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S11 --ia <n>` (prérequis cochés dans `SUIVI.md` : S06 ; branche `tache/S11-T06-spike02` créée ou reprise ; `rapports/S11.md` au statut EN COURS) ⟶ cochée par `prendre`
+- [ ] R1 Obtenir les binaires 4.7.2-stable et 4.8-dev7 avec `tools/ci/fetch_godot.sh`. ⟶ cocher S11 R1
+- [ ] R2 Q1 Détection de capacités : script, commande, sortie sur les deux versions. ⟶ cocher S11 R2
+- [ ] R3 Q2 Isolation de compilation : `--check-only` et exécution réelle sur les deux versions. ⟶ cocher S11 R3
+- [ ] R4 Q3 UID des scripts : fichier `.uid`, `ResourceLoader.get_resource_uid`, déplacement avec et sans `.uid`. ⟶ cocher S11 R4
+- [ ] R5 Q4 Inventaire des API sensibles de `docs/ARCHITECTURE.md` : tableau par version. ⟶ cocher S11 R5
+- [ ] R6 Écrire `spikes/spike02_compat/run.sh`. ⟶ cocher S11 R6
+- [ ] R7 Écrire `docs/spikes/SPIKE-02.md` avec les deux décisions. ⟶ cocher S11 R7
+- [ ] R8 Contrôles finaux : T06-a, T06-b, T06-c, T06-d exécutés dans une copie propre, sorties collées dans le rapport ; `tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S11 R8
 
 ## Prompt de vérification
 
 ```text
-Tu es <ton nom d'IA>, au rôle Vérificateur, vérificateur indépendant de l'unité S11 « T06 SPIKE-02, frontière de compatibilité » du projet GODOT_DEV_MAPPER.
-Tu n'en es pas l'auteur : lis la ligne « Auteur » de rapports/S11.md ; si c'est toi, arrête-toi.
-Tu ne modifies aucun fichier de l'unité. Tu écris ton verdict et tu coches les sous-étapes V, sur la branche.
+Tu vérifies l'unité S11 « T06 SPIKE-02, frontière de compatibilité » du projet GODOT_DEV_MAPPER. Vérification prévue : IA 3 (vérification). Ton numéro d'IA est celui du prompt de créneau. Tu n'es jamais un auteur de l'unité : la commande de prise le contrôle.
 
-COPIE NEUVE : git fetch origin && git worktree add --detach ../verif-S11-T06-spike02 origin/tache/S11-T06-spike02
+PRISE, depuis ton clone principal
+python3 suivi/outil.py prendre S11 --ia <n> --verification
+- « VÉRIFICATION PRISE » : copie neuve ../verif-S11-T06-spike02 créée sur origin/tache/S11-T06-spike02, verdict EN COURS écrit, V1 cochée. cd ../verif-S11-T06-spike02 : toute la vérification se fait dans ce dossier.
+- « REFUSÉ » : une autre IA vérifie déjà, tu es auteur, ou l'unité n'est pas terminée : reviens au prompt de créneau.
 GODOT : même procédure que le prompt de réalisation.
+Tu ne modifies aucun fichier de l'unité. Tu écris seulement ton verdict et tes cases V.
 
-1. PÉRIMÈTRE. git diff --name-only origin/main...origin/tache/S11-T06-spike02. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S11*.md et suivi/S11-T06-spike02.md. Tout autre fichier : refus.
-2. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : T06-a, T06-b, T06-c, T06-d.
-3. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd.
-4. CONTOURNEMENTS. Cherche :
+TRACE OBLIGATOIRE : après chaque sous-étape V, git add du fichier de verdict, puis python3 suivi/outil.py cocher S11 <V…> --ia <n>. Pour la dernière : --verdict ACCEPTÉE ou --verdict REFUSÉE, identique à la ligne « Verdict » du fichier. Une sous-étape non cochée par cette commande est considérée comme non faite.
+
+1. TRAÇABILITÉ. Chaque case R cochée est signée « — IA n · date » et a son commit sur la branche (git log --oneline origin/main..HEAD). Case cochée sans travail prouvé dans le rapport : refus.
+2. PÉRIMÈTRE. git diff --name-only origin/main...HEAD. Autorisés : les « Fichiers autorisés » de la fiche, rapports/S11*.md et suivi/S11-T06-spike02.md. Tout autre fichier : refus.
+3. CONTRÔLES. Relance chacun dans ta copie neuve et compare au rapport : T06-a, T06-b, T06-c, T06-d.
+4. CONTRE-ÉPREUVES. Applique chaque sabotage marqué (CE) dans la fiche et dans le travail technique ; vérifie que le contrôle échoue ; annule avec git checkout -- . && git clean -fd (jamais sur rapports/).
+5. CONTOURNEMENTS. Cherche :
    - test sans assertion, ou toujours vrai ;
    - test désactivé, renommé ou sorti du runner ;
    - valeur attendue recopiée depuis la sortie du code ;
@@ -137,38 +156,47 @@ GODOT : même procédure que le prompt de réalisation.
    - API Godot inventée ou non vérifiée ;
    - dépendance interdite entre modules ; API sensible hors de la frontière de compatibilité ;
    - affirmation du rapport sans sortie qui la prouve.
-5. COHÉRENCE. Plan §4 (isolation) et §5 (clé de correspondance) ; liste des API sensibles.
+6. COHÉRENCE. Plan §4 (isolation) et §5 (clé de correspondance) ; liste des API sensibles.
 
-VERDICT dans rapports/S11-verif-<tentative>.md :
+VERDICT dans rapports/S11-verif-<tentative>.md (créé par la prise) :
 - Verdict : ACCEPTÉE | REFUSÉE
 - Contrôles relancés : commande, code, attendu, obtenu
 - Contre-épreuves : sabotage, contrôle, détecté oui ou non
 - Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
 - Doutes non bloquants : liste courte
-Pousse le verdict sur la branche. Si ACCEPTÉE, fais les sous-étapes F de la fiche. Si REFUSÉE, arrête-toi : une IA au rôle de l'auteur reprendra.
+
+SI ACCEPTÉE — FUSION, depuis ton clone principal
+1. python3 suivi/outil.py fusionner S11 --ia <n> --godot "$B"
+   Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S11-T06-spike02, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
+2. cd ../fusion-S11-T06-spike02 ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S11 F<k> --ia <n> (commit local, sans poussée).
+3. python3 suivi/outil.py publier S11 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
+SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
 ```
 
 ## Sous-étapes de vérification
 
-- [ ] V1 Prise en charge : pas l'auteur ; copie neuve `../verif-S11-T06-spike02` sur `origin/tache/S11-T06-spike02`.
-- [ ] V2 Périmètre : `git diff --name-only origin/main...origin/tache/S11-T06-spike02` ⊂ fichiers autorisés.
-- [ ] V3.1 Contrôle T06-a relancé, résultat conforme.
-- [ ] V3.2 Contrôle T06-b relancé, résultat conforme.
-- [ ] V3.3 Contrôle T06-c relancé, résultat conforme.
-- [ ] V3.4 Contrôle T06-d relancé, résultat conforme.
-- [ ] V4 Contre-épreuves (CE) appliquées et détectées, puis annulées.
-- [ ] V5 Contournements cherchés.
-- [ ] V6 Cohérence avec les contrats et les invariants.
-- [ ] V7 Verdict écrit dans `rapports/S11-verif-<tentative>.md` et poussé.
+Dans `../verif-S11-T06-spike02`, après chaque sous-étape : `git add` du verdict, puis `python3 suivi/outil.py cocher S11 V<k> --ia <n>`.
+
+- [ ] V1 Prise en charge : `python3 suivi/outil.py prendre S11 --ia <n> --verification` (pas un auteur ; copie neuve `../verif-S11-T06-spike02` sur `origin/tache/S11-T06-spike02` ; verdict EN COURS) ⟶ cochée par `prendre`
+- [ ] V2 Traçabilité : chaque case R cochée porte une signature « — IA n · date » et un commit sur la branche (`git log --oneline origin/main..HEAD`) ⟶ cocher S11 V2
+- [ ] V3 Périmètre : `git diff --name-only origin/main...HEAD` ⊂ fichiers autorisés. ⟶ cocher S11 V3
+- [ ] V4.1 Contrôle T06-a relancé, résultat conforme. ⟶ cocher S11 V4.1
+- [ ] V4.2 Contrôle T06-b relancé, résultat conforme. ⟶ cocher S11 V4.2
+- [ ] V4.3 Contrôle T06-c relancé, résultat conforme. ⟶ cocher S11 V4.3
+- [ ] V4.4 Contrôle T06-d relancé, résultat conforme. ⟶ cocher S11 V4.4
+- [ ] V5 Contre-épreuves (CE) appliquées et détectées, puis annulées. ⟶ cocher S11 V5
+- [ ] V6 Contournements cherchés. ⟶ cocher S11 V6
+- [ ] V7 Cohérence avec les contrats et les invariants. ⟶ cocher S11 V7
+- [ ] V8 Verdict écrit dans `rapports/S11-verif-<tentative>.md` ⟶ cocher S11 V8 --verdict ACCEPTÉE ou --verdict REFUSÉE
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
-- [ ] F1 `git switch main && git pull --ff-only && git merge --no-ff origin/tache/S11-T06-spike02 -m "Fusion S11 : T06 SPIKE-02, frontière de compatibilité"`.
-- [ ] F2 Sur `main` : `GODOT="$B" tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK. Sinon : `git reset --hard ORIG_HEAD`, verdict « REFUSÉE (fusion) » poussé sur la branche, et arrêt de la fusion.
-- [ ] F3 Dans `SUIVI.md`, cocher la ligne **S11** et compléter « fait le <date> · auteur <IA> · vérifié par <IA> · <n> créneaux ».
-- [ ] F4 Inscrire dans `docs/DECISIONS.md` les deux décisions de SPIKE-02 (règle d'isolation, clé de correspondance), au statut « adoptée par défaut », avec la date.
-- [ ] F5 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette.
-- [ ] F6 Cocher les sous-étapes F de cette fiche ; `git commit` ; `git push origin main` (en cas de refus : `git pull --rebase`, puis push).
+F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S11-T06-spike02`, par `python3 suivi/outil.py cocher S11 F<k> --ia <n>` (commit local).
+
+- [ ] F1 Fusion : `python3 suivi/outil.py fusionner S11 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S11-T06-spike02`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S11** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F2 Inscrire dans `docs/DECISIONS.md` les deux décisions de SPIKE-02 (règle d'isolation, clé de correspondance), au statut « adoptée par défaut », avec la date. ⟶ cocher S11 F2
+- [ ] F3 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S11 F3
+- [ ] F4 Publication : `python3 suivi/outil.py publier S11 --ia <n>` (verifier OK, `main` poussée, branche `tache/S11-T06-spike02` supprimée, verrou rendu) ⟶ cochée par `publier`
 
 ## Pour la recette
 

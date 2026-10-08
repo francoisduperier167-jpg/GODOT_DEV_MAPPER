@@ -18,7 +18,7 @@ Lever les deux dernières inconnues techniques avant d'écrire les contrats :
 ## Méthodologie
 
 - Pour chaque question : hypothèse, expérience minimale, mesure, décision.
-- T05 reprend le code de SPIKE-01a (`spikes/spike01_debugger/`). Opus le conduit ; toi, tu fais les manipulations dans l'éditeur, car il faut le rendu et l'interface.
+- T05 reprend le code de SPIKE-01a (`spikes/spike01_debugger/`). IA 1 le conduit ; toi, tu fais les manipulations dans l'éditeur, car il faut le rendu et l'interface.
 - T06 se fait entièrement sans interface, sur 4.7.2 et sur la préversion. Il peut tourner dans un environnement distant, sans ta machine.
 
 ## Points de contrôle
@@ -42,7 +42,7 @@ Lever les deux dernières inconnues techniques avant d'écrire les contrats :
 
 ## T05 — SPIKE-01b : partie éditeur du canal
 
-Opus et toi · A0 · file A · sur ta machine · vérification : Gemini relit le rapport ; tu rejoues un critère · contexte : `docs/spikes/SPIKE-01.md`, `spikes/spike01_debugger/`, fiche T05 de `docs/orchestration.md`
+IA 1 et toi · A0 · file A · sur ta machine · vérification : IA 3 relit le rapport ; tu rejoues un critère · contexte : `docs/spikes/SPIKE-01.md`, `spikes/spike01_debugger/`, fiche T05 de `docs/orchestration.md`
 
 Fichiers autorisés : `spikes/spike01_debugger/editor/`, `docs/spikes/SPIKE-01.md`. La décision KEEP, REWRITE ou DISCARD est reportée dans `docs/DECISIONS.md` à la fusion.
 
@@ -87,7 +87,7 @@ LES MANIPULATIONS À FAIRE À LA MAIN (lancer, arrêter, désactiver le plugin),
 
 ## T06 — SPIKE-02 : frontière de compatibilité
 
-Opus · A0 · file B · dépend de T03 · sans interface, possible à distance · vérification : Gemini relance `run.sh` · contexte : plan §4 et §5, `docs/ARCHITECTURE.md` (API sensibles)
+IA 1 · A0 · file B · dépend de T03 · sans interface, possible à distance · vérification : IA 3 relance `run.sh` · contexte : plan §4 et §5, `docs/ARCHITECTURE.md` (API sensibles)
 
 Fichiers autorisés : `spikes/spike02_compat/`, `docs/spikes/SPIKE-02.md`. Les décisions sont reportées dans `docs/DECISIONS.md` à la fusion.
 

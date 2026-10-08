@@ -10,11 +10,11 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 | --- | --- |
 | `docs/plan-directeur.md` | Plan directeur PD-0.5 : capacités, architecture, protocole de session, modèle de données, POC, MVP, budgets, risques, mode d'exécution |
 | `docs/methodologie.md` | Méthode de construction MC-0.5 : sources de vérité et leur hiérarchie, contrats, tests, CI, veille de Godot, gabarits |
-| `docs/orchestration.md` | OR-0.5 : tâches T00 à T20, dépendances, routage entre les modèles |
+| `docs/orchestration.md` | OR-0.5 : tâches T00 à T20, dépendances, répartition entre IA 1, IA 2 et IA 3 |
 | `docs/construction/` | Guide de construction GC-0.4 et sa carte interactive `carte.html` : pour chaque étape, objectif, obligations, méthodologie, points de contrôle, amélioration et prompts de réalisation et de vérification |
-| `SUIVI.md` | Liste de progression à cocher : une ligne par unité, ses prérequis, les vagues d'unités indépendantes, la recette finale |
-| `suivi/` | Une fiche d'exécution par unité : ce qu'il faut faire, fichiers autorisés, prompt de réalisation, prompt de vérification, sous-étapes à cocher ; `suivi/outil.py verifier` contrôle la cohérence |
-| `docs/construction/sequence.md` | Règles du mode autonome : rôles des trois IA, prise en charge et fusion, prompt de créneau, arrêts obligatoires, recette finale |
+| `SUIVI.md` | Liste de progression : une ligne par unité, rangée dans sa piste autonome ou son rendez-vous, cochée à la fusion ; recette finale |
+| `suivi/` | Une fiche d'exécution par unité (prompts, sous-étapes à cocher et à signer) ; `suivi/outil.py` : commandes des IA, verrou de `main`, contrôle de cohérence ; `suivi/tableau.html` : tableau de bord graphique |
+| `docs/construction/sequence.md` | Règles du mode autonome : IA 1, IA 2, IA 3, trace des sous-étapes, accès simultané, fusion, prompt de créneau, arrêts obligatoires, recette finale |
 | `docs/maquettes/` | Maquettes fictives du rendu : atlas EMBER hors exécution, et mode en direct avec la carte des scripts superposée au jeu |
 | `docs/spikes/SPIKE-01.md` | Rapport de SPIKE-01a : canal du débogueur, partie jeu, mesuré sur 4.7.2 et 4.8-dev7 |
 | `spikes/` | Prototypes jetables des spikes |
@@ -29,13 +29,15 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 ## Démarrer
 
 **En mode autonome**, le mode proposé (D-09) :
-1. Donne à chaque IA, au début de chacun de ses créneaux, le prompt de créneau de `docs/construction/sequence.md` (§4), avec son nom et son rôle.
-2. L'IA choisit seule son travail dans `SUIVI.md` : la première unité disponible pour son rôle, ou une unité à vérifier. Elle suit la fiche de l'unité dans `suivi/` et coche les sous-étapes au fur et à mesure ; une autre IA reprend à la première case non cochée. La première unité est S01, le dossier de décisions, par le concepteur.
-3. Tu n'interviens qu'à la recette finale (fin de `SUIVI.md`), ou si un fichier `rapports/ARRET.md` apparaît sur `main` (§5 de `sequence.md`).
+1. Choisis quelle IA tient chaque numéro : IA 1 (conception), IA 2 (développement), IA 3 (vérification). Le numéro ne change plus.
+2. Donne à chaque IA, au début de chacun de ses créneaux, le prompt de créneau de `docs/construction/sequence.md` (§4) avec son numéro ; le bouton « Copier » du tableau de bord le prépare.
+3. L'IA lance `python3 suivi/outil.py etat --ia N`, prend la première unité proposée, suit sa fiche dans `suivi/`, et coche puis signe chaque sous-étape avec `python3 suivi/outil.py cocher`. Une autre IA reprend à la première case non cochée. Deux IA qui travaillent en même temps ne se gênent pas : une unité ne se prend qu'une fois, et `main` ne s'écrit que sous verrou. La première unité est S01, le dossier de décisions, par IA 1.
+4. Pour suivre l'avancement, ouvre `suivi/tableau.html` depuis une copie du dépôt et clique « Actualiser » : cinq carrés par unité, du rouge au vert, et un carré de fond par piste autonome.
+5. Tu n'interviens qu'à la recette finale (fin de `SUIVI.md`), ou si un fichier `rapports/ARRET.md` apparaît sur `main` (§5 de `sequence.md`).
 
 **En mode piloté**, le mode d'origine :
 1. Relire `docs/plan-directeur.md` et trancher les décisions bloquantes D-01, D-02, D-05 et D-07 (§10).
-2. Ouvrir la carte interactive `docs/construction/carte.html` : elle affiche la prochaine action, le modèle à lancer et le prompt à copier. Le guide `docs/construction/README.md` en est la référence détaillée.
+2. Ouvrir la carte interactive `docs/construction/carte.html` : elle affiche la prochaine action, l'IA à lancer et le prompt à copier. Le guide `docs/construction/README.md` en est la référence détaillée.
 
 SPIKE-01b, la partie éditeur du canal (tâche T05), peut s'exécuter sous écran virtuel avec un rendu logiciel : c'est vérifié sur Godot 4.7.2 le 8 octobre 2026. Seule la mesure de débit sur GPU attend ta machine.
 
@@ -45,11 +47,9 @@ Godot publie une version mineure tous les quelques mois, et une version mineure 
 
 Avant la preuve de valeur, cette frontière reste légère : des façades, une CI bloquante sur Godot 4.7.2 et la préversion suivante testée à part. Les adaptateurs par version et la veille automatisée n'arrivent qu'au MVP, ou plus tôt si une rupture réelle apparaît.
 
-## Orchestration des modèles
+## Répartition entre les IA
 
-Claude Opus 5.5 prend les contrats, les façades de compatibilité, les spikes et le débogage difficile. Sonnet écrit le code de l'éditeur ; Gemini lit les jeux open source et relit les diffs de Sonnet. Qwen3.8-27B, exécuté localement, prend les tâches sous contrat validé et couvertes par des tests. Les outils sans IA exécutent les tests, le lint et les mesures.
-
-En mode autonome, trois IA tiennent trois rôles : concepteur, développeur, vérificateur (`docs/construction/sequence.md`, §2). L'auteur d'une unité ne la vérifie jamais.
+Trois IA, que tu choisis, tiennent trois rôles. IA 1 prend les décisions, les contrats, les façades de compatibilité, les spikes, les portes et le débogage difficile. IA 2 écrit le code sous contrat validé et couvert par des tests, l'outillage et l'interface. IA 3 vérifie, lit les jeux open source et prépare la mesure de valeur. Les outils sans IA exécutent les tests, le lint et les mesures. L'auteur d'une unité ne la vérifie jamais (`docs/construction/sequence.md`, §2).
 
 ## Bancs d'essai
 
@@ -61,7 +61,7 @@ Chaque version correspond à un commit de l'historique. Les étiquettes ci-desso
 
 - `prompts-v1` : prompts d'origine ;
 - `prompts-v2.0` : révision et analyse critique ;
-- `prompts-v2.1` : paramètres connus, analyse de l'existant, budget, contrat runtime phasé, bancs d'essai open source, orchestration multi-modèles ;
+- `prompts-v2.1` : paramètres connus, analyse de l'existant, budget, contrat runtime phasé, bancs d'essai open source, orchestration de plusieurs IA ;
 - `prompts-v2.2` : couche de compatibilité moteur et politique de versions (INV-09), avec le plan directeur, la méthodologie et l'orchestration.
 
 La commande `git log --follow prompts/conception.txt` montre l'évolution d'un prompt.
