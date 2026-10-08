@@ -61,7 +61,7 @@ Dans `../verif-Sxx.k-<nom>`, après chaque sous-étape : `git add` du verdict, p
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
-- [ ] F1 Fusion : `python3 suivi/outil.py fusionner Sxx.k --ia <n> --godot "$B"` ⟶ cochée par `fusionner`
+- [ ] F1 Fusion, depuis le clone principal : `python3 suivi/outil.py fusionner Sxx.k --ia <n>` (Godot trouvé seul) ⟶ cochée par `fusionner`
 - [ ] F2 `PROJECT_STATE.md` : mesures, liste de recette ⟶ cocher Sxx.k F2
 - [ ] F3 Publication : `python3 suivi/outil.py publier Sxx.k --ia <n>` ⟶ cochée par `publier`
 

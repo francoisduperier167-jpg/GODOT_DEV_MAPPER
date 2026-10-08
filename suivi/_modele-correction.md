@@ -26,7 +26,7 @@ Les fichiers autorisés de la fiche de Syy. Toujours autorisés en plus : `rappo
 ```text
 Tu corriges le défaut relevé par la porte Sxx du projet GODOT_DEV_MAPPER. Réalisation prévue : IA 2. Ton numéro d'IA est celui du prompt de créneau.
 1. python3 suivi/outil.py prendre Sxx.cN --ia <n>   (code non nul : l'unité n'est pas pour toi maintenant)
-2. Lis rapports/Sxx.md (point KO, correction attendue) et la fiche de Syy dans suivi/ : ses règles, ses fichiers autorisés et ses contrôles s'appliquent.
+2. Lis rapports/Sxx.md (point KO, correction attendue) et la fiche de Syy dans suivi/ : ses règles, son bloc GODOT, ses fichiers autorisés et ses contrôles s'appliquent.
 3. Fais la plus petite correction qui rend le point OK sans affaiblir aucun test. Colle les sorties des contrôles dans rapports/Sxx.cN.md.
 TRACE OBLIGATOIRE : après chaque sous-étape, git add des fichiers de la sous-étape, puis python3 suivi/outil.py cocher Sxx.cN <sous-étape> --ia <n>. Une sous-étape non cochée par cette commande est considérée comme non faite.
 ```
@@ -45,7 +45,7 @@ Tu vérifies la correction Sxx.cN du projet GODOT_DEV_MAPPER. Vérification pré
 1. python3 suivi/outil.py prendre Sxx.cN --ia <n> --verification, puis cd dans la copie neuve indiquée.
 2. Périmètre : fichiers de Syy seulement. Relance les contrôles de Syy et le point KO de la porte Sxx.
 3. Verdict dans rapports/Sxx.cN-verif-<tentative>.md ; dernière case : cocher Sxx.cN V4 --ia <n> --verdict ACCEPTÉE (ou REFUSÉE).
-4. Si ACCEPTÉE : python3 suivi/outil.py fusionner Sxx.cN --ia <n>, puis les cases F, puis python3 suivi/outil.py publier Sxx.cN --ia <n>. La porte Sxx redevient alors disponible : elle sera rejouée.
+4. Si ACCEPTÉE : depuis ton clone principal, python3 suivi/outil.py fusionner Sxx.cN --ia <n> (Godot : la commande le trouve seule, par --godot, $GODOT, le cache du bloc GODOT ou tools/ci/fetch_godot.sh), puis, dans la copie de fusion, les cases F, puis python3 suivi/outil.py publier Sxx.cN --ia <n>. La porte Sxx redevient alors disponible : elle sera rejouée.
 TRACE OBLIGATOIRE : python3 suivi/outil.py cocher Sxx.cN <sous-étape> --ia <n> après chaque sous-étape.
 ```
 
@@ -58,7 +58,7 @@ TRACE OBLIGATOIRE : python3 suivi/outil.py cocher Sxx.cN <sous-étape> --ia <n> 
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
-- [ ] F1 `fusionner` : verrou de `main`, fusion, contrôles sur `main`, ligne cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F1 `fusionner Sxx.cN --ia <n>` depuis le clone principal : verrou de `main`, fusion, contrôles sur `main` avec Godot, ligne cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
 - [ ] F2 `PROJECT_STATE.md` : mesures de l'unité ⟶ cocher Sxx.cN F2
 - [ ] F3 `publier` : `main` poussé, branche supprimée, verrou rendu ⟶ cochée par `publier`
 

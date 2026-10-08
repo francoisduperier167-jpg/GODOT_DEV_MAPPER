@@ -24,30 +24,40 @@ def prompt_creneau():
 
 
 def collecter(fetch=True):
+    """Après fetch, tout se lit sur le dépôt distant (origin/main et branches tache/*), jamais dans la copie de
+    travail, qui peut être en retard ou sur une autre branche ; --sans-fetch lit la copie de travail."""
     if fetch:
         C.fetch()
-    suivi = (C.RACINE / "SUIVI.md").read_text(encoding="utf-8")
+        lire = lambda chemin: C.montrer("origin/main", chemin)
+        ref, source = "origin/main", "instantané du dépôt distant (origin/main et branches)"
+    else:
+        lire = lambda chemin: (C.RACINE / chemin).read_text(encoding="utf-8") if (C.RACINE / chemin).exists() else None
+        ref, source = "HEAD", "instantané de la copie de travail locale"
+    suivi = lire("SUIVI.md") or ""
     S = C.lire_suivi(suivi)
     dist = C.branches_distantes()
-    fiches, rapports = {}, {}
+    fiches, rapports, verdicts, ajoutees = {}, {}, {}, {}
     for uid, u in S["unites"].items():
         br = C.branche_de(u)
         if br in dist:
             fiches[uid] = filtrer(C.montrer("origin/" + br, u["fiche"]))
             rapports[uid] = C.montrer("origin/" + br, f"rapports/{uid}.md")
+            t = C.lire_rapport(rapports[uid])["tentative"]
+            verdicts[uid] = C.montrer("origin/" + br, f"rapports/{uid}-verif-{t}.md")
         else:
-            p = C.RACINE / u["fiche"]
-            fiches[uid] = filtrer(p.read_text(encoding="utf-8") if p.exists() else "")
-    arret = C.RACINE / "rapports" / "ARRET.md"
+            fiches[uid] = filtrer(lire(u["fiche"]))
+        if not u["coche"] and not C.deps_reelles(S, uid):
+            d = C.ligne_ajoutee_le(uid, ref)
+            if d:
+                ajoutees[uid] = C.horodatage(d)
     verrou = None
     if fetch:
         import travail
         e = travail.etat_verrou()
         verrou = e["message"] if e else None
-    return dict(depot=C.DEPOT, genere=C.horodatage() + " UTC", source="instantané du dépôt",
-                suivi=suivi, fiches=fiches, rapports=rapports, branches=sorted(dist),
-                verrou=verrou, arret=arret.read_text(encoding="utf-8") if arret.exists() else None,
-                prompt_creneau=prompt_creneau())
+    return dict(depot=C.DEPOT, genere=C.horodatage() + " UTC", source=source,
+                suivi=suivi, fiches=fiches, rapports=rapports, verdicts=verdicts, ajoutees=ajoutees, branches=sorted(dist),
+                verrou=verrou, arret=lire("rapports/ARRET.md"), prompt_creneau=prompt_creneau())
 
 
 def page(donnees, fragment=False):

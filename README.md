@@ -34,6 +34,7 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 3. L'IA lance `python3 suivi/outil.py etat --ia N`, prend la première unité proposée, suit sa fiche dans `suivi/`, et coche puis signe chaque sous-étape avec `python3 suivi/outil.py cocher`. Une autre IA reprend à la première case non cochée. Deux IA qui travaillent en même temps ne se gênent pas : une unité ne se prend qu'une fois, et `main` ne s'écrit que sous verrou. La première unité est S01, le dossier de décisions, par IA 1.
 4. Pour suivre l'avancement, ouvre `suivi/tableau.html` depuis une copie du dépôt et clique « Actualiser » : cinq carrés par unité, du rouge au vert, et un carré de fond par piste autonome.
 5. Tu n'interviens qu'à la recette finale (fin de `SUIVI.md`), ou si un fichier `rapports/ARRET.md` apparaît sur `main` (§5 de `sequence.md`).
+6. Durée : `python3 suivi/outil.py calendrier` simule le chemin critique. Avec les règles actuelles et six créneaux par jour, le POC finit vers le jour 16, le MVP vers le jour 35 et la V1 vers le jour 57, sans aucune reprise ; les leviers pour aller plus vite sont au §8 de `sequence.md`.
 
 **En mode piloté**, le mode d'origine :
 1. Relire `docs/plan-directeur.md` et trancher les décisions bloquantes D-01, D-02, D-05 et D-07 (§10).

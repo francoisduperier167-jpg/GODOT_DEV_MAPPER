@@ -8,7 +8,7 @@
 | Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
 | Piste | M.B Phases P6, P7 : S39 → S39.P → S40 → S40.P (unité 1 sur 4) |
 | Commence après | S35 (cochée dans `SUIVI.md`) |
-| Indépendante de | S36, S36.P, S37, S37.P, S38, S38.P, S36.1, S36.2, S36.3, S36.4, S36.5, S37.1, S37.2, S37.3, et 17 autres (voir SUIVI.md) |
+| Indépendante de | S36, S36.P, S37, S37.P, S38, S36.1, S36.2, S36.3, S36.4, S36.5, S37.1, S37.2, S37.3, S37.4, et 13 autres (voir SUIVI.md) |
 | Branche | `tache/S39-P6-decoupage` |
 | Fiche de conception | `docs/construction/mvp.md`, section P6 |
 | Estimation | 1 créneau |
@@ -17,11 +17,11 @@
 
 ## Ce qu'il faut faire
 
-- Revoir le découpage provisoire de la phase P6 : 11 tâches (S39.1, S39.2, S39.3, S39.4, S39.5, S39.6, S39.7, S39.8, S39.9, S39.10, S39.11), écrites avant le POC d'après `docs/construction/mvp.md` et le plan directeur.
+- Revoir le découpage provisoire de la phase P6 : 12 tâches (S39.1, S39.2, S39.3, S39.4, S39.5, S39.6, S39.7, S39.8, S39.9, S39.10, S39.11, S39.12), écrites avant le POC d'après `docs/construction/mvp.md` et le plan directeur.
 - Le confronter aux résultats du POC (`docs/revues/revue-poc.md`), aux décisions (`docs/DECISIONS.md`), aux spikes, aux mesures et aux rapports des phases précédentes.
 - Pour chaque tâche : la garder, la préciser (fiche modifiée), la retirer, ou la remplacer ; ajouter les tâches manquantes depuis `suivi/_modele-tache.md`. Total dans le budget de la phase : 10 à 16 h humaines.
 - Écrire `docs/construction/mvp-P6.md` : objectif, obligations, méthodologie, points de contrôle et cheminement d'amélioration de la phase, précisés par les résultats ; tableau des tâches retenues, avec la raison de chaque changement.
-- Écrire dans le rapport les changements à porter dans `SUIVI.md` : lignes ajoutées sous **S39**, lignes retirées, prérequis modifiés ; ou « aucun changement ».
+- Écrire dans le rapport les changements à porter dans `SUIVI.md` : lignes ajoutées sous **S39**, lignes retirées, prérequis modifiés, rôles modifiés (réalise, vérifie) ; ou « aucun changement ». La fiche et sa ligne de `SUIVI.md` doivent dire la même chose : `verifier` compare rôles et prérequis.
 
 ## Fichiers autorisés
 
@@ -29,17 +29,18 @@
 
 ## Tâches du découpage provisoire
 
-- **S39.1** · Révision des contrats C-04 et C-06 en version 2 · réalise IA 1 · vérifie IA 3 · après S39 · `suivi/S39.1-contrats-c04-c06-v2.md`
+- **S39.1** · Révision des contrats C-04, C-06 et C-07 en version 2 · réalise IA 1 · vérifie IA 3 · après S39 · `suivi/S39.1-contrats-c04-c06-v2.md`
 - **S39.2** · Contrat C-10 : format de session persistée · réalise IA 1 · vérifie IA 3 · après S39 · `suivi/S39.2-contrat-c10-session.md`
 - **S39.3** · Codec de l'enveloppe v2, lecture de la v1 · réalise IA 2 · vérifie IA 1 · après S39.1 · `suivi/S39.3-codec-v2.md`
 - **S39.4** · FlowTrace v2 : capacités, frames, ticks, nouveaux événements · réalise IA 2 · vérifie IA 1 · après S39.3 · `suivi/S39.4-flowtrace-v2.md`
 - **S39.5** · Connexion tardive et reconnexion, côté jeu · réalise IA 2 · vérifie IA 1 · après S39.4 · `suivi/S39.5-connexion-tardive-jeu.md`
-- **S39.6** · Réception v2 côté éditeur · réalise IA 2 · vérifie IA 1 · après S39.3 · `suivi/S39.6-reception-v2.md`
+- **S39.6** · Réception v2 côté éditeur · réalise IA 2 · vérifie IA 1 · après S39.3, S39.7 · `suivi/S39.6-reception-v2.md`
 - **S39.7** · Event Store v2 : lacunes explicites, doublons, frames · réalise IA 2 · vérifie IA 3 · après S39.1 · `suivi/S39.7-store-v2.md`
-- **S39.8** · Sauvegarde atomique et rechargement des sessions · réalise IA 2 · vérifie IA 1 · après S39.2, S39.7 · `suivi/S39.8-persistance-session.md`
-- **S39.9** · Relecture d'une session sans le jeu · réalise IA 2 · vérifie IA 3 · après S39.6, S39.8 · `suivi/S39.9-relecture.md`
+- **S39.8** · Sauvegarde atomique et rechargement des sessions · réalise IA 2 · vérifie IA 1 · après S39.2, S39.7, S37.2 · `suivi/S39.8-persistance-session.md`
+- **S39.9** · Relecture d'une session sans le jeu · réalise IA 2 · vérifie IA 3 · après S39.6, S39.8, S39.12 · `suivi/S39.9-relecture.md`
 - **S39.10** · Banc de reconnexion sans éditeur · réalise IA 3 · vérifie IA 1 · après S39.5, S39.6 · `suivi/S39.10-banc-reconnexion.md`
 - **S39.11** · Export d'une fenêtre de session · réalise IA 2 · vérifie IA 3 · après S39.8 · `suivi/S39.11-export-session.md`
+- **S39.12** · Panneau principal à onglets découverts et capture d'un onglet · réalise IA 2 · vérifie IA 3 · après S39 · `suivi/S39.12-panneau-onglets.md`
 
 ## Prompt de réalisation
 
@@ -61,7 +62,7 @@ RÈGLES NON NÉGOCIABLES
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée : tu colles sa sortie réelle dans le rapport.
 - Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status. Tu ne pousses jamais avec --force.
 - Deux échecs au même contrôle : statut ESCALADE, avec ton diagnostic.
-- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre.
+- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre : python3 suivi/outil.py arreter --ia <n> --unite S39 --raison "<raison>", puis fin du créneau.
 
 TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
 1. git add <les fichiers de la sous-étape> (jamais git add -A).
@@ -91,11 +92,12 @@ RÈGLES
 TRAVAIL TECHNIQUE — fin de la copie exacte du guide
 
 ADAPTATIONS DU MODE AUTONOME
-- Le découpage existe déjà : les fiches suivi/S39.1-… à suivi/S39.11-…, listées dans cette fiche. Tu le revois au lieu de partir de zéro ; le document à produire reste celui du guide, docs/construction/mvp-P6.md.
+- Le découpage existe déjà : les fiches suivi/S39.1-… à suivi/S39.12-…, listées dans cette fiche. Tu le revois au lieu de partir de zéro ; le document à produire reste celui du guide, docs/construction/mvp-P6.md.
 - Budget : traduis les heures humaines de la phase en créneaux d'IA avec le ratio observé au POC (docs/revues/revue-poc.md).
 - Tu gardes une tâche telle quelle si rien ne la contredit. Tu la modifies si un résultat l'exige (décision de spike, contrat révisé, outil renommé, mesure), en le citant.
 - Une tâche ajoutée : nouvelle fiche suivi/S39.<k>-<nom>.md depuis suivi/_modele-tache.md, toutes sections remplies, sous-étapes au format « ⟶ cocher ». Une tâche retirée : sa fiche reste, avec la raison en tête ; le vérificateur retire sa ligne de SUIVI.md à la fusion.
-- Prérequis : S39 pour toute tâche, plus les tâches de la phase dont elle dépend vraiment. Évite que deux tâches indépendantes modifient le même fichier.
+- Prérequis : S39 pour toute tâche, plus les tâches dont elle dépend vraiment, y compris d'une autre phase quand deux phases parallèles touchent le même fichier (contrat révisé, flow_trace.gd, envelope.gd et codec, tools/deps_rules.json, branche du banc). Deux tâches indépendantes ne modifient jamais le même fichier.
+- Un nouveau contrat va dans son propre fichier docs/contracts/C-xx.md ; une révision de C-01 à C-07 reste dans docs/CONTRACTS.md, avec sa version cible écrite dans la fiche. Une nouvelle vue est un onglet ui/vues/<nom>/ (convention de S39.12), jamais une modification de plugin.gd ou du panneau principal.
 - Répartition : réalisation par IA 2, sauf contrat, protocole, façade ou format persisté (IA 1) ; vérification par IA 3, sauf ces mêmes sujets (IA 1, ou IA 3 si IA 1 est l'auteur).
 - Contrôle final : python3 suivi/outil.py verifier → OK, une fois SUIVI.md mis à jour à la fusion.
 
@@ -124,10 +126,10 @@ Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil
 
 - [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S39 --ia <n>` (prérequis cochés dans `SUIVI.md` : S35 ; branche `tache/S39-P6-decoupage` créée ou reprise ; `rapports/S39.md` au statut EN COURS) ⟶ cochée par `prendre`
 - [ ] R1 Lire `docs/revues/revue-poc.md`, `docs/DECISIONS.md`, `docs/spikes/`, `PROJECT_STATE.md` et les rapports des phases précédentes ; noter les faits qui touchent la phase. ⟶ cocher S39 R1
-- [ ] R2 Relire chaque fiche du découpage provisoire (S39.1, S39.2, S39.3, S39.4, S39.5, S39.6, S39.7, S39.8, S39.9, S39.10, S39.11) et décider : garder, préciser, retirer ou remplacer, avec la raison. ⟶ cocher S39 R2
+- [ ] R2 Relire chaque fiche du découpage provisoire (S39.1, S39.2, S39.3, S39.4, S39.5, S39.6, S39.7, S39.8, S39.9, S39.10, S39.11, S39.12) et décider : garder, préciser, retirer ou remplacer, avec la raison. ⟶ cocher S39 R2
 - [ ] R3 Appliquer les décisions aux fiches ; créer les fiches des tâches ajoutées. ⟶ cocher S39 R3
 - [ ] R4 Écrire `docs/construction/mvp-P6.md`. ⟶ cocher S39 R4
-- [ ] R5 Écrire dans le rapport les changements à porter dans `SUIVI.md`, ou « aucun changement ». ⟶ cocher S39 R5
+- [ ] R5 Écrire dans le rapport les changements à porter dans `SUIVI.md` (lignes, prérequis, rôles), ou « aucun changement ». ⟶ cocher S39 R5
 - [ ] R6 Contrôles finaux : chaque fiche gardée, modifiée ou ajoutée a toutes ses sections ; budget respecté ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S39 R6
 
 ## Prompt de vérification
@@ -139,6 +141,7 @@ PRISE, depuis ton clone principal
 python3 suivi/outil.py prendre S39 --ia <n> --verification
 - « VÉRIFICATION PRISE » : copie neuve ../verif-S39-P6-decoupage créée sur origin/tache/S39-P6-decoupage, verdict EN COURS écrit, V1 cochée. cd ../verif-S39-P6-decoupage : toute la vérification se fait dans ce dossier.
 - « REFUSÉ » : une autre IA vérifie déjà, tu es auteur, ou l'unité n'est pas terminée : reviens au prompt de créneau.
+- Créneau fini avant le verdict : au créneau suivant, etat te propose la même commande ; elle recrée la copie (« VÉRIFICATION REPRISE ») et tu reprends à la première case V ouverte.
 GODOT : même procédure que le prompt de réalisation.
 Tu ne modifies aucun fichier de l'unité. Tu écris seulement ton verdict et tes cases V.
 
@@ -167,11 +170,11 @@ VERDICT dans rapports/S39-verif-<tentative>.md (créé par la prise) :
 - Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
 - Doutes non bloquants : liste courte
 
-SI ACCEPTÉE — FUSION, depuis ton clone principal
-1. python3 suivi/outil.py fusionner S39 --ia <n> --godot "$B"
-   Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S39-P6-decoupage, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
+SI ACCEPTÉE — FUSION, depuis ton clone principal (cd hors de ../verif-S39-P6-decoupage)
+1. python3 suivi/outil.py fusionner S39 --ia <n>
+   Elle trouve Godot (--godot, $GODOT, cache du bloc GODOT ou tools/ci/fetch_godot.sh ; sans Godot : REFUSÉ, verdict inchangé), prend le verrou de main (et attend s'il est pris), revérifie l'unité, fusionne dans ../fusion-S39-P6-decoupage, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité. La fusion te revient parce que tu as signé le verdict ; une autre IA ne la fait qu'après 12 h.
 2. cd ../fusion-S39-P6-decoupage ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S39 F<k> --ia <n> (commit local, sans poussée).
-   Dans ../fusion-S39-P6-decoupage : porte dans SUIVI.md les changements du rapport (lignes ajoutées sous S39, retirées, prérequis) ; python3 suivi/outil.py verifier → OK ; git add SUIVI.md ; puis coche F2.
+   Dans ../fusion-S39-P6-decoupage : porte dans SUIVI.md les changements du rapport (lignes ajoutées sous S39, retirées, prérequis, rôles réalise et vérifie) ; python3 suivi/outil.py verifier → OK (il compare rôles et prérequis de chaque fiche à sa ligne) ; git add SUIVI.md ; puis coche F2.
 3. python3 suivi/outil.py publier S39 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
 SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
 ```
@@ -192,8 +195,8 @@ Dans `../verif-S39-P6-decoupage`, après chaque sous-étape : `git add` du verdi
 
 F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S39-P6-decoupage`, par `python3 suivi/outil.py cocher S39 F<k> --ia <n>` (commit local).
 
-- [ ] F1 Fusion : `python3 suivi/outil.py fusionner S39 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S39-P6-decoupage`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S39** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
-- [ ] F2 Changements du rapport portés dans `SUIVI.md` (lignes ajoutées sous **S39**, retirées, prérequis) ; `python3 suivi/outil.py verifier` → OK ⟶ cocher S39 F2
+- [ ] F1 Fusion, depuis le clone principal : `python3 suivi/outil.py fusionner S39 --ia <n>` : Godot trouvé seul (--godot, $GODOT, cache du bloc GODOT ou fetch_godot.sh), verrou de `main`, fusion `--no-ff` dans `../fusion-S39-P6-decoupage`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S39** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F2 Changements du rapport portés dans `SUIVI.md` (lignes ajoutées sous **S39**, retirées, prérequis, rôles) ; `python3 suivi/outil.py verifier` → OK ⟶ cocher S39 F2
 - [ ] F3 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S39 F3
 - [ ] F4 Publication : `python3 suivi/outil.py publier S39 --ia <n>` (verifier OK, `main` poussée, branche `tache/S39-P6-decoupage` supprimée, verrou rendu) ⟶ cochée par `publier`
 

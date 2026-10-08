@@ -26,7 +26,7 @@ Le MVP et la V1 sont découpés en tâches dès maintenant, d'après `mvp.md`, `
 | Étape 5 — Intégration | **5.A** Réception éditeur et essai : S24 → S26 · **5.B** Instrumentation du banc : S25 | S27 | 4 |
 | Étape 6 — Interface et robustesse | **6.A** Panneau et chemin observé : S28 → S29 → S31 · **6.B** Robustesse : S30 | S32 | 5 |
 | Étape 7 — Valeur et revue | **7.A** Bugs injectés et mesure de valeur : S33 → S34 | S35 | 3 |
-| MVP — phases P4a à P8 | **M.A** Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P · **M.B** Phases P6, P7 : S39 → S39.P → S40 → S40.P | S41 → S41.P | 61, dont 49 tâches de phase |
+| MVP — phases P4a à P8 | **M.A** Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P · **M.B** Phases P6, P7 : S39 → S39.P → S40 → S40.P | S41 → S41.P | 63, dont 51 tâches de phase |
 | V1 — phases P9 à P16 | **V.A** Phases P9, P12, P13, P15 : S42 → S42.P → S45 → S45.P → S46 → S46.P → S48 → S48.P · **V.B** Phase P10 : S43 → S43.P · **V.C** Phase P11 : S44 → S44.P · **V.D** Phase P14 : S47 → S47.P | S49 → S49.P | 74, dont 58 tâches de phase |
 
 ```mermaid
@@ -312,7 +312,7 @@ flowchart TB
   - Découpage provisoire : 11 tâches, S37.1 à S37.11, revues par S37 au début de la phase (budget de la phase : 8 à 14 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
 - [ ] **S37.1** · Contrat C-08 : inventaire du projet et relations d'appel · réalise IA 1 · vérifie IA 3 · après S37 · fiche `suivi/S37.1-contrat-c08.md`
 - [ ] **S37.2** · Façades d'introspection et de syntaxe · réalise IA 2 · vérifie IA 1 · après S37 · fiche `suivi/S37.2-facades-introspection-syntaxe.md`
-- [ ] **S37.3** · Fixtures de syntaxe GDScript et relations attendues · réalise IA 3 · vérifie IA 2 · après S37 · fiche `suivi/S37.3-fixtures-syntaxe.md`
+- [ ] **S37.3** · Fixtures de syntaxe GDScript et relations attendues · réalise IA 3 · vérifie IA 2 · après S37.1 · fiche `suivi/S37.3-fixtures-syntaxe.md`
 - [ ] **S37.4** · Lexeur GDScript · réalise IA 2 · vérifie IA 3 · après S37.2, S37.3 · fiche `suivi/S37.4-lexeur-gdscript.md`
 - [ ] **S37.5** · Extraction des déclarations et de leurs ancrages · réalise IA 2 · vérifie IA 3 · après S37.4 · fiche `suivi/S37.5-declarations.md`
 - [ ] **S37.6** · Extraction des relations d'appel et de signal · réalise IA 2 · vérifie IA 3 · après S37.5 · fiche `suivi/S37.6-relations-appel.md`
@@ -329,7 +329,7 @@ flowchart TB
 - [ ] **S38.3** · Appelants et appelés, expansion bornée · réalise IA 2 · vérifie IA 3 · après S38.1 · fiche `suivi/S38.3-appelants-appeles.md`
 - [ ] **S38.4** · Arborescence res:// et correspondance fichier ↔ éléments · réalise IA 2 · vérifie IA 3 · après S38.1 · fiche `suivi/S38.4-arborescence-res.md`
 - [ ] **S38.5** · Vue de graphe bornée, selon SPIKE-03 · réalise IA 2 · vérifie IA 3 · après S38.3 · fiche `suivi/S38.5-vue-graphe.md`
-- [ ] **S38.6** · Panneau de navigation : recherche, appelants, res:// · réalise IA 2 · vérifie IA 3 · après S38.2, S38.4, S38.5 · fiche `suivi/S38.6-panneau-navigation.md`
+- [ ] **S38.6** · Onglet de navigation : recherche, appelants, res:// · réalise IA 2 · vérifie IA 3 · après S38.2, S38.4, S38.5, S39.12 · fiche `suivi/S38.6-panneau-navigation.md`
 - [ ] **S38.7** · Requêtes de navigation en ligne de commande · réalise IA 2 · vérifie IA 3 · après S38.2, S38.3, S38.4 · fiche `suivi/S38.7-requetes-cli.md`
 - [ ] **S38.8** · Essai de navigation sous écran virtuel (J2 et J3) · réalise IA 3 · vérifie IA 2 · après S38.6 · fiche `suivi/S38.8-essai-navigation.md`
 - [ ] **S38.9** · Test de cartographie par substitution · réalise IA 3 · vérifie IA 1 · après S38.7, S38.8 · fiche `suivi/S38.9-cartographie-substitution.md`
@@ -338,27 +338,29 @@ flowchart TB
 ### Piste M.B · Phases P6, P7 — démarre après S35
 
 - [ ] **S39** · P6 Historique, persistance, protocole MVP (CAP-11, CAP-07 complet) : revue du découpage · réalise IA 1 · vérifie IA 3 · après S35 · fiche `suivi/S39-P6-decoupage.md`
-  - Découpage provisoire : 11 tâches, S39.1 à S39.11, revues par S39 au début de la phase (budget de la phase : 10 à 16 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
-- [ ] **S39.1** · Révision des contrats C-04 et C-06 en version 2 · réalise IA 1 · vérifie IA 3 · après S39 · fiche `suivi/S39.1-contrats-c04-c06-v2.md`
+  - Découpage provisoire : 12 tâches, S39.1 à S39.12, revues par S39 au début de la phase (budget de la phase : 10 à 16 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
+- [ ] **S39.1** · Révision des contrats C-04, C-06 et C-07 en version 2 · réalise IA 1 · vérifie IA 3 · après S39 · fiche `suivi/S39.1-contrats-c04-c06-v2.md`
 - [ ] **S39.2** · Contrat C-10 : format de session persistée · réalise IA 1 · vérifie IA 3 · après S39 · fiche `suivi/S39.2-contrat-c10-session.md`
 - [ ] **S39.3** · Codec de l'enveloppe v2, lecture de la v1 · réalise IA 2 · vérifie IA 1 · après S39.1 · fiche `suivi/S39.3-codec-v2.md`
 - [ ] **S39.4** · FlowTrace v2 : capacités, frames, ticks, nouveaux événements · réalise IA 2 · vérifie IA 1 · après S39.3 · fiche `suivi/S39.4-flowtrace-v2.md`
 - [ ] **S39.5** · Connexion tardive et reconnexion, côté jeu · réalise IA 2 · vérifie IA 1 · après S39.4 · fiche `suivi/S39.5-connexion-tardive-jeu.md`
-- [ ] **S39.6** · Réception v2 côté éditeur · réalise IA 2 · vérifie IA 1 · après S39.3 · fiche `suivi/S39.6-reception-v2.md`
+- [ ] **S39.6** · Réception v2 côté éditeur · réalise IA 2 · vérifie IA 1 · après S39.3, S39.7 · fiche `suivi/S39.6-reception-v2.md`
 - [ ] **S39.7** · Event Store v2 : lacunes explicites, doublons, frames · réalise IA 2 · vérifie IA 3 · après S39.1 · fiche `suivi/S39.7-store-v2.md`
-- [ ] **S39.8** · Sauvegarde atomique et rechargement des sessions · réalise IA 2 · vérifie IA 1 · après S39.2, S39.7 · fiche `suivi/S39.8-persistance-session.md`
-- [ ] **S39.9** · Relecture d'une session sans le jeu · réalise IA 2 · vérifie IA 3 · après S39.6, S39.8 · fiche `suivi/S39.9-relecture.md`
+- [ ] **S39.8** · Sauvegarde atomique et rechargement des sessions · réalise IA 2 · vérifie IA 1 · après S39.2, S39.7, S37.2 · fiche `suivi/S39.8-persistance-session.md`
+- [ ] **S39.9** · Relecture d'une session sans le jeu · réalise IA 2 · vérifie IA 3 · après S39.6, S39.8, S39.12 · fiche `suivi/S39.9-relecture.md`
 - [ ] **S39.10** · Banc de reconnexion sans éditeur · réalise IA 3 · vérifie IA 1 · après S39.5, S39.6 · fiche `suivi/S39.10-banc-reconnexion.md`
 - [ ] **S39.11** · Export d'une fenêtre de session · réalise IA 2 · vérifie IA 3 · après S39.8 · fiche `suivi/S39.11-export-session.md`
+- [ ] **S39.12** · Panneau principal à onglets découverts et capture d'un onglet · réalise IA 2 · vérifie IA 3 · après S39 · fiche `suivi/S39.12-panneau-onglets.md`
 - [ ] **S39.P** · Porte de P6 · réalise IA 1 · vérifie IA 3 · après S39, S39.* · fiche `suivi/S39.P-P6-porte.md`
 - [ ] **S40** · P7 Logique et Game Flow annoté (CAP-12 annoté) : revue du découpage · réalise IA 1 · vérifie IA 3 · après S39.P · fiche `suivi/S40-P7-decoupage.md`
-  - Découpage provisoire : 6 tâches, S40.1 à S40.6, revues par S40 au début de la phase (budget de la phase : 5 à 9 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
+  - Découpage provisoire : 7 tâches, S40.1 à S40.7, revues par S40 au début de la phase (budget de la phase : 5 à 9 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
 - [ ] **S40.1** · Contrat C-11 : blocs temporels déclarés · réalise IA 1 · vérifie IA 3 · après S40 · fiche `suivi/S40.1-contrat-c11-blocs.md`
 - [ ] **S40.2** · FlowTrace : déclaration des blocs · réalise IA 2 · vérifie IA 1 · après S40.1 · fiche `suivi/S40.2-flowtrace-blocs.md`
 - [ ] **S40.3** · Projection des blocs et de leurs occurrences · réalise IA 2 · vérifie IA 3 · après S40.1 · fiche `suivi/S40.3-projection-blocs.md`
 - [ ] **S40.4** · Projection logique : décisions et états · réalise IA 2 · vérifie IA 3 · après S40 · fiche `suivi/S40.4-projection-logique.md`
-- [ ] **S40.5** · Vues Game Flow annoté et Logique · réalise IA 2 · vérifie IA 3 · après S40.3, S40.4 · fiche `suivi/S40.5-vues-gameflow-logique.md`
-- [ ] **S40.6** · Blocs déclarés dans le banc d'essai · réalise IA 3 · vérifie IA 2 · après S40.2, S40.3 · fiche `suivi/S40.6-blocs-banc.md`
+- [ ] **S40.5** · Vues Game Flow annoté et Logique · réalise IA 2 · vérifie IA 3 · après S40.3, S40.4, S40.7 · fiche `suivi/S40.5-vues-gameflow-logique.md`
+- [ ] **S40.6** · Blocs déclarés dans le banc d'essai · réalise IA 3 · vérifie IA 2 · après S40.2, S40.3, S40.7 · fiche `suivi/S40.6-blocs-banc.md`
+- [ ] **S40.7** · Chargeur du graphe déclaré .flow.json en version 2 · réalise IA 2 · vérifie IA 3 · après S40.1 · fiche `suivi/S40.7-chargeur-flow-v2.md`
 - [ ] **S40.P** · Porte de P7 · réalise IA 1 · vérifie IA 3 · après S40, S40.* · fiche `suivi/S40.P-P7-porte.md`
 
 ### Rendez-vous du MVP — attend S38.P, S40.P
@@ -366,7 +368,7 @@ flowchart TB
 - [ ] **S41** · P8 Compatibilité MVP et stabilisation (CAP-13) : revue du découpage · réalise IA 1 · vérifie IA 3 · après S38.P, S40.P · fiche `suivi/S41-P8-decoupage.md`
   - Découpage provisoire : 7 tâches, S41.1 à S41.7, revues par S41 au début de la phase (budget de la phase : 6 à 10 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
 - [ ] **S41.1** · Matrice de compatibilité générée par la CI · réalise IA 2 · vérifie IA 1 · après S41 · fiche `suivi/S41.1-matrice-compat.md`
-- [ ] **S41.2** · Bascule vers Godot 4.8 stable · réalise IA 1 · vérifie IA 3 · après S41 · fiche `suivi/S41.2-bascule-48.md`
+- [ ] **S41.2** · Bascule vers Godot 4.8 stable · réalise IA 1 · vérifie IA 3 · après S41.1, S41.3 · fiche `suivi/S41.2-bascule-48.md`
 - [ ] **S41.3** · Tri des échecs de la préversion · réalise IA 2 · vérifie IA 1 · après S41 · fiche `suivi/S41.3-tri-preversion.md`
 - [ ] **S41.4** · Outil de désinstallation de l'instrumentation · réalise IA 2 · vérifie IA 3 · après S41 · fiche `suivi/S41.4-desinstallation-instrumentation.md`
 - [ ] **S41.5** · Installation et désinstallation propres du plugin · réalise IA 3 · vérifie IA 2 · après S41.4 · fiche `suivi/S41.5-installation-propre.md`
@@ -434,12 +436,12 @@ flowchart TB
 
 - [ ] **S44** · P11 Data Flow : origine et usages d'un paramètre : revue du découpage · réalise IA 1 · vérifie IA 3 · après S41.P · fiche `suivi/S44-P11-decoupage.md`
   - Découpage provisoire : 9 tâches, S44.1 à S44.9, revues par S44 au début de la phase (budget de la phase : 12 à 20 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
-- [ ] **S44.1** · Contrat C-14 : origine et usages d'un paramètre · réalise IA 1 · vérifie IA 3 · après S44 · fiche `suivi/S44.1-contrat-c14-parametres.md`
+- [ ] **S44.1** · Contrat C-14 : origine et usages d'un paramètre · réalise IA 1 · vérifie IA 3 · après S44, S42.1 · fiche `suivi/S44.1-contrat-c14-parametres.md`
 - [ ] **S44.2** · Déclarations de paramètres et valeurs par défaut · réalise IA 2 · vérifie IA 3 · après S44.1 · fiche `suivi/S44.2-declarations-parametres.md`
 - [ ] **S44.3** · Valeurs des ressources .tres et .res · réalise IA 2 · vérifie IA 1 · après S44.1 · fiche `suivi/S44.3-valeurs-ressources.md`
 - [ ] **S44.4** · Surcharges de paramètres dans les scènes · réalise IA 2 · vérifie IA 3 · après S44.1 · fiche `suivi/S44.4-surcharges-scenes.md`
 - [ ] **S44.5** · Lecteurs et écrivains statiques d'un paramètre · réalise IA 2 · vérifie IA 3 · après S44.2 · fiche `suivi/S44.5-lecteurs-ecrivains.md`
-- [ ] **S44.6** · Valeur observée : écritures instrumentées · réalise IA 2 · vérifie IA 1 · après S44.1 · fiche `suivi/S44.6-valeur-observee.md`
+- [ ] **S44.6** · Valeur observée : écritures instrumentées · réalise IA 2 · vérifie IA 1 · après S44.1, S42.6 · fiche `suivi/S44.6-valeur-observee.md`
 - [ ] **S44.7** · Projection de l'origine d'un paramètre · réalise IA 2 · vérifie IA 3 · après S44.3, S44.4, S44.5, S44.6 · fiche `suivi/S44.7-projection-origine.md`
 - [ ] **S44.8** · Vue Data Flow (parcours J4) · réalise IA 2 · vérifie IA 3 · après S44.7 · fiche `suivi/S44.8-vue-data-flow.md`
 - [ ] **S44.9** · Paramètre du banc d'essai suivi de bout en bout · réalise IA 3 · vérifie IA 2 · après S44.7 · fiche `suivi/S44.9-parametre-banc.md`
@@ -449,12 +451,12 @@ flowchart TB
 
 - [ ] **S47** · P14 Performance corrélée : revue du découpage · réalise IA 1 · vérifie IA 3 · après S41.P · fiche `suivi/S47-P14-decoupage.md`
   - Découpage provisoire : 6 tâches, S47.1 à S47.6, revues par S47 au début de la phase (budget de la phase : 6 à 10 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
-- [ ] **S47.1** · Contrat : événement metric et coût de capture · réalise IA 1 · vérifie IA 3 · après S47 · fiche `suivi/S47.1-contrat-metric.md`
-- [ ] **S47.2** · Échantillonneur de moniteurs, côté jeu · réalise IA 2 · vérifie IA 1 · après S47.1 · fiche `suivi/S47.2-echantillonneur.md`
+- [ ] **S47.1** · Contrat : événement metric et coût de capture · réalise IA 1 · vérifie IA 3 · après S47, S44.1 · fiche `suivi/S47.1-contrat-metric.md`
+- [ ] **S47.2** · Échantillonneur de moniteurs, côté jeu · réalise IA 2 · vérifie IA 1 · après S47.1, S44.6, S44.3 · fiche `suivi/S47.2-echantillonneur.md`
 - [ ] **S47.3** · Coût de capture avec et sans collecte · réalise IA 2 · vérifie IA 3 · après S47.2 · fiche `suivi/S47.3-cout-capture.md`
 - [ ] **S47.4** · Projection de corrélation performance ↔ événements · réalise IA 2 · vérifie IA 3 · après S47.1 · fiche `suivi/S47.4-projection-perf.md`
 - [ ] **S47.5** · Vue performance · réalise IA 2 · vérifie IA 3 · après S47.3, S47.4 · fiche `suivi/S47.5-vue-perf.md`
-- [ ] **S47.6** · Pic de frame corrélé sur le banc d'essai · réalise IA 3 · vérifie IA 2 · après S47.4 · fiche `suivi/S47.6-pic-banc.md`
+- [ ] **S47.6** · Pic de frame corrélé sur le banc d'essai · réalise IA 3 · vérifie IA 2 · après S47.3, S47.4 · fiche `suivi/S47.6-pic-banc.md`
 - [ ] **S47.P** · Porte de P14 · réalise IA 1 · vérifie IA 3 · après S47, S47.* · fiche `suivi/S47.P-P14-porte.md`
 
 ### Rendez-vous de la V1 — attend S47.P, S48.P
@@ -464,11 +466,11 @@ flowchart TB
 - [ ] **S49.1** · Deux versions stables dans la CI · réalise IA 2 · vérifie IA 1 · après S49 · fiche `suivi/S49.1-deux-stables.md`
 - [ ] **S49.2** · Traitement de la dette · réalise IA 1 · vérifie IA 3 · après S49 · fiche `suivi/S49.2-dette.md`
 - [ ] **S49.3** · Documentation : installation et premiers pas · réalise IA 3 · vérifie IA 2 · après S49 · fiche `suivi/S49.3-doc-installation.md`
-- [ ] **S49.4** · Documentation des modes · réalise IA 3 · vérifie IA 2 · après S49 · fiche `suivi/S49.4-doc-modes.md`
-- [ ] **S49.5** · Guide d'instrumentation · réalise IA 3 · vérifie IA 2 · après S49 · fiche `suivi/S49.5-doc-instrumentation.md`
-- [ ] **S49.6** · Installation à froid par la documentation seule · réalise IA 1 · vérifie IA 2 · après S49.3, S49.5 · fiche `suivi/S49.6-installation-froid.md`
+- [ ] **S49.4** · Documentation des modes · réalise IA 3 · vérifie IA 2 · après S49.3 · fiche `suivi/S49.4-doc-modes.md`
+- [ ] **S49.5** · Guide d'instrumentation · réalise IA 3 · vérifie IA 2 · après S49.3 · fiche `suivi/S49.5-doc-instrumentation.md`
+- [ ] **S49.6** · Installation à froid par la documentation seule · réalise IA 1 · vérifie IA 2 · après S49.4, S49.5, S49.8, S49.9 · fiche `suivi/S49.6-installation-froid.md`
 - [ ] **S49.7** · Démonstrations de CAP-12 à CAP-18 rejouées · réalise IA 2 · vérifie IA 3 · après S49.1 · fiche `suivi/S49.7-demos-v1.md`
-- [ ] **S49.8** · Installation et désinstallation propres de la V1 · réalise IA 3 · vérifie IA 2 · après S49.7 · fiche `suivi/S49.8-desinstallation-v1.md`
+- [ ] **S49.8** · Installation et désinstallation propres de la V1 · réalise IA 3 · vérifie IA 2 · après S49.3, S49.7 · fiche `suivi/S49.8-desinstallation-v1.md`
 - [ ] **S49.9** · Mesures finales et limites · réalise IA 1 · vérifie IA 3 · après S49.7 · fiche `suivi/S49.9-mesures-v1.md`
 - [ ] **S49.10** · Dossier de décision : licence et diffusion · réalise IA 1 · vérifie IA 3 · après S49 · fiche `suivi/S49.10-dossier-licence.md`
 - [ ] **S49.P** · Porte de P16 et porte de la V1 · réalise IA 1 · vérifie IA 3 · après S49, S49.* · fiche `suivi/S49.P-P16-porte.md`

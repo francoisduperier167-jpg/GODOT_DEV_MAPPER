@@ -11,7 +11,9 @@ cohérence à vérifier, contexte à lire.
 
 RUN = '"$B" --headless --path . -s res://tests/run_all.gd 2>&1'
 DEPS = ("python3 tools/check_deps.py; echo $?", "0, aucune violation")
-PREVIEW = 'P=$(tools/ci/fetch_godot.sh 4.8-dev7) && "$P" --headless --path . -s res://tests/run_all.gd 2>&1 | grep GDM_TESTS'
+PREVIEW = ('P=$(tools/ci/fetch_godot.sh "$(python3 -c \'import json; print(json.load(open("addons/godot_dev_mapper/compat/versions.json"))["preview"])\')") '
+           '&& "$P" --headless --path . -s res://tests/run_all.gd 2>&1 | grep GDM_TESTS')
+OUTILS_CONTRAT = ["tools/validate_fixtures.py (schéma et règles du nouveau format)", "tools/check_contracts.py (sections C-xx et fichiers docs/contracts/)"]
 
 
 def tests(*noms):
@@ -151,15 +153,15 @@ t("S36.2", "spike03-rendu", "SPIKE-03, rendu du graphe : GraphEdit, canevas ou h
 t("S36.3", "spike04-maison", "SPIKE-04, extraction maison des relations d'appel", "D", "C", ["S36.1"],
   ["Écrire dans `spikes/spike04_backend/maison/` un extracteur jetable en GDScript : lecture du texte des scripts, découpage en jetons, repérage des déclarations et des appels.",
    "Le lancer sur les scripts de l'étalon et compter, par type de relation : justes, fausses, manquées ; mesurer le temps sur tout le banc.",
-   "Écrire la partie « extraction maison » de `docs/spikes/SPIKE-04.md` : résultats, constructions mal couvertes, coût estimé d'une version de production."],
-  ["spikes/spike04_backend/maison/", "docs/spikes/SPIKE-04.md (section « Extraction maison »)"],
+   "Écrire `docs/spikes/SPIKE-04-maison.md` : résultats, constructions mal couvertes, coût estimé d'une version de production (S36.5 en fera la synthèse dans SPIKE-04.md)."],
+  ["spikes/spike04_backend/maison/", "docs/spikes/SPIKE-04-maison.md"],
   ["Lecteur de jetons GDScript minimal (chaînes, commentaires, indentation).",
    "Repérage des déclarations (class_name, extends, func, signal).",
    "Repérage des appels et des signaux ; « non résolu » pour tout appel dynamique.",
    "Comparaison à l'étalon par `spikes/spike04_backend/maison/run.sh` : justes, fausses, manquées.",
-   "Rédiger la section du rapport."],
+   "Rédiger `docs/spikes/SPIKE-04-maison.md`."],
   [("S36.3-a", "GODOT=\"$B\" spikes/spike04_backend/maison/run.sh", "comptes justes, fausses, manquées par type ; temps total sur le banc"),
-   ("S36.3-b", "grep -c \"Extraction maison\" docs/spikes/SPIKE-04.md", "au moins 1")],
+   ("S36.3-b", "grep -ciE \"justes|fausses|manquées\" docs/spikes/SPIKE-04-maison.md", "au moins 3")],
   ["(CE) Supprimer le marquage « non résolu » des appels `call(\"…\")` : le nombre de relations fausses augmente dans S36.3-a ; annuler."],
   "Objectif de P4a : 90 % des appels directs résolus, aucune relation certaine fausse.",
   contexte=["benches/<nom>/relations_attendues.json", "docs/construction/mvp.md, P4a"])
@@ -168,11 +170,11 @@ t("S36.4", "spike04-astflow", "SPIKE-04, évaluation de GDScript AST Flow", "C",
   ["Vérifier l'existence, la licence (fichier LICENSE à une révision épinglée), la version de Godot visée et le mode d'exécution de GDScript AST Flow ; « non vérifié » écarte l'outil.",
    "L'exécuter hors du dépôt (cache local, version épinglée) sur les scripts de l'étalon et compter justes, fausses, manquées ; mesurer le temps.",
    "Estimer le coût d'intégration derrière une façade de syntaxe et écrire un plan de sortie ; ne rien ajouter au dépôt hors de `spikes/`."],
-  ["spikes/spike04_backend/astflow/ (scripts seulement, aucun code tiers)", "docs/spikes/SPIKE-04.md (section « GDScript AST Flow »)"],
+  ["spikes/spike04_backend/astflow/ (scripts seulement, aucun code tiers)", "docs/spikes/SPIKE-04-astflow.md"],
   ["Trouver le dépôt de l'outil ; épingler une révision ; vérifier la licence et la version de Godot visée.",
    "Écrire `spikes/spike04_backend/astflow/run.sh` : télécharge la révision épinglée dans un cache hors du dépôt, l'exécute, convertit sa sortie au format de l'étalon.",
    "Comparer à l'étalon ; mesurer le temps.",
-   "Écrire la section : résultats, coût d'intégration, plan de sortie, risques (maintenance, licence)."],
+   "Écrire `docs/spikes/SPIKE-04-astflow.md` : résultats, coût d'intégration, plan de sortie, risques (maintenance, licence)."],
   [("S36.4-a", "GODOT=\"$B\" spikes/spike04_backend/astflow/run.sh", "comptes justes, fausses, manquées, ou « outil indisponible » avec la raison"),
    ("S36.4-b", "git ls-files spikes/spike04_backend/astflow | grep -v -E \"\\.(sh|py|md)$\" | wc -l", "0 (aucun code tiers versionné)")],
   ["(CE) Changer la révision épinglée pour une valeur inexistante : run.sh échoue avec un message clair ; annuler."],
@@ -180,11 +182,11 @@ t("S36.4", "spike04-astflow", "SPIKE-04, évaluation de GDScript AST Flow", "C",
   contexte=["docs/plan-directeur.md §3", "docs/DECISIONS.md (D-04)"])
 
 t("S36.5", "decisions-p4a", "Décisions de rendu et de backend statique", "C", "V", ["S36.2", "S36.3", "S36.4"],
-  ["Comparer les deux backends sur les critères de P4a (relations justes, fausses, manquées ; temps ; coût d'intégration) et conclure `docs/spikes/SPIKE-04.md`.",
+  ["Comparer les deux backends sur les critères de P4a (relations justes, fausses, manquées ; temps ; coût d'intégration) et écrire `docs/spikes/SPIKE-04.md` : synthèse de `SPIKE-04-maison.md` et `SPIKE-04-astflow.md`, comparaison et conclusion.",
    "Règle : l'extraction maison est retenue par défaut. Si AST Flow l'emporte nettement, la recommandation est écrite « proposée, décision humaine (D-04) » et passe à la recette ; le MVP continue avec l'extraction maison.",
    "Écrire dans le rapport les décisions à inscrire : option de rendu retenue (SPIKE-03), backend retenu (SPIKE-04), et les ajustements que cela demande aux fiches de P4b et de P5."],
-  ["docs/spikes/SPIKE-04.md", "docs/spikes/SPIKE-03.md (conclusion seulement)"],
-  ["Relire SPIKE-03, les deux sections de SPIKE-04 et l'étalon.",
+  ["docs/spikes/SPIKE-04.md (synthèse)", "docs/spikes/SPIKE-03.md (conclusion seulement)"],
+  ["Relire SPIKE-03, SPIKE-04-maison.md, SPIKE-04-astflow.md et l'étalon.",
    "Écrire la comparaison et la conclusion de SPIKE-04.",
    "Appliquer la règle de décision et l'écrire.",
    "Lister les ajustements pour les revues S37 et S38."],
@@ -192,7 +194,7 @@ t("S36.5", "decisions-p4a", "Décisions de rendu et de backend statique", "C", "
    ("S36.5-b", "grep -c \"objectif\" docs/spikes/SPIKE-04.md", "au moins 1 (objectif de P4a comparé aux chiffres)")],
   ["(CE) Le vérificateur recalcule les pourcentages de SPIKE-04 depuis les sorties de S36.3-a et S36.4-a : un écart de plus d'un point est un refus."],
   "Plan §3 et §9 (porte de P4a) ; sequence.md §5 (nouvelle dépendance : décision humaine).",
-  contexte=["docs/spikes/SPIKE-03.md", "docs/spikes/SPIKE-04.md", "docs/DECISIONS.md"],
+  contexte=["docs/spikes/SPIKE-03.md", "docs/spikes/SPIKE-04-maison.md", "docs/spikes/SPIKE-04-astflow.md", "docs/DECISIONS.md"],
   recette=["Confirmer le backend statique (D-04, SPIKE-04) et l'option de rendu (SPIKE-03)."],
   fusion=["Inscrire dans `docs/DECISIONS.md` les décisions de SPIKE-03 (rendu) et de SPIKE-04 (backend statique), au statut « adoptée par défaut » ; une recommandation d'outil tiers reste « proposée »."])
 
@@ -202,18 +204,20 @@ t("S36.5", "decisions-p4a", "Décisions de rendu et de backend statique", "C", "
 # =====================================================================================================
 
 t("S37.1", "contrat-c08", "Contrat C-08 : inventaire du projet et relations d'appel", "C", "V", ["S37"],
-  ["Ajouter à `docs/CONTRACTS.md` la section C-08, avec ses sept rubriques : ProgramSnapshot complet (scripts, scènes, ressources, autoloads, classes globales, révision, couverture), relations extraites (call, signal_connect, signal_emit, extends, preload, instantiates), preuve « extraite », résolution (resolved, partial, unresolved avec raison), diagnostics par fichier à codes stables.",
-   "Écrire `contracts/schemas/program_snapshot.v1.schema.json`, des fixtures valides et invalides (`invalid_<CODE>__*`), et les tests de contrat `tests/contract/test_c08_*.gd` avec leurs marqueurs `tests/pending/` au nom des tâches qui les activeront."],
-  ["docs/CONTRACTS.md (section C-08)", "contracts/schemas/program_snapshot.v1.schema.json", "contracts/fixtures/c08/", "tests/contract/test_c08_snapshot.gd", "tests/contract/test_c08_relations.gd", "tests/pending/test_c08_*.pending"],
+  ["Écrire `docs/contracts/C-08.md` (un fichier par nouveau contrat, renvoyé depuis l'index de `docs/CONTRACTS.md`), avec ses sept rubriques : ProgramSnapshot complet (scripts, scènes, ressources, autoloads, classes globales, révision, couverture), relations extraites (call, signal_connect, signal_emit, extends, preload, instantiates), preuve « extraite », résolution (resolved, partial, unresolved avec raison), diagnostics par fichier à codes stables.",
+   "Écrire `contracts/schemas/program_snapshot.v1.schema.json`, des fixtures valides et invalides (`invalid_<CODE>__*`) dans `tests/contract/fixtures/program_snapshot/`, et les tests de contrat `tests/contract/test_c08_*.gd` avec leurs marqueurs `tests/pending/` au nom des tâches qui les activeront (S37.6 et S37.7).",
+   "Étendre `tools/check_contracts.py` aux contrats C-xx, qu'ils soient une section de `docs/CONTRACTS.md` ou un fichier `docs/contracts/C-xx.md`, et `tools/validate_fixtures.py` au kind program_snapshot (schéma et règles de niveau 2)."],
+  ["docs/contracts/C-08.md", "docs/CONTRACTS.md (index : lien vers C-08)", "contracts/schemas/program_snapshot.v1.schema.json", "tests/contract/fixtures/program_snapshot/", "tests/contract/test_c08_snapshot.gd", "tests/contract/test_c08_relations.gd", "tests/pending/test_c08_*.pending"] + OUTILS_CONTRAT,
   ["Relire C-01, C-02, C-05, SPIKE-04 et la revue S37.",
    "Rédiger C-08 : objet, format, exemples valides, exemples invalides, comportement en erreur, version, tests de contrat.",
    "Écrire le schéma et au moins cinq fixtures invalides (référence inconnue, résolution absente, diagnostic sans code, ligne hors du fichier, relation certaine vers une cible non résolue).",
    "Écrire les deux tests de contrat et leurs marqueurs (S37.6 et S37.7).",
-   "Déclarer les fixtures dans `tools/validate_fixtures.py --kinds` si le format l'exige."],
-  [("S37.1-a", "python3 tools/validate_fixtures.py --kinds program_snapshot; echo $?", "0 ; chaque fixture invalide rejetée avec le code de son nom"),
-   ("S37.1-b", "python3 tools/check_contracts.py; echo $?", "0, C-08 a ses sept rubriques"),
+   "Étendre `tools/check_contracts.py` (fichiers docs/contracts/C-xx.md) et `tools/validate_fixtures.py` (kind program_snapshot)."],
+  [("S37.1-a", "python3 tools/validate_fixtures.py; echo $?", "0 ; fixtures program_snapshot comprises, chaque fixture invalide rejetée avec le code de son nom"),
+   ("S37.1-b", "python3 tools/check_contracts.py C-08; echo $?", "0, C-08 a ses sept rubriques"),
    ("S37.1-c", f"{RUN} | grep GDM_TESTS", "failed=0, pending augmenté du nombre de tests C-08")],
-  ["(CE) Retirer le champ « resolution » d'une fixture valide : S37.1-a la rejette ; annuler."],
+  ["(CE) Retirer le champ « resolution » d'une fixture valide : S37.1-a la rejette ; annuler.",
+   "(CE) Retirer la rubrique « comportement en erreur » de docs/contracts/C-08.md : S37.1-b sort en 1 ; annuler."],
   "C-05 et C-01 non modifiés ; plan §5 (Relation, Evidence) ; INV-03.",
   contexte=["docs/CONTRACTS.md (C-01, C-02, C-05)", "docs/spikes/SPIKE-04.md", "docs/plan-directeur.md §3 et §5"])
 
@@ -236,7 +240,7 @@ t("S37.2", "facades-introspection-syntaxe", "Façades d'introspection et de synt
   "C-03 (façades) ; INV-09 ; règles d'isolation de SPIKE-02.",
   contexte=["docs/CONTRACTS.md (C-03)", "docs/spikes/SPIKE-02.md", "docs/ARCHITECTURE.md (API sensibles)"])
 
-t("S37.3", "fixtures-syntaxe", "Fixtures de syntaxe GDScript et relations attendues", "V", "D", ["S37"],
+t("S37.3", "fixtures-syntaxe", "Fixtures de syntaxe GDScript et relations attendues", "V", "D", ["S37.1"],
   ["Écrire `tests/fixtures/syntaxe/` : un script par construction ciblée (appel direct, self, super, receveur typé, receveur non typé, appel statique sur class_name, Callable, call et callv, signal connecté par les deux syntaxes, emit, await, lambda, classe interne, annotations, chaînes multilignes, commentaires trompeurs).",
    "Ajouter un script à syntaxe inconnue et un fichier illisible, qui doivent produire un diagnostic sans plantage.",
    "Écrire `tests/fixtures/syntaxe/attendu.json` : déclarations et relations attendues, au format de C-08, avec la résolution attendue de chacune."],
@@ -250,7 +254,7 @@ t("S37.3", "fixtures-syntaxe", "Fixtures de syntaxe GDScript et relations attend
    ("S37.3-c", "\"$B\" --headless --path tests/fixtures/syntaxe --check-only -s res://appel_direct.gd; echo $?", "0 (les fixtures valides compilent)")],
   ["(CE) Marquer « resolved » un appel `call(\"nom\")` dans attendu.json : le vérificateur montre que cela contredit C-08 ; annuler."],
   "C-08 ; plan §3 (CAP-09 : appels dynamiques non résolus).",
-  contexte=["docs/CONTRACTS.md (C-08)", "benches/<nom>/relations_attendues.json"])
+  contexte=["docs/contracts/C-08.md", "benches/<nom>/relations_attendues.json"])
 
 t("S37.4", "lexeur-gdscript", "Lexeur GDScript", "D", "V", ["S37.2", "S37.3"],
   ["`acquisition/gd_lexer.gd` : jetons avec ligne et colonne, chaînes simples, doubles et multilignes, StringName et NodePath, commentaires, indentation et dédentation, continuations de ligne.",
@@ -262,7 +266,7 @@ t("S37.4", "lexeur-gdscript", "Lexeur GDScript", "D", "V", ["S37.2", "S37.3"],
   [("S37.4-a",) + tests("test_gd_lexer"), ("S37.4-b",) + DEPS],
   ["(CE) Ignorer les chaînes multilignes : le test correspondant échoue ; annuler."],
   "Module acquisition : dépend de core et compat seulement (plan §4).",
-  contexte=["tests/fixtures/syntaxe/", "docs/CONTRACTS.md (C-08)"])
+  contexte=["tests/fixtures/syntaxe/", "docs/contracts/C-08.md"])
 
 t("S37.5", "declarations", "Extraction des déclarations et de leurs ancrages", "D", "V", ["S37.4"],
   ["`acquisition/gd_declarations.gd` : class_name, extends, classes internes, func (statiques ou non), signal, var et const (exportées ou non), avec leur SourceAnchor (path, script_uid, line_start, line_end, range_hash).",
@@ -274,7 +278,7 @@ t("S37.5", "declarations", "Extraction des déclarations et de leurs ancrages", 
   [("S37.5-a",) + tests("test_gd_declarations"), ("S37.5-b",) + DEPS],
   ["(CE) Décaler line_end d'une ligne : le test des ancrages échoue ; annuler."],
   "C-01 (identités), C-02 (ancrage), C-08.",
-  contexte=["docs/CONTRACTS.md (C-01, C-02, C-08)"])
+  contexte=["docs/CONTRACTS.md (C-01, C-02)", "docs/contracts/C-08.md"])
 
 t("S37.6", "relations-appel", "Extraction des relations d'appel et de signal", "D", "V", ["S37.5"],
   ["`acquisition/call_extractor.gd` : appels directs, self, super, receveur typé, appel statique sur class_name ; connexions et émissions de signaux ; héritage et preload.",
@@ -289,7 +293,7 @@ t("S37.6", "relations-appel", "Extraction des relations d'appel et de signal", "
    ("S37.6-b", f"{RUN} | grep -c \"relation certaine fausse\"", "0")],
   ["(CE) Résoudre un appel sur receveur non typé par son nom de méthode : un test signale une relation certaine fausse ; annuler."],
   "C-08 ; CAP-09 (appels dynamiques non résolus) ; INV-03.",
-  contexte=["docs/CONTRACTS.md (C-08)", "tests/fixtures/syntaxe/attendu.json"])
+  contexte=["docs/contracts/C-08.md", "tests/fixtures/syntaxe/attendu.json"])
 
 t("S37.7", "inventaire", "Inventaire du projet sans instanciation", "D", "V", ["S37.2", "S37.6"],
   ["`acquisition/project_inventory.gd` : parcourt res:// par la façade d'introspection, lit chaque script (déclarations et relations), chaque scène (nœuds, scripts attachés, connexions déclarées dans le .tscn) et chaque ressource, sans rien instancier.",
@@ -304,7 +308,7 @@ t("S37.7", "inventaire", "Inventaire du projet sans instanciation", "D", "V", ["
   ["(CE) Lever une erreur au premier fichier illisible au lieu d'un diagnostic : le test d'isolation échoue ; annuler.",
    "(CE) Instancier une scène pendant l'inventaire : le test « aucune instance créée » échoue ; annuler."],
   "C-08 ; CAP-08 (sans instancier le projet) ; plan §8 (15 s pour 300 scripts).",
-  contexte=["docs/CONTRACTS.md (C-08)", "docs/construction/mvp.md, P4b"])
+  contexte=["docs/contracts/C-08.md", "docs/construction/mvp.md, P4b"])
 
 t("S37.8", "resolution-provenance", "Résolution entre scripts et fusion avec le graphe déclaré", "D", "C", ["S37.7"],
   ["`acquisition/resolver.gd` : résout les cibles d'appel entre scripts par la table des class_name, les types déclarés et les autoloads ; garde « partiel » quand plusieurs cibles sont possibles.",
@@ -317,7 +321,7 @@ t("S37.8", "resolution-provenance", "Résolution entre scripts et fusion avec le
   [("S37.8-a",) + tests("test_resolver"), ("S37.8-b",) + DEPS],
   ["(CE) Donner la priorité à la relation extraite sur la relation déclarée contradictoire : le test de provenance échoue ; annuler."],
   "INV-03 (provenance conservée) ; plan §5 (annotations jamais écrasées) ; C-05 et C-08.",
-  contexte=["docs/CONTRACTS.md (C-05, C-08)", "docs/plan-directeur.md §5"])
+  contexte=["docs/CONTRACTS.md (C-05)", "docs/contracts/C-08.md", "docs/plan-directeur.md §5"])
 
 t("S37.9", "cache-index", "Cache d'index par révision de fichier", "D", "V", ["S37.7"],
   ["`acquisition/index_cache.gd` : cache régénérable dans le dossier de cache du projet (non versionné), clé = empreinte du contenu de chaque fichier ; un fichier inchangé n'est pas relu ; un fichier modifié ou supprimé est réindexé ou retiré.",
@@ -335,12 +339,13 @@ t("S37.10", "grand-projet", "Grand projet de mesure : 300 scripts ou plus", "V",
   ["Si le banc d'essai compte moins de 300 scripts : choisir un second jeu Godot 4.x open source de 300 scripts ou plus, dont les licences permettent de redistribuer une copie modifiée, à une révision épinglée.",
    "Le copier dans la branche orpheline `banc/<grand>-base`, l'importer avec Godot 4.7.2, corriger seulement la migration ; l'ajouter à `benches/benches.json`.",
    "Si le banc d'essai compte déjà 300 scripts ou plus : le noter, et la tâche se limite au contrôle S37.10-a."],
-  ["benches/benches.json", "docs/benches/<grand>.md", "branche orpheline banc/<grand>-base (hors de main)"],
+  ["benches/benches.json", "docs/benches/<grand>.md", "tools/check_benches.py (comptage des scripts, licence « non vérifié » refusée)", "branche orpheline banc/<grand>-base (hors de main)"],
   ["Compter les scripts du banc d'essai ; décider si un second jeu est nécessaire.",
    "Chercher et vérifier les candidats (licences, version, nombre de scripts), à une révision épinglée.",
    "Créer et pousser `banc/<grand>-base` (procédure de S08).",
    "Importer et corriger la migration, un commit par correction.",
-   "Mettre à jour `benches/benches.json` et écrire `docs/benches/<grand>.md`."],
+   "Mettre à jour `benches/benches.json` et écrire `docs/benches/<grand>.md`.",
+   "Étendre `tools/check_benches.py` : nombre de scripts .gd de chaque banc (lu dans benches.json, champ scripts, relevé par la tâche), sortie 1 si aucun banc n'atteint 300 ou si une licence vaut « non vérifié »."],
   [("S37.10-a", "python3 tools/check_benches.py; echo $?", "0, un jeu de 300 scripts ou plus référencé"),
    ("S37.10-b", "git ls-remote origin \"refs/heads/banc/*-base\" | wc -l", "1 ou 2")],
   ["(CE) Remplacer une licence par « non vérifié » dans benches.json : S37.10-a sort en 1 ; annuler."],
@@ -369,18 +374,18 @@ t("S37.11", "golden-banc", "Tests de référence sur le banc d'essai et contrôl
 # =====================================================================================================
 
 t("S38.1", "contrat-c09", "Contrat C-09 : requêtes de navigation", "C", "V", ["S38"],
-  ["Ajouter la section C-09 à `docs/CONTRACTS.md` : search(texte, types, limite), definition_at(chemin, ligne), callers et callees (définition, profondeur, limite), res_tree(dossier), elements_of(fichier) ; chaque résultat porte sa provenance et sa résolution ; toute expansion est bornée et signale « tronqué ».",
+  ["Écrire `docs/contracts/C-09.md` : search(texte, types, limite), definition_at(chemin, ligne), callers et callees (définition, profondeur, limite), res_tree(dossier), elements_of(fichier) ; chaque résultat porte sa provenance et sa résolution ; toute expansion est bornée et signale « tronqué ».",
    "Écrire les tests de contrat `tests/contract/test_c09_*.gd` sur un instantané de fixture, avec leurs marqueurs au nom de S38.2 à S38.4."],
-  ["docs/CONTRACTS.md (section C-09)", "contracts/fixtures/c09/", "tests/contract/test_c09_search.gd", "tests/contract/test_c09_calls.gd", "tests/contract/test_c09_res_tree.gd", "tests/pending/test_c09_*.pending"],
+  ["docs/contracts/C-09.md", "docs/CONTRACTS.md (index : lien vers C-09)", "tests/contract/fixtures/navigation_query/", "tests/contract/test_c09_search.gd", "tests/contract/test_c09_calls.gd", "tests/contract/test_c09_res_tree.gd", "tests/pending/test_c09_*.pending"] + OUTILS_CONTRAT,
   ["Relire C-08 et le parcours J2 et J3 du plan §7.",
    "Rédiger C-09 et ses sept rubriques.",
    "Écrire l'instantané de fixture (cycle d'appels, relation non résolue, 2 000 définitions pour la borne).",
    "Écrire les trois tests de contrat et leurs marqueurs."],
-  [("S38.1-a", "python3 tools/check_contracts.py; echo $?", "0, C-09 a ses sept rubriques"),
+  [("S38.1-a", "python3 tools/check_contracts.py C-09 && python3 tools/validate_fixtures.py; echo $?", "0, C-09 a ses sept rubriques ; fixtures navigation_query validées"),
    ("S38.1-b", f"{RUN} | grep GDM_TESTS", "failed=0, trois tests C-09 en attente")],
-  ["(CE) Retirer la limite d'une requête d'exemple de C-09 : check_contracts signale l'expansion non bornée ; annuler."],
+  ["(CE) Ajouter la fixture `tests/contract/fixtures/navigation_query/invalid_UNBOUNDED__sans_limite.json` (requête sans limite) puis retirer la règle de borne de validate_fixtures.py : S38.1-a sort en 1 ; remettre la règle : la fixture est rejetée avec ce code ; garder la fixture."],
   "Plan §7 (J2, J3) ; P5 (expansion bornée, provenance).",
-  contexte=["docs/CONTRACTS.md (C-08)", "docs/plan-directeur.md §7"])
+  contexte=["docs/contracts/C-08.md", "docs/plan-directeur.md §7"])
 
 t("S38.2", "index-recherche", "Index de recherche des définitions", "D", "V", ["S38.1"],
   ["`projections/search_index.gd` : recherche par nom, nom qualifié, fichier et type ; préfixe et sous-chaîne, sans tenir compte de la casse ; classement stable (correspondance exacte, puis préfixe, puis sous-chaîne) ; limite et « tronqué ».",
@@ -391,7 +396,7 @@ t("S38.2", "index-recherche", "Index de recherche des définitions", "D", "V", [
    ("S38.2-b", f"{RUN} | grep \"search_index temps\"", "50 ms au plus par recherche sur 300 scripts")],
   ["(CE) Supprimer la limite : le test de borne échoue ; annuler."],
   "C-09 ; projections dépend de core et store seulement.",
-  contexte=["docs/CONTRACTS.md (C-09)"])
+  contexte=["docs/contracts/C-09.md"])
 
 t("S38.3", "appelants-appeles", "Appelants et appelés, expansion bornée", "D", "V", ["S38.1"],
   ["`projections/call_queries.gd` : callers et callees en largeur, profondeur et nombre bornés, cycles détectés, relations non résolues montrées comme telles, provenance sur chaque arête.",
@@ -401,7 +406,7 @@ t("S38.3", "appelants-appeles", "Appelants et appelés, expansion bornée", "D",
   [("S38.3-a",) + tests("test_call_queries", "test_c09_calls"), ("S38.3-b",) + DEPS],
   ["(CE) Compter une relation non résolue comme un appelant certain : le test correspondant échoue ; annuler."],
   "C-09 ; INV-03 ; P5 (expansion bornée).",
-  contexte=["docs/CONTRACTS.md (C-08, C-09)"])
+  contexte=["docs/contracts/C-08.md", "docs/contracts/C-09.md"])
 
 t("S38.4", "arborescence-res", "Arborescence res:// et correspondance fichier ↔ éléments", "D", "V", ["S38.1"],
   ["`projections/res_tree.gd` : arbre de res:// avec, pour chaque fichier, le nombre de définitions, de relations et de diagnostics ; elements_of(fichier) et definition_at(chemin, ligne).",
@@ -411,7 +416,7 @@ t("S38.4", "arborescence-res", "Arborescence res:// et correspondance fichier �
   [("S38.4-a",) + tests("test_res_tree", "test_c09_res_tree"), ("S38.4-b",) + DEPS],
   ["(CE) Renvoyer la définition suivante quand la ligne tombe entre deux fonctions : le test definition_at échoue ; annuler."],
   "C-09 ; C-02 (ancrages).",
-  contexte=["docs/CONTRACTS.md (C-02, C-09)"])
+  contexte=["docs/CONTRACTS.md (C-02)", "docs/contracts/C-09.md"])
 
 t("S38.5", "vue-graphe", "Vue de graphe bornée, selon SPIKE-03", "D", "V", ["S38.3"],
   ["`ui/graph_view.gd` et `.tscn`, selon l'option retenue par SPIKE-03 : voisinage d'une définition, expansion à la demande, 300 éléments visibles au plus, provenance et résolution affichées par texte ou icône (jamais la couleur seule), navigation au clavier.",
@@ -424,20 +429,21 @@ t("S38.5", "vue-graphe", "Vue de graphe bornée, selon SPIKE-03", "D", "V", ["S3
    ("S38.5-b", "xvfb-run -a \"$B\" --path . --rendering-driver opengl3 -s res://tools/harness/ui_load.gd -- graph_view 300 2>&1 | grep FRAME_MS", "temps de frame mesuré, rendu logiciel")],
   ["(CE) Afficher l'état « non résolu » par la seule couleur : le test des libellés échoue ; annuler."],
   "Plan §7 (SPIKE-03, 300 éléments) ; module ui : lit les projections seulement.",
-  contexte=["docs/spikes/SPIKE-03.md", "docs/CONTRACTS.md (C-09)"],
+  contexte=["docs/spikes/SPIKE-03.md", "docs/contracts/C-09.md"],
   recette=["Lisibilité de la vue de graphe, sur ta machine."])
 
-t("S38.6", "panneau-navigation", "Panneau de navigation : recherche, appelants, res://", "D", "V", ["S38.2", "S38.4", "S38.5"],
-  ["`ui/navigation_panel.gd` et `.tscn` : champ de recherche, résultats, liste des appelants et des appelés, arbre res://, ouverture du code par `editor/source_opener.gd` ; parcours J2 et J3.",
-   "`plugin.gd` ajoute le panneau ; l'index se construit par l'inventaire de P4b, avec le cache."],
-  ["addons/godot_dev_mapper/ui/navigation_panel.gd", "addons/godot_dev_mapper/ui/navigation_panel.tscn", "addons/godot_dev_mapper/plugin.gd (ajout du panneau)", "addons/godot_dev_mapper/editor/index_service.gd", "tests/unit/test_index_service.gd"],
-  ["Écrire `editor/index_service.gd` (inventaire, cache, mise à jour à la sauvegarde d'un script) et ses tests.", "Écrire le panneau.",
-   "Ajouter le panneau dans `plugin.gd`.", "Charger l'éditeur sans interface avec le plugin : aucune erreur."],
+t("S38.6", "panneau-navigation", "Onglet de navigation : recherche, appelants, res://", "D", "V", ["S38.2", "S38.4", "S38.5", "S39.12"],
+  ["`ui/vues/navigation/` : champ de recherche, résultats, liste des appelants et des appelés, arbre res://, ouverture du code par `editor/source_opener.gd` ; parcours J2 et J3.",
+   "L'onglet s'ajoute par son seul dossier : `ui/vues/navigation/vue.gd` le décrit, le panneau principal de S39.12 le découvre ; aucun fichier commun modifié. L'index se construit par l'inventaire de P4b, avec le cache."],
+  ["addons/godot_dev_mapper/ui/vues/navigation/", "addons/godot_dev_mapper/editor/index_service.gd", "tests/unit/test_index_service.gd", "rapports/S38.6/"],
+  ["Écrire `editor/index_service.gd` (inventaire, cache, mise à jour à la sauvegarde d'un script) et ses tests.", "Écrire l'onglet dans `ui/vues/navigation/`.",
+   "Écrire `ui/vues/navigation/vue.gd` (titre, ordre, scène) ; vérifier que l'onglet apparaît.", "Charger l'éditeur sans interface avec le plugin : aucune erreur ; capture de l'onglet."],
   [("S38.6-a",) + tests("test_index_service"),
-   ("S38.6-b", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0")],
+   ("S38.6-b", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
+   ("S38.6-c", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh navigation rapports/S38.6/navigation.png; echo $?", "0, capture écrite")],
   ["(CE) Faire appeler le store directement par le panneau : `check_deps.py` signale la dépendance interdite ; annuler."],
   "Plan §4 (ui → projections) ; C-09.",
-  contexte=["docs/CONTRACTS.md (C-09)", "addons/godot_dev_mapper/editor/source_opener.gd"])
+  contexte=["docs/contracts/C-09.md", "addons/godot_dev_mapper/editor/source_opener.gd"])
 
 t("S38.7", "requetes-cli", "Requêtes de navigation en ligne de commande", "D", "V", ["S38.2", "S38.3", "S38.4"],
   ["Étendre `tools/gdm_query.gd` : `index <projet>` (instantané en JSON), `search <texte>`, `callers <définition>`, `callees <définition>`, `file <chemin>` ; sortie texte stable, provenance sur chaque ligne.",
@@ -448,7 +454,7 @@ t("S38.7", "requetes-cli", "Requêtes de navigation en ligne de commande", "D", 
    ("S38.7-b", "\"$B\" --headless --path . -s res://tools/gdm_query.gd -- callers inconnue 2>&1 | tail -1", "« définition inconnue », code 1, sans plantage")],
   ["(CE) Retirer la provenance des lignes de sortie : run_query.sh échoue ; annuler."],
   "C-09 ; même code de requêtes que l'interface.",
-  contexte=["tools/gdm_query.gd (S34)", "docs/CONTRACTS.md (C-09)"])
+  contexte=["tools/gdm_query.gd (S34)", "docs/contracts/C-09.md"])
 
 t("S38.8", "essai-navigation", "Essai de navigation sous écran virtuel (J2 et J3)", "V", "D", ["S38.6"],
   ["Étendre `tools/harness/editor_driver/` d'un scénario de navigation : rechercher une fonction du banc d'essai, ouvrir ses appelants, ouvrir le code, cliquer un fichier de res:// et retrouver son élément.",
@@ -479,27 +485,27 @@ t("S38.9", "cartographie-substitution", "Test de cartographie par substitution",
 # MVP — P6 Historique, persistance, protocole MVP, CAP-11 et CAP-07 complet (revue S39)
 # =====================================================================================================
 
-t("S39.1", "contrats-c04-c06-v2", "Révision des contrats C-04 et C-06 en version 2", "C", "V", ["S39"],
-  ["Étendre C-04 (enveloppe) et C-06 (Event Store) en version 2 : négociation de capacités, connexion tardive, reconnexion, marqueurs de lacune explicites, frames et ticks physiques, doublons, références tardives, export ; la version 1 reste lisible.",
-   "Mettre à jour les schémas, ajouter les fixtures v2 (valides et invalides), rendre les sessions enregistrées du POC fixtures de compatibilité ascendante, écrire les tests de contrat v2 avec leurs marqueurs."],
-  ["docs/CONTRACTS.md (C-04, C-06)", "contracts/", "tests/contract/", "tests/pending/"],
+t("S39.1", "contrats-c04-c06-v2", "Révision des contrats C-04, C-06 et C-07 en version 2", "C", "V", ["S39"],
+  ["Étendre C-04 (enveloppe), C-06 (Event Store) et C-07 (protocole de session : négociation de capacités, connexion tardive, reconnexion) en version 2 : marqueurs de lacune explicites, frames et ticks physiques, doublons, références tardives, export ; la version 1 reste lisible.",
+   "Mettre à jour les schémas, ajouter les fixtures v2 (valides et invalides) dans `tests/contract/fixtures/<kind>/`, rendre les sessions enregistrées du POC fixtures de compatibilité ascendante, écrire les tests de contrat v2 avec leurs marqueurs au nom des tâches qui les activent : S39.3 (codec), S39.4 (FlowTrace), S39.6 (réception), S39.7 (store)."],
+  ["docs/CONTRACTS.md (C-04, C-06, C-07)", "contracts/", "tests/contract/", "tests/pending/"] + OUTILS_CONTRAT,
   ["Relire C-04, C-06, C-07, les sessions enregistrées et le plan §6 (contrat runtime du MVP).",
-   "Rédiger C-04 v2 avec l'analyse d'impact sur la v1.", "Rédiger C-06 v2.", "Écrire schémas et fixtures v2.",
-   "Écrire les tests de contrat v2 et leurs marqueurs (S39.3 à S39.7).", "Écrire l'analyse d'impact dans le rapport."],
+   "Rédiger C-04 v2 avec l'analyse d'impact sur la v1.", "Rédiger C-06 v2 et C-07 v2 (capacités, connexion tardive, reconnexion).", "Écrire schémas et fixtures v2 ; étendre `tools/validate_fixtures.py` si les règles de niveau 2 changent.",
+   "Écrire les tests de contrat v2 et leurs marqueurs (S39.3, S39.4, S39.6, S39.7).", "Écrire l'analyse d'impact dans le rapport."],
   [("S39.1-a", "python3 tools/validate_fixtures.py; echo $?", "0, fixtures v1 et v2 validées"),
    ("S39.1-b", "python3 tools/check_contracts.py; echo $?", "0"),
    ("S39.1-c", f"{RUN} | grep GDM_TESTS", "failed=0 ; tests v2 en attente")],
   ["(CE) Supprimer la compatibilité v1 dans le schéma : une session du POC est rejetée par S39.1-a ; annuler."],
-  "Plan §6 (contrat runtime MVP) ; gel des contrats (S15) : changement de version et accord d'IA 1 et d'IA 3.",
+  "Plan §6 (contrat runtime MVP) ; gel des contrats (S15) : changement de version et accord d'IA 1 et d'IA 3. Versions cibles : C-04 v2, C-06 v2, C-07 v2 (S40.1 les complète pour les blocs ; la V1 ouvre la v3).",
   contexte=["docs/CONTRACTS.md (C-04, C-06, C-07)", "tests/contract/fixtures/sessions/", "docs/plan-directeur.md §6"], creneaux=2)
 
 t("S39.2", "contrat-c10-session", "Contrat C-10 : format de session persistée", "C", "V", ["S39"],
-  ["Ajouter C-10 : fichier de session en JSON par lots, avec schema_version, en-tête (session, révision, profil moteur, configuration de capture), lots, lacunes, marqueur de fin ; emplacement selon D-08 ; sauvegarde atomique ; refus explicite d'une version inconnue et d'un fichier tronqué.",
-   "Schéma, fixtures (valide, tronqué, version inconnue, lot dans le désordre) et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (section C-10)", "contracts/schemas/session_file.v1.schema.json", "contracts/fixtures/c10/", "tests/contract/test_c10_session_file.gd", "tests/pending/test_c10_session_file.pending"],
+  ["Écrire `docs/contracts/C-10.md` : fichier de session en JSON par lots, avec schema_version, en-tête (session, révision, profil moteur, configuration de capture), lots, lacunes, marqueur de fin ; emplacement selon D-08 ; sauvegarde atomique ; refus explicite d'une version inconnue et d'un fichier tronqué.",
+   "Schéma, fixtures dans `tests/contract/fixtures/session_file/` (valide, tronqué, version inconnue, lot dans le désordre) et tests de contrat avec marqueurs."],
+  ["docs/contracts/C-10.md", "docs/CONTRACTS.md (index : lien vers C-10)", "contracts/schemas/session_file.v1.schema.json", "tests/contract/fixtures/session_file/", "tests/contract/test_c10_session_file.gd", "tests/pending/test_c10_session_file.pending"] + OUTILS_CONTRAT,
   ["Relire D-08 et le plan §8 (données et emplacements).", "Rédiger C-10.", "Écrire schéma et fixtures.", "Écrire le test de contrat et son marqueur (S39.8)."],
-  [("S39.2-a", "python3 tools/validate_fixtures.py --kinds session_file; echo $?", "0 ; le fichier tronqué rejeté avec son code"),
-   ("S39.2-b", "python3 tools/check_contracts.py; echo $?", "0")],
+  [("S39.2-a", "python3 tools/validate_fixtures.py; echo $?", "0 ; fixtures session_file comprises, le fichier tronqué rejeté avec son code"),
+   ("S39.2-b", "python3 tools/check_contracts.py C-10; echo $?", "0")],
   ["(CE) Accepter un fichier sans marqueur de fin dans le schéma : la fixture tronquée passe à tort ; annuler."],
   "Plan §8 (sauvegarde atomique, versions) ; INV-07, INV-08.",
   contexte=["docs/plan-directeur.md §8", "docs/DECISIONS.md (D-08)"])
@@ -535,11 +541,11 @@ t("S39.5", "connexion-tardive-jeu", "Connexion tardive et reconnexion, côté je
   "C-04 v2, C-07 ; plan §6 (MVP : connexion tardive, reconnexion).",
   contexte=["docs/CONTRACTS.md (C-04, C-07)"])
 
-t("S39.6", "reception-v2", "Réception v2 côté éditeur", "D", "C", ["S39.3"],
+t("S39.6", "reception-v2", "Réception v2 côté éditeur", "D", "C", ["S39.3", "S39.7"],
   ["`editor/session_controller.gd` : négociation de capacités, connexion tardive (état initial), reconnexion, doublons écartés par séquence, références tardives conservées et marquées, marqueurs de lacune transmis au store.",
    "Les sessions enregistrées v1 et v2 se rejouent toutes."],
-  ["addons/godot_dev_mapper/editor/session_controller.gd", "tests/unit/test_session_controller.gd", "tests/fixtures/sessions_v2/"],
-  ["Écrire les sessions v2 enregistrées (tardive, reconnexion, doublons, référence tardive).", "Écrire les tests ; les voir échouer.", "Implémenter.", "Rejouer aussi les sessions v1."],
+  ["addons/godot_dev_mapper/editor/session_controller.gd", "tests/unit/test_session_controller.gd", "tests/fixtures/sessions_v2/", "tests/pending/ (suppression des marqueurs de réception v2)"],
+  ["Supprimer les marqueurs de réception v2 ; coller l'échec.", "Écrire les sessions v2 enregistrées (tardive, reconnexion, doublons, référence tardive).", "Écrire les tests ; les voir échouer.", "Implémenter, en transmettant les lacunes à l'API de lacunes explicites du store v2 (S39.7).", "Rejouer aussi les sessions v1."],
   [("S39.6-a",) + tests("test_session_controller"), ("S39.6-b",) + DEPS],
   ["(CE) Accepter un lot en double : le test des doublons échoue ; annuler."],
   "C-04 v2, C-06 v2, C-07 ; compatibilité ascendante.",
@@ -555,26 +561,26 @@ t("S39.7", "store-v2", "Event Store v2 : lacunes explicites, doublons, frames", 
   "C-06 v2 ; INV-04, INV-07.",
   contexte=["docs/CONTRACTS.md (C-06)"])
 
-t("S39.8", "persistance-session", "Sauvegarde atomique et rechargement des sessions", "D", "C", ["S39.2", "S39.7"],
+t("S39.8", "persistance-session", "Sauvegarde atomique et rechargement des sessions", "D", "C", ["S39.2", "S39.7", "S37.2"],
   ["`persistence/session_writer.gd` : écriture par fichier temporaire puis renommage, par la façade éditeur si l'API est sensible ; `persistence/session_reader.gd` : validation à l'import, refus clair d'une version inconnue et d'un fichier tronqué.",
    "Activer `test_c10_session_file`."],
-  ["addons/godot_dev_mapper/persistence/session_writer.gd", "addons/godot_dev_mapper/persistence/session_reader.gd", "addons/godot_dev_mapper/compat/engine_facade.gd (renommage atomique, si nécessaire)", "tests/unit/test_session_persistence.gd", "tests/pending/test_c10_session_file.pending (suppression)"],
+  ["addons/godot_dev_mapper/persistence/session_writer.gd", "addons/godot_dev_mapper/persistence/session_reader.gd", "addons/godot_dev_mapper/compat/engine_facade.gd (renommage atomique, si nécessaire)", "tools/deps_rules.json (API de renommage, si elle est sensible)", "tests/unit/test_session_persistence.gd", "tests/pending/test_c10_session_file.pending (suppression)"],
   ["Supprimer le marqueur ; coller l'échec.", "Écrire l'écriture atomique.", "Écrire la lecture et ses refus.", "Tester une coupure au milieu d'une écriture : l'ancien fichier reste intact."],
   [("S39.8-a",) + tests("test_session_persistence", "test_c10_session_file"), ("S39.8-b",) + DEPS],
   ["(CE) Écrire directement dans le fichier final : le test de coupure laisse un fichier tronqué et échoue ; annuler.",
    "(CE) Charger un fichier tronqué : refus avec un message qui nomme le fichier et l'endroit."],
   "C-10 ; plan §8 (sauvegarde atomique) ; INV-09 pour l'API de renommage.",
-  contexte=["docs/CONTRACTS.md (C-10)", "docs/plan-directeur.md §8"])
+  contexte=["docs/contracts/C-10.md", "docs/plan-directeur.md §8"])
 
-t("S39.9", "relecture", "Relecture d'une session sans le jeu", "D", "V", ["S39.6", "S39.8"],
+t("S39.9", "relecture", "Relecture d'une session sans le jeu", "D", "V", ["S39.6", "S39.8", "S39.12"],
   ["Ouvrir une session enregistrée dans l'éditeur, sans jeu : le store se remplit depuis le fichier, les projections et le panneau du POC l'affichent comme une session terminée ; une session du POC se recharge.",
-   "Commande « Ouvrir une session » dans le panneau ; la session vivante et les sessions relues ne se mélangent jamais."],
-  ["addons/godot_dev_mapper/editor/session_library.gd", "addons/godot_dev_mapper/ui/poc_panel.gd (commande d'ouverture)", "tests/unit/test_session_library.gd"],
+   "Commande « Ouvrir une session » dans l'onglet journal ; la session vivante et les sessions relues ne se mélangent jamais."],
+  ["addons/godot_dev_mapper/editor/session_library.gd", "addons/godot_dev_mapper/ui/vues/journal/ (commande d'ouverture)", "tests/unit/test_session_library.gd"],
   ["Écrire les tests (session v2, session du POC, deux sessions ouvertes) ; les voir échouer.", "Écrire `session_library.gd`.", "Ajouter la commande au panneau."],
   [("S39.9-a",) + tests("test_session_library"), ("S39.9-b",) + DEPS],
   ["(CE) Ajouter les événements relus à la session vivante : le test de séparation échoue ; annuler."],
   "CAP-11 ; plan §6 (ancienne session archivée à part).",
-  contexte=["docs/CONTRACTS.md (C-06, C-10)"])
+  contexte=["docs/CONTRACTS.md (C-06)", "docs/contracts/C-10.md"])
 
 t("S39.10", "banc-reconnexion", "Banc de reconnexion sans éditeur", "V", "C", ["S39.5", "S39.6"],
   ["Étendre `tools/harness/fake_editor.gd` de scénarios : connexion tardive, coupure puis reconnexion, doublon injecté.",
@@ -594,7 +600,27 @@ t("S39.11", "export-session", "Export d'une fenêtre de session", "D", "V", ["S3
   [("S39.11-a",) + tests("test_session_export"), ("S39.11-b",) + DEPS],
   ["(CE) Omettre une lacune qui chevauche la fenêtre : le test échoue ; annuler."],
   "C-10 ; INV-07 (pertes visibles).",
-  contexte=["docs/CONTRACTS.md (C-10)"])
+  contexte=["docs/contracts/C-10.md"])
+
+t("S39.12", "panneau-onglets", "Panneau principal à onglets découverts et capture d'un onglet", "D", "V", ["S39"],
+  ["`ui/main_panel.gd` et `.tscn` : panneau principal à onglets. Au chargement, il découvre chaque dossier `addons/godot_dev_mapper/ui/vues/<nom>/` qui contient `vue.gd` (descripteur : titre, ordre, scène de l'onglet) et en fait un onglet, dans l'ordre déclaré. Une vue qui échoue au chargement donne un onglet « erreur » qui nomme le fichier, sans bloquer les autres.",
+   "Le journal du POC devient l'onglet `ui/vues/journal/` (il reprend `poc_panel`) ; `plugin.gd` charge le panneau principal au lieu de `poc_panel`. Ensuite, chaque nouvelle vue s'ajoute par son seul dossier `ui/vues/<nom>/` : aucune tâche ne modifie plus `plugin.gd` ni le panneau principal pour ajouter un onglet.",
+   "`tools/harness/editor_driver/capture_onglet.sh <onglet> <fichier.png>` : copie temporaire du projet, éditeur sous écran virtuel avec le plugin et le pilote de S26, sélection de l'onglet, attente de 60 frames, capture PNG ; sortie 1 si l'onglet n'existe pas.",
+   "Écrire la convention dans `addons/godot_dev_mapper/ui/vues/README.md`."],
+  ["addons/godot_dev_mapper/ui/main_panel.gd", "addons/godot_dev_mapper/ui/main_panel.tscn", "addons/godot_dev_mapper/ui/vues/journal/", "addons/godot_dev_mapper/ui/vues/README.md",
+   "addons/godot_dev_mapper/plugin.gd (chargement du panneau principal)", "tools/harness/editor_driver/ (option de capture d'un onglet, capture_onglet.sh)", "tests/unit/test_main_panel.gd", "rapports/S39.12/"],
+  ["Écrire les tests de découverte (ordre, dossier sans vue.gd ignoré, vue en erreur isolée) ; les voir échouer.",
+   "Écrire `main_panel.gd` et `.tscn`.",
+   "Déplacer le journal du POC dans `ui/vues/journal/` ; faire charger le panneau principal par `plugin.gd`.",
+   "Écrire `capture_onglet.sh` et l'option de sélection d'onglet du pilote.",
+   "Écrire `ui/vues/README.md` ; capturer l'onglet journal."],
+  [("S39.12-a",) + tests("test_main_panel"),
+   ("S39.12-b", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
+   ("S39.12-c", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh journal rapports/S39.12/journal.png; echo $?", "0, capture écrite ; le vérificateur y lit l'onglet journal")],
+  ["(CE) Ajouter `ui/vues/essai/vue.gd` qui lève une erreur au chargement : l'onglet « erreur » apparaît et le journal reste ; retirer le dossier.",
+   "(CE) Renommer `ui/vues/journal/vue.gd` : l'onglet disparaît sans autre modification, et S39.12-c sort en 1 ; annuler."],
+  "Plan §4 (module ui : lit les projections seulement) ; INV-06 (le jeu ne voit rien de l'interface).",
+  contexte=["addons/godot_dev_mapper/ui/poc_panel.gd", "addons/godot_dev_mapper/plugin.gd", "tools/harness/editor_driver/"])
 
 
 # =====================================================================================================
@@ -602,24 +628,25 @@ t("S39.11", "export-session", "Export d'une fenêtre de session", "D", "V", ["S3
 # =====================================================================================================
 
 t("S40.1", "contrat-c11-blocs", "Contrat C-11 : blocs temporels déclarés", "C", "V", ["S40"],
-  ["Ajouter C-11 : TemporalBlockDefinition dans le graphe déclaré (`.flow.json` version 2, la version 1 restant lisible), événements block_begin et block_end (clé de bloc, occurrence, parent), cycle de vie (non démarré, actif, suspendu, terminé, échoué, abandonné, incomplet) et règles de transition ; un bloc ouvert à la fin de session ou touché par une lacune est « incomplet ».",
-   "Schéma, fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (sections C-05 et C-11)", "contracts/", "tests/contract/test_c11_blocks.gd", "tests/pending/test_c11_blocks.pending"],
-  ["Relire C-05, C-07 et le plan §6 (temporalité).", "Rédiger C-11 et la version 2 de C-05.", "Écrire schéma et fixtures (imbriqués, interrompus, sans fin).", "Écrire le test de contrat et son marqueur (S40.3)."],
-  [("S40.1-a", "python3 tools/validate_fixtures.py; echo $?", "0"), ("S40.1-b", "python3 tools/check_contracts.py; echo $?", "0")],
+  ["Écrire `docs/contracts/C-11.md` : TemporalBlockDefinition dans le graphe déclaré (`.flow.json` version 2, la version 1 restant lisible), événements block_begin et block_end (clé de bloc, occurrence, parent), cycle de vie (non démarré, actif, suspendu, terminé, échoué, abandonné, incomplet) et règles de transition ; un bloc ouvert à la fin de session ou touché par une lacune est « incomplet ».",
+   "Réviser dans `docs/CONTRACTS.md` : C-05 en version 2 (`.flow.json` avec blocs), C-04 et C-07 (événements block_begin et block_end dans l'enveloppe v2, règles d'appel de block_begin et block_end) ; analyse d'impact dans le rapport.",
+   "Schéma, fixtures dans `tests/contract/fixtures/<kind>/` et tests de contrat avec marqueurs (S40.3 pour la projection, S40.7 pour le chargeur v2)."],
+  ["docs/contracts/C-11.md", "docs/CONTRACTS.md (C-04, C-05, C-07 ; index : lien vers C-11)", "contracts/", "tests/contract/fixtures/", "tests/contract/test_c11_blocks.gd", "tests/contract/test_c05_flow_v2.gd", "tests/pending/test_c11_blocks.pending", "tests/pending/test_c05_flow_v2.pending"] + OUTILS_CONTRAT,
+  ["Relire C-04, C-05, C-07 et le plan §6 (temporalité).", "Rédiger C-11 et la version 2 de C-05.", "Ajouter block_begin et block_end à C-04 et à C-07 (règles d'appel).", "Écrire schéma et fixtures (imbriqués, interrompus, sans fin, .flow.json v1 et v2).", "Écrire les tests de contrat et leurs marqueurs (S40.3, S40.7)."],
+  [("S40.1-a", "python3 tools/validate_fixtures.py; echo $?", "0"), ("S40.1-b", "python3 tools/check_contracts.py C-04 C-05 C-07 C-11; echo $?", "0")],
   ["(CE) Autoriser la transition actif → terminé sans block_end dans la table : la fixture « sans fin » passe à tort ; annuler."],
   "Plan §5 (TemporalBlock) et §6 (cycle de vie) ; INV-05.",
-  contexte=["docs/CONTRACTS.md (C-05, C-07)", "docs/plan-directeur.md §5 et §6"])
+  contexte=["docs/CONTRACTS.md (C-04, C-05, C-07)", "docs/plan-directeur.md §5 et §6"])
 
 t("S40.2", "flowtrace-blocs", "FlowTrace : déclaration des blocs", "D", "C", ["S40.1"],
   ["`FlowTrace.block_begin(clé)` et `FlowTrace.block_end(clé, statut)` : pile de blocs par producteur, occurrence identifiée, parent ; coût désactivé inchangé.",
-   "Règles d'appel ajoutées à C-07 par S40.1, appliquées ici."],
-  ["addons/godot_dev_mapper_runtime/flow_trace.gd", "tests/unit/test_flow_trace_blocks.gd"],
-  ["Écrire les tests ; les voir échouer.", "Écrire l'API et la pile.", "Mesurer le coût désactivé."],
+   "Règles d'appel ajoutées à C-07 par S40.1, appliquées ici ; block_begin et block_end encodés et décodés par l'enveloppe et le codec (C-04 révisée par S40.1)."],
+  ["addons/godot_dev_mapper_runtime/flow_trace.gd", "addons/godot_dev_mapper_runtime/envelope.gd", "addons/godot_dev_mapper/protocol/envelope_codec.gd", "tests/unit/test_flow_trace_blocks.gd"],
+  ["Écrire les tests ; les voir échouer.", "Encoder et décoder block_begin et block_end (enveloppe et codec).", "Écrire l'API et la pile.", "Mesurer le coût désactivé."],
   [("S40.2-a",) + tests("test_flow_trace_blocks"), ("S40.2-b",) + DEPS],
   ["(CE) Ne pas dépiler sur block_end : le test d'imbrication échoue ; annuler."],
-  "C-07, C-11 ; INV-06.",
-  contexte=["docs/CONTRACTS.md (C-07, C-11)"])
+  "C-04, C-07, C-11 ; INV-06.",
+  contexte=["docs/CONTRACTS.md (C-04, C-07)", "docs/contracts/C-11.md"])
 
 t("S40.3", "projection-blocs", "Projection des blocs et de leurs occurrences", "D", "V", ["S40.1"],
   ["`projections/block_projection.gd` : occurrences reconstruites depuis les événements, imbrication, statut calculé selon C-11 ; jamais de bloc inféré.",
@@ -629,7 +656,7 @@ t("S40.3", "projection-blocs", "Projection des blocs et de leurs occurrences", "
   [("S40.3-a",) + tests("test_block_projection", "test_c11_blocks"), ("S40.3-b",) + DEPS],
   ["(CE) Marquer « terminé » un bloc sans fin : le test échoue (contre-épreuve de la porte de P7) ; annuler."],
   "C-11 ; P7 (blocs déclarés seulement) ; INV-04.",
-  contexte=["docs/CONTRACTS.md (C-11)"])
+  contexte=["docs/contracts/C-11.md"])
 
 t("S40.4", "projection-logique", "Projection logique : décisions et états", "D", "V", ["S40"],
   ["`projections/logic_projection.gd` : pour une définition de décision, nombre d'observations de chaque branche par instance ; pour une instance, suite de ses state_change ; chaque chiffre avec sa fenêtre et sa couverture.",
@@ -641,19 +668,19 @@ t("S40.4", "projection-logique", "Projection logique : décisions et états", "D
   "INV-04 ; plan §6 (limites de preuve).",
   contexte=["docs/plan-directeur.md §6"])
 
-t("S40.5", "vues-gameflow-logique", "Vues Game Flow annoté et Logique", "D", "V", ["S40.3", "S40.4"],
-  ["`ui/game_flow_view.gd` : arbre des blocs déclarés, occurrences, statut écrit en toutes lettres (« incomplet », « actif »…) avec une icône ; `ui/logic_view.gd` : décisions et états d'une instance.",
-   "Captures sous écran virtuel sur une session de fixture."],
-  ["addons/godot_dev_mapper/ui/game_flow_view.gd", "addons/godot_dev_mapper/ui/game_flow_view.tscn", "addons/godot_dev_mapper/ui/logic_view.gd", "addons/godot_dev_mapper/ui/logic_view.tscn", "rapports/S40.5/"],
-  ["Écrire les deux vues.", "Les brancher au panneau.", "Captures sous écran virtuel."],
+t("S40.5", "vues-gameflow-logique", "Vues Game Flow annoté et Logique", "D", "V", ["S40.3", "S40.4", "S40.7"],
+  ["Onglet `ui/vues/game_flow/` : arbre des blocs déclarés (lus par le chargeur v2 de S40.7), occurrences, statut écrit en toutes lettres (« incomplet », « actif »…) avec une icône ; onglet `ui/vues/logique/` : décisions et états d'une instance.",
+   "Chaque onglet s'ajoute par son dossier et son `vue.gd` (convention de S39.12) ; captures sous écran virtuel sur une session de fixture."],
+  ["addons/godot_dev_mapper/ui/vues/game_flow/", "addons/godot_dev_mapper/ui/vues/logique/", "rapports/S40.5/"],
+  ["Écrire les deux vues.", "Écrire leurs `vue.gd` : les onglets apparaissent sans autre fichier modifié.", "Captures par `capture_onglet.sh`."],
   [("S40.5-a", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
-   ("S40.5-b", "ls rapports/S40.5/*.png | wc -l", "au moins 2")],
+   ("S40.5-b", "for o in game_flow logique; do GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh $o rapports/S40.5/$o.png || exit 1; done; ls rapports/S40.5/*.png | wc -l", "2")],
   ["(CE) Retirer le libellé texte du statut : le vérificateur constate sur la capture que l'état ne se lit qu'à la couleur ; annuler."],
   "Plan §7 (états jamais portés par la seule couleur) ; module ui.",
-  contexte=["docs/CONTRACTS.md (C-11)"])
+  contexte=["docs/contracts/C-11.md"])
 
-t("S40.6", "blocs-banc", "Blocs déclarés dans le banc d'essai", "V", "D", ["S40.2", "S40.3"],
-  ["Sur `banc/<nom>-instrumentation` : déclarer trois à cinq blocs (par exemple entrée dans une pièce jusqu'à la fin du combat) dans `benches/<nom>/flow.json` v2 et dans le code ; mesurer le temps passé par bloc déclaré.",
+t("S40.6", "blocs-banc", "Blocs déclarés dans le banc d'essai", "V", "D", ["S40.2", "S40.3", "S40.7"],
+  ["Sur `banc/<nom>-instrumentation` (rebasée sur la branche distante avant de pousser, jamais --force) : déclarer trois à cinq blocs (par exemple entrée dans une pièce jusqu'à la fin du combat) dans `benches/<nom>/flow.json` v2 et dans le code ; mesurer le temps passé par bloc déclaré.",
    "Test d'intégration : une partie interrompue au milieu d'un bloc donne « incomplet »."],
   ["benches/<nom>/flow.json", "tests/integration/run_blocks_bench.sh", "docs/benches/<nom>.md (section « Blocs »)", "branche banc/<nom>-instrumentation (hors de main)"],
   ["Choisir et déclarer les blocs dans le banc ; pousser la branche.", "Mettre à jour flow.json.", "Écrire `run_blocks_bench.sh`.", "Noter le coût de déclaration."],
@@ -663,6 +690,18 @@ t("S40.6", "blocs-banc", "Blocs déclarés dans le banc d'essai", "V", "D", ["S4
   "C-11 ; P7 (coût de déclaration mesuré).",
   contexte=["docs/benches/<nom>.md", "benches/<nom>/flow.json"],
   recette=["Coût de déclaration des blocs, jugé par toi."])
+
+t("S40.7", "chargeur-flow-v2", "Chargeur du graphe déclaré .flow.json en version 2", "D", "V", ["S40.1"],
+  ["Le chargeur de `core/` (C-05, écrit par S17 en v1) lit la version 2 : définitions de blocs temporels, parent, clés de bloc uniques ; la version 1 reste lisible ; une version inconnue est rejetée avec son code.",
+   "Activer `test_c05_flow_v2`."],
+  ["addons/godot_dev_mapper/core/", "tests/unit/test_flow_loader_v2.gd", "tests/pending/test_c05_flow_v2.pending (suppression)"],
+  ["Supprimer le marqueur ; coller l'échec.", "Écrire les tests (v1, v2 avec blocs imbriqués, clé dupliquée, version inconnue) ; les voir échouer.", "Étendre le chargeur."],
+  [("S40.7-a",) + tests("test_flow_loader_v2", "test_c05_flow_v2"), ("S40.7-b",) + DEPS,
+   ("S40.7-c", f"{RUN} | grep GDM_TESTS", "failed=0 ; les tests v1 du chargeur (S17) passent toujours")],
+  ["(CE) Accepter deux blocs de même clé : le test de clé dupliquée échoue ; annuler.",
+   "(CE) Refuser la version 1 : un test de S17 échoue ; annuler."],
+  "C-05 v2, C-11 ; compatibilité ascendante (P6, formats persistés).",
+  contexte=["docs/CONTRACTS.md (C-05)", "docs/contracts/C-11.md"])
 
 
 # =====================================================================================================
@@ -680,11 +719,11 @@ t("S41.1", "matrice-compat", "Matrice de compatibilité générée par la CI", "
   "CAP-13 ; versions seulement dans versions.json (T03).",
   contexte=["docs/COMPATIBILITY.md", "addons/godot_dev_mapper/compat/versions.json"])
 
-t("S41.2", "bascule-48", "Bascule vers Godot 4.8 stable", "C", "V", ["S41"],
+t("S41.2", "bascule-48", "Bascule vers Godot 4.8 stable", "C", "V", ["S41.1", "S41.3"],
   ["Si Godot 4.8 stable est publiée : l'ajouter à `versions.json` comme version bloquante, relancer toute la suite, corriger chaque rupture dans la frontière de compatibilité seulement, un test de compatibilité par rupture.",
    "Si elle n'est pas publiée : le constater (lien des publications officielles), écrire « en attente » dans le rapport, et la porte du MVP le note pour la recette sans bloquer."],
-  ["addons/godot_dev_mapper/compat/", "tests/unit/test_compat_*.gd", "docs/COMPATIBILITY.md"],
-  ["Vérifier les publications officielles de Godot.", "Si 4.8 stable existe : la télécharger par fetch_godot.sh et lancer la suite.", "Corriger chaque rupture dans compat/, avec son test.", "Écrire le résultat."],
+  ["addons/godot_dev_mapper/compat/", "tests/unit/test_compat_*.gd", "docs/COMPATIBILITY.md", ".github/workflows/ci.yml (job stable par version de versions.json)", "tools/ci/fetch_godot.sh (si le format de version change)"],
+  ["Vérifier les publications officielles de Godot.", "Si 4.8 stable existe : la télécharger par fetch_godot.sh, l'ajouter à versions.json et à la CI comme version bloquante (4.7.2 le reste), et lancer la suite.", "Corriger chaque rupture dans compat/, avec son test.", "Écrire le résultat."],
   [("S41.2-a", "python3 -c \"import json; print(json.load(open('addons/godot_dev_mapper/compat/versions.json')))\"", "4.8 stable listée si elle est publiée ; sinon « en attente » écrit dans le rapport"),
    ("S41.2-b",) + DEPS],
   ["(CE) Corriger une rupture hors de compat/ : check_deps.py signale l'API sensible ; annuler."],
@@ -695,8 +734,8 @@ t("S41.2", "bascule-48", "Bascule vers Godot 4.8 stable", "C", "V", ["S41"],
 t("S41.3", "tri-preversion", "Tri des échecs de la préversion", "D", "C", ["S41"],
   ["Lancer toute la suite sur la dernière préversion de 4.8 ; classer chaque échec (changement d'API, bug de la préversion, test fragile) ; un changement d'API devient un test de compatibilité et une correction dans compat/.",
    "Écrire `docs/compat/tri-P8.md`."],
-  ["docs/compat/tri-P8.md", "addons/godot_dev_mapper/compat/", "tests/unit/test_compat_*.gd"],
-  ["Lancer la suite sur la préversion.", "Classer chaque échec.", "Corriger ou documenter."],
+  ["docs/compat/tri-P8.md", "addons/godot_dev_mapper/compat/*.gd (adaptateurs ; ni versions.json ni matrix.json)", "tests/unit/test_compat_*.gd"],
+  ["Lancer la suite sur la préversion inscrite dans versions.json, et sur la dernière préversion publiée si elle est plus récente (le noter).", "Classer chaque échec.", "Corriger ou documenter."],
   [("S41.3-a", PREVIEW, "résultat de la préversion ; chaque échec restant est expliqué dans tri-P8.md"),
    ("S41.3-b",) + DEPS],
   ["(CE) Le vérificateur relance un échec classé « bug de la préversion » et confirme sa cause par le changelog ou un script de trois lignes."],
@@ -751,26 +790,26 @@ t("S41.7", "demo-mvp", "Démonstration du MVP sous écran virtuel", "D", "V", ["
 # =====================================================================================================
 
 t("S42.1", "contrat-c12-timeline", "Contrat C-12 : timeline et corrélation à travers await", "C", "V", ["S42"],
-  ["Ajouter C-12 : intervalles d'occurrences de blocs par instance (couloirs), niveaux d'imbrication, interruptions, regroupement par niveau, zoom sémantique ; l'ordre n'est garanti que par producteur ; aucune arête causale.",
-   "Étendre C-07 (version 3) : l'identifiant d'invocation renvoyé par `enter` peut être passé explicitement à travers un `await` ; les règles et la compatibilité sont écrites.",
-   "Fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (C-07, C-12)", "contracts/", "tests/contract/test_c12_timeline.gd", "tests/contract/test_c07_await.gd", "tests/pending/"],
-  ["Relire C-07, C-11 et le plan §6 (V1 : corrélation à travers await).", "Rédiger C-12.", "Rédiger C-07 v3, avec l'analyse d'impact.", "Écrire fixtures et tests de contrat, marqueurs au nom de S42.2 et S42.7."],
-  [("S42.1-a", "python3 tools/check_contracts.py; echo $?", "0"), ("S42.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
+  ["Écrire `docs/contracts/C-12.md` : intervalles d'occurrences de blocs par instance (couloirs), niveaux d'imbrication, interruptions, regroupement par niveau, zoom sémantique ; l'ordre n'est garanti que par producteur ; aucune arête causale.",
+   "Ouvrir la version 3 de C-07 dans `docs/CONTRACTS.md` : l'identifiant d'invocation renvoyé par `enter` peut être passé explicitement à travers un `await` ; les règles et la compatibilité sont écrites. S44.1 puis S47.1 complètent cette même version 3, dans cet ordre.",
+   "Fixtures dans `tests/contract/fixtures/<kind>/` et tests de contrat avec marqueurs."],
+  ["docs/contracts/C-12.md", "docs/CONTRACTS.md (C-07 v3 ; index : lien vers C-12)", "contracts/", "tests/contract/fixtures/", "tests/contract/test_c12_timeline.gd", "tests/contract/test_c07_await.gd", "tests/pending/"] + OUTILS_CONTRAT,
+  ["Relire C-07, C-11 et le plan §6 (V1 : corrélation à travers await).", "Rédiger C-12.", "Rédiger C-07 v3, avec l'analyse d'impact.", "Écrire fixtures et tests de contrat, marqueurs au nom de S42.3 (timeline) et S42.6 (await)."],
+  [("S42.1-a", "python3 tools/check_contracts.py C-07 C-12; echo $?", "0"), ("S42.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
   ["(CE) Ajouter à une fixture une arête « causes » entre deux occurrences proches : la validation la rejette ; annuler."],
   "INV-05 ; plan §6 (limites de preuve, V1).",
-  contexte=["docs/CONTRACTS.md (C-07, C-11)", "docs/plan-directeur.md §6"])
+  contexte=["docs/CONTRACTS.md (C-07)", "docs/contracts/C-11.md", "docs/plan-directeur.md §6"])
 
 t("S42.2", "fixtures-timeline", "Fixtures d'occurrences entrelacées", "V", "D", ["S42.1"],
   ["`tests/fixtures/timeline/` : sessions d'occurrences entrelacées entre instances, imbriquées, interrompues, touchées par une lacune, et un générateur déterministe de 1 000 occurrences.",
    "Pour chaque fixture, le résultat attendu de la projection, sans aucune relation causale."],
   ["tests/fixtures/timeline/", "tools/gen_timeline_fixture.py"],
   ["Écrire les fixtures à la main.", "Écrire le générateur à graine fixe.", "Écrire les résultats attendus.", "Valider les fixtures contre C-12."],
-  [("S42.2-a", "python3 tools/validate_fixtures.py --kinds timeline; echo $?", "0"),
+  [("S42.2-a", "for f in tests/fixtures/timeline/*.json; do python3 tools/validate_fixtures.py --file \"$f\" || exit 1; done; echo $?", "0"),
    ("S42.2-b", "python3 tools/gen_timeline_fixture.py --n 1000 --graine 7 | sha256sum", "même empreinte à chaque exécution")],
   ["(CE) Changer la graine : l'empreinte change ; la remettre."],
   "C-12 ; INV-05.",
-  contexte=["docs/CONTRACTS.md (C-12)"])
+  contexte=["docs/contracts/C-12.md"])
 
 t("S42.3", "projection-timeline", "Projection timeline", "D", "V", ["S42.2"],
   ["`projections/timeline_projection.gd` : couloirs par instance, intervalles d'occurrences, interruptions et lacunes marquées, imbrication ; aucune arête causale produite.",
@@ -780,7 +819,7 @@ t("S42.3", "projection-timeline", "Projection timeline", "D", "V", ["S42.2"],
   [("S42.3-a",) + tests("test_timeline_projection", "test_c12_timeline"), ("S42.3-b",) + DEPS],
   ["(CE) Relier deux occurrences successives d'instances différentes : le test « aucune arête causale » échoue ; annuler."],
   "C-12 ; INV-05.",
-  contexte=["docs/CONTRACTS.md (C-12)"])
+  contexte=["docs/contracts/C-12.md"])
 
 t("S42.4", "zoom-semantique", "Regroupement par niveau et zoom sémantique", "D", "V", ["S42.3"],
   ["Regrouper les occurrences par niveau de bloc et par fenêtre selon le zoom ; 1 000 occurrences projetées en 20 ms au plus (objectif à valider) ; le regroupement montre le nombre d'occurrences et d'interruptions qu'il cache."],
@@ -792,25 +831,26 @@ t("S42.4", "zoom-semantique", "Regroupement par niveau et zoom sémantique", "D"
   contexte=["docs/construction/v1.md, P9"])
 
 t("S42.5", "vue-timeline", "Vue timeline", "D", "V", ["S42.4"],
-  ["`ui/timeline_view.gd` et `.tscn` : couloirs, zoom et défilement, sélection d'une occurrence avec ses preuves, « incomplet » écrit en toutes lettres ; tenue à 1 000 occurrences mesurée sous écran virtuel."],
-  ["addons/godot_dev_mapper/ui/timeline_view.gd", "addons/godot_dev_mapper/ui/timeline_view.tscn", "rapports/S42.5/"],
-  ["Écrire la vue.", "La brancher au panneau.", "Mesurer avec `tools/harness/ui_load.gd` à 1 000 occurrences.", "Captures."],
+  ["Onglet `ui/vues/timeline/` (timeline_view.gd et .tscn, et son vue.gd selon la convention de S39.12) : couloirs, zoom et défilement, sélection d'une occurrence avec ses preuves, « incomplet » écrit en toutes lettres ; tenue à 1 000 occurrences mesurée sous écran virtuel."],
+  ["addons/godot_dev_mapper/ui/vues/timeline/", "rapports/S42.5/"],
+  ["Écrire la vue.", "Écrire `vue.gd` : l'onglet apparaît sans autre fichier modifié.", "Mesurer avec `tools/harness/ui_load.gd` à 1 000 occurrences.", "Captures par `capture_onglet.sh`."],
   [("S42.5-a", "xvfb-run -a \"$B\" --path . --rendering-driver opengl3 -s res://tools/harness/ui_load.gd -- timeline_view 1000 2>&1 | grep FRAME_MS", "temps de frame mesuré, rendu logiciel"),
-   ("S42.5-b", "ls rapports/S42.5/*.png | wc -l", "au moins 2")],
+   ("S42.5-b", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh timeline rapports/S42.5/timeline.png && ls rapports/S42.5/*.png | wc -l", "au moins 2")],
   ["(CE) Tracer une flèche entre deux occurrences voisines : le vérificateur la voit sur la capture et refuse ; annuler."],
   "INV-05 ; plan §7 (états jamais portés par la seule couleur).",
-  contexte=["docs/CONTRACTS.md (C-12)"],
+  contexte=["docs/contracts/C-12.md"],
   recette=["Lisibilité de la timeline, sur ta machine."])
 
 t("S42.6", "await-runtime", "Corrélation à travers await, côté jeu et côté éditeur", "D", "C", ["S42.1"],
   ["`FlowTrace` : un identifiant d'invocation passé explicitement après un `await` rattache les événements suivants à la bonne invocation ; sans lui, « corrélation non garantie » reste affiché.",
    "Activer `test_c07_await` ; instrumenter un cas d'`await` dans le banc d'essai."],
-  ["addons/godot_dev_mapper_runtime/flow_trace.gd", "addons/godot_dev_mapper/projections/observed_path.gd", "tests/unit/test_flow_trace_await.gd", "tests/pending/test_c07_await.pending (suppression)"],
-  ["Supprimer le marqueur ; coller l'échec.", "Écrire les tests ; les voir échouer.", "Côté jeu.", "Côté chemin observé."],
+  ["addons/godot_dev_mapper_runtime/flow_trace.gd", "addons/godot_dev_mapper/projections/observed_path.gd", "tests/unit/test_flow_trace_await.gd", "tests/pending/test_c07_await.pending (suppression)",
+   "benches/<nom>/flow.json (clé de sonde du cas d'await)", "branche banc/<nom>-instrumentation (hors de main ; rebasée sur la branche distante avant de pousser)"],
+  ["Supprimer le marqueur ; coller l'échec.", "Écrire les tests ; les voir échouer.", "Côté jeu.", "Côté chemin observé.", "Instrumenter un cas d'`await` dans le banc ; ajouter sa clé à flow.json ; pousser la branche du banc."],
   [("S42.6-a",) + tests("test_flow_trace_await", "test_c07_await"), ("S42.6-b",) + DEPS],
   ["(CE) Rattacher les événements d'après un `await` sans identifiant à l'invocation précédente : le test « non garantie » échoue ; annuler."],
   "C-07 v3 ; plan §6 (V1) ; INV-05.",
-  contexte=["docs/CONTRACTS.md (C-07)"])
+  contexte=["docs/CONTRACTS.md (C-07)", "docs/benches/<nom>.md"])
 
 t("S42.7", "essai-timeline", "Essai de la timeline sur le banc d'essai", "V", "D", ["S42.5", "S42.6"],
   ["Sur une session du banc avec blocs entrelacés : afficher la timeline sous écran virtuel ; vérifier qu'aucune fausse causalité n'apparaît et que l'affichage tient à 1 000 occurrences.",
@@ -838,11 +878,11 @@ t("S43.1", "affirmations-preuves", "Affirmations et preuves : socle commun de la
   contexte=["docs/construction/v1.md", "docs/plan-directeur.md §6 (limites de preuve)"])
 
 t("S43.2", "contrat-c13-comparaison", "Contrat C-13 : comparaison d'instances", "C", "V", ["S43"],
-  ["Ajouter C-13 : requête (définition, deux instances, fenêtre de chacune), alignement explicite des fenêtres, résultat (branches prises, états, fréquences), chaque différence avec ses preuves, et les métadonnées obligatoires : révision, configuration, scénario, fenêtre, couverture.",
+  ["Écrire `docs/contracts/C-13.md` : requête (définition, deux instances, fenêtre de chacune), alignement explicite des fenêtres, résultat (branches prises, états, fréquences), chaque différence avec ses preuves, et les métadonnées obligatoires : révision, configuration, scénario, fenêtre, couverture.",
    "Fenêtres inégales : signalées avant tout affichage. Fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (section C-13)", "contracts/", "tests/contract/test_c13_compare.gd", "tests/pending/test_c13_compare.pending"],
+  ["docs/contracts/C-13.md", "docs/CONTRACTS.md (index : lien vers C-13)", "contracts/", "tests/contract/fixtures/", "tests/contract/test_c13_compare.gd", "tests/pending/test_c13_compare.pending"] + OUTILS_CONTRAT,
   ["Rédiger C-13.", "Écrire fixtures (deux ennemis, fenêtres égales et inégales).", "Écrire le test de contrat et son marqueur (S43.4)."],
-  [("S43.2-a", "python3 tools/check_contracts.py; echo $?", "0"), ("S43.2-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
+  [("S43.2-a", "python3 tools/check_contracts.py C-13; echo $?", "0"), ("S43.2-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
   ["(CE) Retirer la couverture d'une fixture valide : la validation la rejette ; annuler."],
   "INV-02 ; plan §6 (toute comparaison cite révision, configuration, scénario, fenêtre, couverture).",
   contexte=["docs/CONTRACTS.md (C-01, C-06)"])
@@ -854,7 +894,7 @@ t("S43.3", "couverture", "Couverture et fenêtres d'observation", "D", "V", ["S4
   [("S43.3-a",) + tests("test_coverage"), ("S43.3-b",) + DEPS],
   ["(CE) Ignorer une lacune dans le calcul : le test échoue ; annuler."],
   "INV-04, INV-07.",
-  contexte=["docs/CONTRACTS.md (C-06, C-13)"])
+  contexte=["docs/CONTRACTS.md (C-06)", "docs/contracts/C-13.md"])
 
 t("S43.4", "projection-comparaison", "Projection de comparaison d'instances", "D", "V", ["S43.1", "S43.3"],
   ["`projections/instance_compare.gd` : différences de branches, d'états et de fréquences entre deux instances d'une même définition, chacune en affirmation avec ses preuves ; fenêtres inégales signalées ; activer `test_c13_compare`.",
@@ -864,20 +904,20 @@ t("S43.4", "projection-comparaison", "Projection de comparaison d'instances", "D
   [("S43.4-a",) + tests("test_instance_compare", "test_c13_compare"), ("S43.4-b",) + DEPS],
   ["(CE) Comparer deux fenêtres différentes sans le signaler : le test échoue (contre-épreuve de la porte de P10) ; annuler."],
   "C-13 ; INV-02 ; règle des affirmations de v1.md.",
-  contexte=["docs/CONTRACTS.md (C-13)"])
+  contexte=["docs/contracts/C-13.md"])
 
 t("S43.5", "vue-comparaison", "Vue de comparaison", "D", "V", ["S43.4"],
-  ["`ui/compare_view.gd` et `.tscn` : deux colonnes, différences en tête, chaque différence ouvre ses preuves, métadonnées toujours visibles ; jamais la couleur seule."],
-  ["addons/godot_dev_mapper/ui/compare_view.gd", "addons/godot_dev_mapper/ui/compare_view.tscn", "rapports/S43.5/"],
-  ["Écrire la vue.", "La brancher au panneau.", "Captures sous écran virtuel."],
+  ["Onglet `ui/vues/comparaison/` (compare_view.gd et .tscn, et son vue.gd selon la convention de S39.12) : deux colonnes, différences en tête, chaque différence ouvre ses preuves, métadonnées toujours visibles ; jamais la couleur seule."],
+  ["addons/godot_dev_mapper/ui/vues/comparaison/", "rapports/S43.5/"],
+  ["Écrire la vue.", "Écrire `vue.gd` : l'onglet apparaît sans autre fichier modifié.", "Captures par `capture_onglet.sh`."],
   [("S43.5-a", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
-   ("S43.5-b", "ls rapports/S43.5/*.png | wc -l", "au moins 1")],
+   ("S43.5-b", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh comparaison rapports/S43.5/comparaison.png && ls rapports/S43.5/*.png | wc -l", "au moins 1")],
   ["(CE) Masquer les métadonnées : le vérificateur le constate sur la capture et refuse ; annuler."],
   "C-13 ; plan §7.",
-  contexte=["docs/CONTRACTS.md (C-13)"])
+  contexte=["docs/contracts/C-13.md"])
 
 t("S43.6", "comparaison-banc", "Deux ennemis du banc d'essai comparés", "V", "D", ["S43.4"],
-  ["Sur `banc/<nom>-instrumentation` : un scénario où deux ennemis d'un même type prennent des branches différentes ; session enregistrée en fixture ; `tests/integration/run_compare_bench.sh` montre la différence de branche avec ses preuves."],
+  ["Sur `banc/<nom>-instrumentation` (rebasée sur la branche distante avant de pousser) : un scénario où deux ennemis d'un même type prennent des branches différentes ; session enregistrée en fixture ; `tests/integration/run_compare_bench.sh` montre la différence de branche avec ses preuves."],
   ["tests/integration/run_compare_bench.sh", "tests/fixtures/sessions_reelles/", "branche banc/<nom>-instrumentation (hors de main)"],
   ["Écrire le scénario dans le banc ; pousser la branche.", "Enregistrer la session.", "Écrire le test d'intégration."],
   [("S43.6-a", "GODOT=\"$B\" tests/integration/run_compare_bench.sh; echo $?", "0, une différence de branche avec preuves")],
@@ -890,15 +930,15 @@ t("S43.6", "comparaison-banc", "Deux ennemis du banc d'essai comparés", "V", "D
 # V1 — P11 Data Flow, CAP-14 (revue S44)
 # =====================================================================================================
 
-t("S44.1", "contrat-c14-parametres", "Contrat C-14 : origine et usages d'un paramètre", "C", "V", ["S44"],
-  ["Ajouter C-14 : définition de paramètre, quatre sources distinguées (défaut du script, ressource, surcharge dans une scène, valeur observée), lecteurs et écrivains (extraits ou observés), « dernière écriture connue » bornée par la fenêtre et marquée comme telle, provenance sur chaque maillon.",
-   "Étendre C-04 et C-07 d'un événement d'écriture observée (clé, valeur primitive, instance) ; fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (C-04, C-07, C-14)", "contracts/", "tests/contract/test_c14_parametres.gd", "tests/pending/"],
+t("S44.1", "contrat-c14-parametres", "Contrat C-14 : origine et usages d'un paramètre", "C", "V", ["S44", "S42.1"],
+  ["Écrire `docs/contracts/C-14.md` : définition de paramètre, quatre sources distinguées (défaut du script, ressource, surcharge dans une scène, valeur observée), lecteurs et écrivains (extraits ou observés), « dernière écriture connue » bornée par la fenêtre et marquée comme telle, provenance sur chaque maillon.",
+   "Compléter la version 3 de C-04 et C-07, ouverte par S42.1, d'un événement d'écriture observée (clé, valeur primitive, instance) ; fixtures et tests de contrat avec marqueurs."],
+  ["docs/contracts/C-14.md", "docs/CONTRACTS.md (C-04 et C-07 v3 ; index : lien vers C-14)", "contracts/", "tests/contract/fixtures/", "tests/contract/test_c14_parametres.gd", "tests/pending/"] + OUTILS_CONTRAT,
   ["Rédiger C-14.", "Étendre C-04 et C-07, avec l'analyse d'impact.", "Écrire fixtures et tests de contrat, marqueurs au nom des tâches de P11."],
-  [("S44.1-a", "python3 tools/check_contracts.py; echo $?", "0"), ("S44.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
+  [("S44.1-a", "python3 tools/check_contracts.py C-04 C-07 C-14; echo $?", "0"), ("S44.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
   ["(CE) Écrire « valeur certaine » dans une fixture valide : la validation la rejette ; annuler."],
   "INV-03 ; plan §3 (CAP-14) et §7 (J4).",
-  contexte=["docs/CONTRACTS.md (C-04, C-07, C-08)", "docs/plan-directeur.md §3 et §7"])
+  contexte=["docs/CONTRACTS.md (C-04, C-07)", "docs/contracts/C-08.md", "docs/plan-directeur.md §3 et §7"])
 
 t("S44.2", "declarations-parametres", "Déclarations de paramètres et valeurs par défaut", "D", "V", ["S44.1"],
   ["`acquisition/param_extractor.gd` : variables exportées, constantes et variables membres, avec type, valeur par défaut lue dans le source et ancrage."],
@@ -907,16 +947,16 @@ t("S44.2", "declarations-parametres", "Déclarations de paramètres et valeurs p
   [("S44.2-a",) + tests("test_param_extractor"), ("S44.2-b",) + DEPS],
   ["(CE) Prendre la valeur d'une expression calculée pour un défaut certain : le test « défaut non littéral » échoue ; annuler."],
   "C-14 ; C-02 (ancrages).",
-  contexte=["docs/CONTRACTS.md (C-14)"])
+  contexte=["docs/contracts/C-14.md"])
 
 t("S44.3", "valeurs-ressources", "Valeurs des ressources .tres et .res", "D", "C", ["S44.1"],
   ["Lire les valeurs de propriétés des ressources par la façade d'introspection, sans instancier de scène ; relier chaque valeur au paramètre qu'elle alimente."],
-  ["addons/godot_dev_mapper/acquisition/resource_values.gd", "addons/godot_dev_mapper/compat/introspection_facade.gd (lecture de ressource)", "tests/unit/test_resource_values.gd"],
-  ["Vérifier les API de lecture sur 4.7.2 et la préversion.", "Écrire les tests ; les voir échouer.", "Écrire la lecture."],
+  ["addons/godot_dev_mapper/acquisition/resource_values.gd", "addons/godot_dev_mapper/compat/introspection_facade.gd (lecture de ressource)", "tools/deps_rules.json (API de lecture de ressource)", "tests/unit/test_resource_values.gd"],
+  ["Vérifier les API de lecture sur 4.7.2 et la préversion.", "Ajouter ces API à la liste des API sensibles de `tools/deps_rules.json`.", "Écrire les tests ; les voir échouer.", "Écrire la lecture."],
   [("S44.3-a",) + tests("test_resource_values"), ("S44.3-b",) + DEPS],
   ["(CE) Lire la ressource hors de la façade : check_deps.py signale l'API sensible ; annuler."],
   "INV-09 ; C-14.",
-  contexte=["docs/CONTRACTS.md (C-03, C-14)"])
+  contexte=["docs/CONTRACTS.md (C-03)", "docs/contracts/C-14.md"])
 
 t("S44.4", "surcharges-scenes", "Surcharges de paramètres dans les scènes", "D", "V", ["S44.1"],
   ["Lire, dans l'état des scènes empaquetées, les propriétés surchargées par nœud ; relier chaque surcharge au paramètre et au nœud."],
@@ -925,7 +965,7 @@ t("S44.4", "surcharges-scenes", "Surcharges de paramètres dans les scènes", "D
   [("S44.4-a",) + tests("test_scene_overrides"), ("S44.4-b",) + DEPS],
   ["(CE) Retirer une surcharge de la fixture : l'origine calculée change, sinon le test échoue (contre-épreuve de la porte de P11)."],
   "C-14 ; CAP-14 (override distingué).",
-  contexte=["docs/CONTRACTS.md (C-14)"])
+  contexte=["docs/contracts/C-14.md"])
 
 t("S44.5", "lecteurs-ecrivains", "Lecteurs et écrivains statiques d'un paramètre", "D", "V", ["S44.2"],
   ["Étendre l'extraction : lectures et écritures des variables membres (self.x, x =, obj.x sur receveur typé) ; receveur non typé : « non résolu »."],
@@ -934,16 +974,16 @@ t("S44.5", "lecteurs-ecrivains", "Lecteurs et écrivains statiques d'un paramèt
   [("S44.5-a",) + tests("test_def_use"), ("S44.5-b",) + DEPS],
   ["(CE) Attribuer une écriture sur receveur non typé : le test « non résolu » échoue ; annuler."],
   "C-14 ; CAP-09 (non résolu jamais deviné).",
-  contexte=["docs/CONTRACTS.md (C-08, C-14)"])
+  contexte=["docs/contracts/C-08.md", "docs/contracts/C-14.md"])
 
-t("S44.6", "valeur-observee", "Valeur observée : écritures instrumentées", "D", "C", ["S44.1"],
+t("S44.6", "valeur-observee", "Valeur observée : écritures instrumentées", "D", "C", ["S44.1", "S42.6"],
   ["`FlowTrace` : écriture observée d'un paramètre (clé littérale, valeur primitive, instance) ; chemin désactivé au coût mesuré ; réception et rangement côté éditeur."],
   ["addons/godot_dev_mapper_runtime/flow_trace.gd", "addons/godot_dev_mapper_runtime/envelope.gd", "addons/godot_dev_mapper/protocol/envelope_codec.gd", "tests/unit/test_flow_trace_values.gd", "tests/pending/"],
   ["Supprimer les marqueurs concernés ; coller l'échec.", "Côté jeu.", "Codec.", "Mesure du chemin désactivé."],
   [("S44.6-a",) + tests("test_flow_trace_values", "test_c04"), ("S44.6-b",) + DEPS],
   ["(CE) Accepter une valeur non primitive : le test de validation échoue ; annuler."],
   "C-04, C-07, C-14 ; INV-06.",
-  contexte=["docs/CONTRACTS.md (C-04, C-07, C-14)"])
+  contexte=["docs/CONTRACTS.md (C-04, C-07)", "docs/contracts/C-14.md"])
 
 t("S44.7", "projection-origine", "Projection de l'origine d'un paramètre", "D", "V", ["S44.3", "S44.4", "S44.5", "S44.6"],
   ["`projections/param_origin.gd` : chaîne défaut → ressource → surcharge de scène → valeur observée, avec lecteurs, écrivains et portée ; « dernière écriture connue » bornée ; chaque maillon en affirmation avec preuve, audit compris."],
@@ -952,20 +992,20 @@ t("S44.7", "projection-origine", "Projection de l'origine d'un paramètre", "D",
   [("S44.7-a",) + tests("test_param_origin", "test_c14_parametres"), ("S44.7-b",) + DEPS],
   ["(CE) Afficher une valeur observée hors de la fenêtre comme actuelle : le test de borne échoue ; annuler."],
   "C-14 ; INV-03 ; règle des affirmations de v1.md.",
-  contexte=["docs/CONTRACTS.md (C-14)"])
+  contexte=["docs/contracts/C-14.md"])
 
 t("S44.8", "vue-data-flow", "Vue Data Flow (parcours J4)", "D", "V", ["S44.7"],
-  ["`ui/data_flow_view.gd` et `.tscn` : choisir un paramètre ; voir les quatre sources, les lecteurs et les écrivains, la portée ; ouvrir le code de chaque maillon."],
-  ["addons/godot_dev_mapper/ui/data_flow_view.gd", "addons/godot_dev_mapper/ui/data_flow_view.tscn", "rapports/S44.8/"],
-  ["Écrire la vue.", "La brancher au panneau.", "Captures sous écran virtuel."],
+  ["Onglet `ui/vues/data_flow/` (data_flow_view.gd et .tscn, et son vue.gd selon la convention de S39.12) : choisir un paramètre ; voir les quatre sources, les lecteurs et les écrivains, la portée ; ouvrir le code de chaque maillon."],
+  ["addons/godot_dev_mapper/ui/vues/data_flow/", "rapports/S44.8/"],
+  ["Écrire la vue.", "Écrire `vue.gd` : l'onglet apparaît sans autre fichier modifié.", "Captures par `capture_onglet.sh`."],
   [("S44.8-a", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
-   ("S44.8-b", "ls rapports/S44.8/*.png | wc -l", "au moins 1")],
+   ("S44.8-b", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh data_flow rapports/S44.8/data_flow.png && ls rapports/S44.8/*.png | wc -l", "au moins 1")],
   ["(CE) Fusionner surcharge et défaut en une seule ligne : le vérificateur le constate et refuse ; annuler."],
   "Plan §7 (J4) ; C-14.",
-  contexte=["docs/CONTRACTS.md (C-14)"])
+  contexte=["docs/contracts/C-14.md"])
 
 t("S44.9", "parametre-banc", "Paramètre du banc d'essai suivi de bout en bout", "V", "D", ["S44.7"],
-  ["Sur le banc : un paramètre (par exemple la cadence d'attaque) suivi de sa déclaration à sa valeur observée ; écriture instrumentée ajoutée à `banc/<nom>-instrumentation` ; `tests/integration/run_param_bench.sh`."],
+  ["Sur le banc : un paramètre (par exemple la cadence d'attaque) suivi de sa déclaration à sa valeur observée ; écriture instrumentée ajoutée à `banc/<nom>-instrumentation` (rebasée sur la branche distante avant de pousser) ; `tests/integration/run_param_bench.sh`."],
   ["tests/integration/run_param_bench.sh", "benches/<nom>/flow.json", "branche banc/<nom>-instrumentation (hors de main)"],
   ["Instrumenter l'écriture dans le banc ; pousser la branche.", "Écrire le test d'intégration.", "Vérifier les quatre sources distinguées."],
   [("S44.9-a", "GODOT=\"$B\" tests/integration/run_param_bench.sh; echo $?", "0, quatre sources distinguées")],
@@ -980,14 +1020,14 @@ t("S44.9", "parametre-banc", "Paramètre du banc d'essai suivi de bout en bout",
 # =====================================================================================================
 
 t("S45.1", "contrat-c15-attentes", "Contrat C-15 : attentes et première divergence", "C", "V", ["S45"],
-  ["Ajouter C-15 : format des attentes, versionné avec le projet (suite d'étapes déclarées, ou session de référence avec sa fenêtre et sa couverture), points d'alignement déclarés, résultat (conforme, première divergence connue, indéterminé), jamais « cause ».",
+  ["Écrire `docs/contracts/C-15.md` : format des attentes, versionné avec le projet (suite d'étapes déclarées, ou session de référence avec sa fenêtre et sa couverture), points d'alignement déclarés, résultat (conforme, première divergence connue, indéterminé), jamais « cause ».",
    "Schéma, fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (section C-15)", "contracts/schemas/expectations.v1.schema.json", "contracts/fixtures/c15/", "tests/contract/test_c15_*.gd", "tests/pending/"],
+  ["docs/contracts/C-15.md", "docs/CONTRACTS.md (index : lien vers C-15)", "contracts/schemas/expectations.v1.schema.json", "tests/contract/fixtures/expectations/", "tests/contract/test_c15_*.gd", "tests/pending/"] + OUTILS_CONTRAT,
   ["Rédiger C-15.", "Écrire schéma et fixtures (conforme, divergente, trou → indéterminé).", "Écrire les tests de contrat et leurs marqueurs."],
-  [("S45.1-a", "python3 tools/check_contracts.py; echo $?", "0"), ("S45.1-b", "python3 tools/validate_fixtures.py --kinds expectations; echo $?", "0")],
+  [("S45.1-a", "python3 tools/check_contracts.py C-15; echo $?", "0"), ("S45.1-b", "python3 tools/validate_fixtures.py; echo $?", "0 ; fixtures expectations comprises")],
   ["(CE) Ajouter un champ « cause » à une fixture de résultat : la validation la rejette ; annuler."],
   "INV-04, INV-05 ; plan §6 (diagnostic V1).",
-  contexte=["docs/CONTRACTS.md (C-06, C-13)", "docs/plan-directeur.md §6"])
+  contexte=["docs/CONTRACTS.md (C-06)", "docs/contracts/C-13.md", "docs/plan-directeur.md §6"])
 
 t("S45.2", "persistance-attentes", "Lecture et écriture des attentes", "D", "C", ["S45.1"],
   ["`persistence/expectations.gd` : sauvegarde atomique, validation à l'import, refus d'une version inconnue ; fichier versionné dans le dossier du projet analysé."],
@@ -996,7 +1036,7 @@ t("S45.2", "persistance-attentes", "Lecture et écriture des attentes", "D", "C"
   [("S45.2-a",) + tests("test_expectations_io"), ("S45.2-b",) + DEPS],
   ["(CE) Accepter une version inconnue : le test échoue ; annuler."],
   "C-15 ; plan §8 (formats versionnés).",
-  contexte=["docs/CONTRACTS.md (C-10, C-15)"])
+  contexte=["docs/contracts/C-10.md", "docs/contracts/C-15.md"])
 
 t("S45.3", "session-reference", "Session de référence", "D", "V", ["S45.2"],
   ["Marquer une session enregistrée comme référence d'un scénario ; en dériver une attente avec sa fenêtre, sa configuration et sa couverture."],
@@ -1005,7 +1045,7 @@ t("S45.3", "session-reference", "Session de référence", "D", "V", ["S45.2"],
   [("S45.3-a",) + tests("test_reference_session"), ("S45.3-b",) + DEPS],
   ["(CE) Dériver une attente sans couverture : le test échoue ; annuler."],
   "C-15 ; INV-04.",
-  contexte=["docs/CONTRACTS.md (C-15)"])
+  contexte=["docs/contracts/C-15.md"])
 
 t("S45.4", "alignement", "Alignement des étapes attendues et observées", "D", "V", ["S45.1"],
   ["`projections/step_alignment.gd` : aligne les étapes par clé de sonde et structure d'invocation, puis par les points d'alignement déclarés ; une étape sans correspondance reste « non observée », jamais « non exécutée »."],
@@ -1014,7 +1054,7 @@ t("S45.4", "alignement", "Alignement des étapes attendues et observées", "D", 
   [("S45.4-a",) + tests("test_step_alignment"), ("S45.4-b",) + DEPS],
   ["(CE) Aligner par la seule proximité temporelle : le test de boucle échoue ; annuler."],
   "INV-04, INV-05 ; C-15.",
-  contexte=["docs/CONTRACTS.md (C-15)"])
+  contexte=["docs/contracts/C-15.md"])
 
 t("S45.5", "premiere-divergence", "Première divergence connue", "D", "V", ["S45.3", "S45.4"],
   ["`projections/divergence.gd` : première divergence connue avec ses preuves ; une lacune avant elle rend le résultat « indéterminé » ; activer les tests C-15 ; audit des affirmations."],
@@ -1023,17 +1063,17 @@ t("S45.5", "premiere-divergence", "Première divergence connue", "D", "V", ["S45
   [("S45.5-a",) + tests("test_divergence", "test_c15"), ("S45.5-b",) + DEPS],
   ["(CE) Ignorer une lacune dans la session fautive : le résultat devrait être « indéterminé » et le test échoue (contre-épreuve de la porte de P12) ; annuler."],
   "C-15 ; INV-04 ; règle des affirmations de v1.md.",
-  contexte=["docs/CONTRACTS.md (C-15)"])
+  contexte=["docs/contracts/C-15.md"])
 
 t("S45.6", "vue-attendu", "Vue Attendu contre observé", "D", "V", ["S45.5"],
-  ["`ui/expected_view.gd` et `.tscn` : attente et session côte à côte, première divergence connue mise en tête avec ses preuves, état « indéterminé » expliqué par les lacunes ; déclaration d'un point d'alignement depuis la vue."],
-  ["addons/godot_dev_mapper/ui/expected_view.gd", "addons/godot_dev_mapper/ui/expected_view.tscn", "rapports/S45.6/"],
-  ["Écrire la vue.", "La brancher au panneau.", "Captures."],
+  ["Onglet `ui/vues/attendu/` (expected_view.gd et .tscn, et son vue.gd selon la convention de S39.12) : attente et session côte à côte, première divergence connue mise en tête avec ses preuves, état « indéterminé » expliqué par les lacunes ; déclaration d'un point d'alignement depuis la vue."],
+  ["addons/godot_dev_mapper/ui/vues/attendu/", "rapports/S45.6/"],
+  ["Écrire la vue.", "Écrire `vue.gd` : l'onglet apparaît sans autre fichier modifié.", "Captures par `capture_onglet.sh`."],
   [("S45.6-a", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
-   ("S45.6-b", "ls rapports/S45.6/*.png | wc -l", "au moins 2")],
+   ("S45.6-b", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh attendu rapports/S45.6/attendu.png && ls rapports/S45.6/*.png | wc -l", "au moins 2")],
   ["(CE) Libeller la divergence « cause » : le vérificateur refuse ; annuler."],
   "C-15 ; INV-05.",
-  contexte=["docs/CONTRACTS.md (C-15)"])
+  contexte=["docs/contracts/C-15.md"])
 
 t("S45.7", "attendu-banc", "Sessions de référence et fautive du banc d'essai", "V", "D", ["S45.5"],
   ["Enregistrer une session de référence du banc et une session fautive (une branche de bug de T19) ; `tests/integration/run_expected_bench.sh` situe la divergence avec ses preuves."],
@@ -1050,14 +1090,14 @@ t("S45.7", "attendu-banc", "Sessions de référence et fautive du banc d'essai",
 # =====================================================================================================
 
 t("S46.1", "contrat-c16-explain", "Contrat C-16 : explication, suggestions, points d'intervention", "C", "V", ["S46"],
-  ["Ajouter C-16 : explication = phrases, chacune avec ses preuves ; inconnues listées ; vérification suggérée, marquée comme suggestion, avec statut (proposée, acceptée, refusée par l'humain) ; point d'intervention = fichier, fonction, paramètre et portée (définitions et instances touchées).",
+  ["Écrire `docs/contracts/C-16.md` : explication = phrases, chacune avec ses preuves ; inconnues listées ; vérification suggérée, marquée comme suggestion, avec statut (proposée, acceptée, refusée par l'humain) ; point d'intervention = fichier, fonction, paramètre et portée (définitions et instances touchées).",
    "Aucune intention inventée : une phrase sans preuve est invalide. Fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (section C-16)", "contracts/", "tests/contract/test_c16_*.gd", "tests/pending/"],
+  ["docs/contracts/C-16.md", "docs/CONTRACTS.md (index : lien vers C-16)", "contracts/", "tests/contract/fixtures/", "tests/contract/test_c16_*.gd", "tests/pending/"] + OUTILS_CONTRAT,
   ["Rédiger C-16.", "Écrire fixtures (valide, phrase sans preuve, suggestion non marquée).", "Écrire les tests de contrat et leurs marqueurs."],
-  [("S46.1-a", "python3 tools/check_contracts.py; echo $?", "0"), ("S46.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
+  [("S46.1-a", "python3 tools/check_contracts.py C-16; echo $?", "0"), ("S46.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
   ["(CE) Retirer les preuves d'une phrase dans une fixture valide : la validation la rejette ; annuler."],
   "Plan §3 (CAP-16) et §6 ; règle des affirmations de v1.md.",
-  contexte=["docs/CONTRACTS.md (C-13, C-14, C-15)"])
+  contexte=["docs/contracts/C-13.md", "docs/contracts/C-14.md", "docs/contracts/C-15.md"])
 
 t("S46.2", "points-intervention", "Points d'intervention et portée", "D", "V", ["S46.1"],
   ["`projections/intervention_points.gd` : à partir d'une divergence, d'une décision ou d'un paramètre, les fichiers, fonctions et paramètres où intervenir, avec la portée calculée par les appelants (P5) et les instances (P10)."],
@@ -1066,7 +1106,7 @@ t("S46.2", "points-intervention", "Points d'intervention et portée", "D", "V", 
   [("S46.2-a",) + tests("test_intervention_points"), ("S46.2-b",) + DEPS],
   ["(CE) Omettre les appelants d'une fonction dans la portée : le test échoue ; annuler."],
   "C-16 ; CAP-16 (fichier, fonction, paramètre et portée affichés).",
-  contexte=["docs/CONTRACTS.md (C-09, C-13, C-16)"])
+  contexte=["docs/contracts/C-09.md", "docs/contracts/C-13.md", "docs/contracts/C-16.md"])
 
 t("S46.3", "explications", "Explications fondées sur les preuves", "D", "C", ["S46.1"],
   ["`projections/explain.gd` : phrases construites à partir des faits du modèle (divergence, décisions observées, paramètres, lacunes), chacune avec ses preuves ; inconnues listées ; aucune intention ni cause affirmée ; audit des affirmations sur toutes les fixtures."],
@@ -1075,7 +1115,7 @@ t("S46.3", "explications", "Explications fondées sur les preuves", "D", "C", ["
   [("S46.3-a",) + tests("test_explain", "test_c16"), ("S46.3-b",) + DEPS],
   ["(CE) Produire une phrase « l'ennemi voulait fuir » : l'audit la rejette (intention inventée) ; annuler."],
   "C-16 ; INV-05.",
-  contexte=["docs/CONTRACTS.md (C-16)"])
+  contexte=["docs/contracts/C-16.md"])
 
 t("S46.4", "verifications-suggerees", "Vérifications suggérées", "D", "V", ["S46.1"],
   ["`projections/suggest_checks.gd` : suggestions marquées comme telles (poser une sonde, enregistrer un scénario, comparer deux instances, déclarer un point d'alignement), chacune justifiée par une lacune ou une inconnue précise."],
@@ -1084,7 +1124,7 @@ t("S46.4", "verifications-suggerees", "Vérifications suggérées", "D", "V", ["
   [("S46.4-a",) + tests("test_suggest_checks"), ("S46.4-b",) + DEPS],
   ["(CE) Produire une suggestion sans justification : le test échoue ; annuler."],
   "C-16 ; P13 (suggestions marquées, validées par l'humain).",
-  contexte=["docs/CONTRACTS.md (C-16)"])
+  contexte=["docs/contracts/C-16.md"])
 
 t("S46.5", "annotations", "Annotations et validation humaine", "D", "C", ["S46.1"],
   ["`persistence/annotations.gd` : annotations et suggestions avec auteur, date et statut ; sauvegarde atomique ; une réindexation n'écrase jamais une annotation humaine."],
@@ -1093,17 +1133,17 @@ t("S46.5", "annotations", "Annotations et validation humaine", "D", "C", ["S46.1
   [("S46.5-a",) + tests("test_annotations"), ("S46.5-b",) + DEPS],
   ["(CE) Réindexer en remplaçant les annotations : le test échoue ; annuler."],
   "Plan §5 (annotations jamais écrasées) ; C-16.",
-  contexte=["docs/plan-directeur.md §5", "docs/CONTRACTS.md (C-16)"])
+  contexte=["docs/plan-directeur.md §5", "docs/contracts/C-16.md"])
 
 t("S46.6", "vue-explain-tune", "Vue Explain et Tune", "D", "V", ["S46.2", "S46.3", "S46.4", "S46.5"],
-  ["`ui/explain_view.gd` et `.tscn` : explication, chaque phrase avec ses preuves ; vérifications suggérées à accepter ou refuser ; points d'intervention avec portée et ouverture du code."],
-  ["addons/godot_dev_mapper/ui/explain_view.gd", "addons/godot_dev_mapper/ui/explain_view.tscn", "rapports/S46.6/"],
-  ["Écrire la vue.", "La brancher au panneau.", "Captures."],
+  ["Onglet `ui/vues/explain/` (explain_view.gd et .tscn, et son vue.gd selon la convention de S39.12) : explication, chaque phrase avec ses preuves ; vérifications suggérées à accepter ou refuser ; points d'intervention avec portée et ouverture du code."],
+  ["addons/godot_dev_mapper/ui/vues/explain/", "rapports/S46.6/"],
+  ["Écrire la vue.", "Écrire `vue.gd` : l'onglet apparaît sans autre fichier modifié.", "Captures par `capture_onglet.sh`."],
   [("S46.6-a", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
-   ("S46.6-b", "ls rapports/S46.6/*.png | wc -l", "au moins 2")],
+   ("S46.6-b", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh explain rapports/S46.6/explain.png && ls rapports/S46.6/*.png | wc -l", "au moins 2")],
   ["(CE) Accepter une suggestion sans action humaine : le vérificateur refuse ; annuler."],
   "C-16 ; plan §7.",
-  contexte=["docs/CONTRACTS.md (C-16)"])
+  contexte=["docs/contracts/C-16.md"])
 
 t("S46.7", "bugs-v1", "Nouveaux bugs injectés à l'aveugle", "V", "C", ["S46"],
   ["Créer `banc/<nom>-bug-4` à `-bug-6` depuis l'instrumentation la plus récente, un bug par branche, de difficulté comparable, et une enveloppe scellée dans la branche orpheline `banc/<nom>-enveloppe-2` ; seuls les symptômes vont dans `rapports/S46.7.md`.",
@@ -1134,21 +1174,22 @@ t("S46.8", "mesure-diagnostic-v1", "Mesure du diagnostic assisté, par substitut
 # V1 — P14 Performance corrélée, CAP-17 (revue S47)
 # =====================================================================================================
 
-t("S47.1", "contrat-metric", "Contrat : événement metric et coût de capture", "C", "V", ["S47"],
-  ["Étendre C-04 et C-07 : événement metric (moniteur, valeur, frame), configuration de l'échantillonneur (moniteurs, période), événement de coût de capture (temps passé dans FlowTrace par frame) ; corrélation dans le temps jamais présentée comme une cause.",
+t("S47.1", "contrat-metric", "Contrat : événement metric et coût de capture", "C", "V", ["S47", "S44.1"],
+  ["Compléter la version 3 de C-04 et C-07, après S42.1 et S44.1 : événement metric (moniteur, valeur, frame), configuration de l'échantillonneur (moniteurs, période), événement de coût de capture (temps passé dans FlowTrace par frame) ; corrélation dans le temps jamais présentée comme une cause.",
    "Fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (C-04, C-07)", "contracts/", "tests/contract/test_c04_metric.gd", "tests/pending/"],
-  ["Rédiger les extensions et l'analyse d'impact.", "Écrire fixtures et tests de contrat, marqueurs au nom de S47.2 et S47.3."],
-  [("S47.1-a", "python3 tools/check_contracts.py; echo $?", "0"), ("S47.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
+  ["docs/CONTRACTS.md (C-04 et C-07 v3)", "contracts/", "tests/contract/fixtures/", "tests/contract/test_c04_metric.gd", "tests/pending/"] + OUTILS_CONTRAT,
+  ["Rédiger les extensions et l'analyse d'impact.", "Écrire fixtures et tests de contrat, marqueur au nom de S47.2."],
+  [("S47.1-a", "python3 tools/check_contracts.py C-04 C-07; echo $?", "0"), ("S47.1-b", "python3 tools/validate_fixtures.py; echo $?", "0")],
   ["(CE) Ajouter « temps CPU par fonction » à une fixture valide : la validation la rejette ; annuler."],
   "Plan §3 (CAP-17 : pas de temps CPU par fonction) ; INV-05.",
   contexte=["docs/CONTRACTS.md (C-04, C-07)"])
 
-t("S47.2", "echantillonneur", "Échantillonneur de moniteurs, côté jeu", "D", "C", ["S47.1"],
+t("S47.2", "echantillonneur", "Échantillonneur de moniteurs, côté jeu", "D", "C", ["S47.1", "S44.6", "S44.3"],
   ["Échantillonner les moniteurs de Godot par la façade runtime (API sensible), à une période configurable, et émettre des événements metric ; coût désactivé inchangé.",
    "Activer les tests de contrat de l'événement metric."],
-  ["addons/godot_dev_mapper_runtime/flow_trace.gd", "addons/godot_dev_mapper_runtime/runtime_facade.gd", "tests/unit/test_metric_sampler.gd", "tests/pending/test_c04_metric.pending (suppression)"],
-  ["Vérifier l'API des moniteurs sur 4.7.2 et la préversion.", "Supprimer le marqueur ; coller l'échec.", "Écrire l'échantillonneur.", "Mesurer le chemin désactivé."],
+  ["addons/godot_dev_mapper_runtime/flow_trace.gd", "addons/godot_dev_mapper_runtime/runtime_facade.gd", "addons/godot_dev_mapper_runtime/envelope.gd", "addons/godot_dev_mapper/protocol/envelope_codec.gd",
+   "tools/deps_rules.json (API des moniteurs)", "tests/unit/test_metric_sampler.gd", "tests/pending/test_c04_metric.pending (suppression)"],
+  ["Vérifier l'API des moniteurs sur 4.7.2 et la préversion ; l'ajouter aux API sensibles de `tools/deps_rules.json`.", "Supprimer le marqueur ; coller l'échec.", "Encoder et décoder l'événement metric (enveloppe et codec).", "Écrire l'échantillonneur.", "Mesurer le chemin désactivé."],
   [("S47.2-a",) + tests("test_metric_sampler", "test_c04_metric"), ("S47.2-b",) + DEPS],
   ["(CE) Lire les moniteurs hors de la façade runtime : check_deps.py le signale ; annuler."],
   "INV-06, INV-09 ; C-04, C-07.",
@@ -1174,17 +1215,17 @@ t("S47.4", "projection-perf", "Projection de corrélation performance ↔ évén
   contexte=["docs/CONTRACTS.md (C-04)"])
 
 t("S47.5", "vue-perf", "Vue performance", "D", "V", ["S47.3", "S47.4"],
-  ["`ui/perf_view.gd` et `.tscn` : courbes, coût de capture affiché, pic sélectionné avec sa fenêtre d'événements ; collecte désactivée : la courbe de coût disparaît."],
-  ["addons/godot_dev_mapper/ui/perf_view.gd", "addons/godot_dev_mapper/ui/perf_view.tscn", "rapports/S47.5/"],
-  ["Écrire la vue.", "La brancher au panneau.", "Captures, collecte active puis désactivée."],
+  ["Onglet `ui/vues/performance/` (perf_view.gd et .tscn, et son vue.gd selon la convention de S39.12) : courbes, coût de capture affiché, pic sélectionné avec sa fenêtre d'événements ; collecte désactivée : la courbe de coût disparaît."],
+  ["addons/godot_dev_mapper/ui/vues/performance/", "rapports/S47.5/"],
+  ["Écrire la vue.", "Écrire `vue.gd` : l'onglet apparaît sans autre fichier modifié.", "Captures par `capture_onglet.sh`, collecte active puis désactivée."],
   [("S47.5-a", "\"$B\" --headless --editor --path . --quit-after 120 2>&1 | grep -cE \"SCRIPT ERROR|ERROR:\"", "0"),
-   ("S47.5-b", "ls rapports/S47.5/*.png | wc -l", "au moins 2")],
+   ("S47.5-b", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh performance rapports/S47.5/performance.png && ls rapports/S47.5/*.png | wc -l", "au moins 2")],
   ["(CE) Laisser la courbe de coût collecte désactivée : le vérificateur le constate et refuse (contre-épreuve de la porte de P14) ; annuler."],
   "CAP-17 ; plan §7.",
   contexte=["docs/construction/v1.md, P14"])
 
-t("S47.6", "pic-banc", "Pic de frame corrélé sur le banc d'essai", "V", "D", ["S47.4"],
-  ["Sur le banc : un scénario qui provoque un pic de temps de frame ; `tests/integration/run_perf_bench.sh` retrouve la fenêtre d'événements du pic."],
+t("S47.6", "pic-banc", "Pic de frame corrélé sur le banc d'essai", "V", "D", ["S47.3", "S47.4"],
+  ["Sur le banc (`banc/<nom>-instrumentation`, rebasée sur la branche distante avant de pousser) : un scénario qui provoque un pic de temps de frame ; `tests/integration/run_perf_bench.sh` retrouve la fenêtre d'événements du pic."],
   ["tests/integration/run_perf_bench.sh", "branche banc/<nom>-instrumentation (hors de main)"],
   ["Écrire le scénario dans le banc ; pousser la branche.", "Écrire le test d'intégration."],
   [("S47.6-a", "GODOT=\"$B\" tests/integration/run_perf_bench.sh; echo $?", "0, pic et fenêtre d'événements trouvés")],
@@ -1198,14 +1239,14 @@ t("S47.6", "pic-banc", "Pic de frame corrélé sur le banc d'essai", "V", "D", [
 # =====================================================================================================
 
 t("S48.1", "contrat-c17-snapshot", "Contrat C-17 : AI Snapshot", "C", "V", ["S48"],
-  ["Ajouter C-17 : JSON d'export (sous-graphe, tranche de trace, lacunes, métadonnées : révision, configuration, scénario, fenêtre, couverture ; liste des champs exclus) et image PNG associée ; export local seulement.",
+  ["Écrire `docs/contracts/C-17.md` : JSON d'export (sous-graphe, tranche de trace, lacunes, métadonnées : révision, configuration, scénario, fenêtre, couverture ; liste des champs exclus) et image PNG associée ; export local seulement.",
    "Schéma, fixtures et tests de contrat avec marqueurs."],
-  ["docs/CONTRACTS.md (section C-17)", "contracts/schemas/ai_snapshot.v1.schema.json", "contracts/fixtures/c17/", "tests/contract/test_c17_snapshot.gd", "tests/pending/test_c17_snapshot.pending"],
+  ["docs/contracts/C-17.md", "docs/CONTRACTS.md (index : lien vers C-17)", "contracts/schemas/ai_snapshot.v1.schema.json", "tests/contract/fixtures/ai_snapshot/", "tests/contract/test_c17_snapshot.gd", "tests/pending/test_c17_snapshot.pending"] + OUTILS_CONTRAT,
   ["Rédiger C-17.", "Écrire schéma et fixtures (sans lacunes : invalide).", "Écrire le test de contrat et son marqueur (S48.2)."],
-  [("S48.1-a", "python3 tools/check_contracts.py; echo $?", "0"), ("S48.1-b", "python3 tools/validate_fixtures.py --kinds ai_snapshot; echo $?", "0")],
+  [("S48.1-a", "python3 tools/check_contracts.py C-17; echo $?", "0"), ("S48.1-b", "python3 tools/validate_fixtures.py; echo $?", "0 ; fixtures ai_snapshot comprises")],
   ["(CE) Retirer les lacunes d'une fixture valide : la validation la rejette ; annuler."],
   "Plan §8 (exports V1) ; CAP-18 ; INV-07.",
-  contexte=["docs/plan-directeur.md §8", "docs/CONTRACTS.md (C-06, C-13)"])
+  contexte=["docs/plan-directeur.md §8", "docs/CONTRACTS.md (C-06)", "docs/contracts/C-13.md"])
 
 t("S48.2", "export-json", "Export JSON : choix des champs et exclusions", "D", "C", ["S48.1"],
   ["`persistence/ai_snapshot.gd` : choix des champs, exclusion des données sensibles (chemins hors du projet, noms d'utilisateur, valeurs de charge marquées sensibles), lacunes toujours incluses ; validation par le schéma ; écriture locale atomique.",
@@ -1215,7 +1256,7 @@ t("S48.2", "export-json", "Export JSON : choix des champs et exclusions", "D", "
   [("S48.2-a",) + tests("test_ai_snapshot", "test_c17_snapshot"), ("S48.2-b",) + DEPS],
   ["(CE) Laisser un champ exclu dans les métadonnées : le test « absent partout » échoue (contre-épreuve de la porte de P15) ; annuler."],
   "C-17 ; export local seulement.",
-  contexte=["docs/CONTRACTS.md (C-17)"])
+  contexte=["docs/contracts/C-17.md"])
 
 t("S48.3", "export-png", "Image PNG cohérente avec le JSON", "D", "V", ["S48.2"],
   ["Rendre la vue courante (sous-graphe et trace) en PNG, avec la même sélection que le JSON ; identifiant commun dans les deux fichiers."],
@@ -1224,17 +1265,17 @@ t("S48.3", "export-png", "Image PNG cohérente avec le JSON", "D", "V", ["S48.2"
   [("S48.3-a", "GODOT=\"$B\" tests/integration/run_snapshot_png.sh; echo $?", "0, PNG et JSON portent le même identifiant")],
   ["(CE) Changer la sélection entre les deux exports : le test d'identifiant commun échoue ; annuler."],
   "C-17 ; CAP-18 (JSON et PNG cohérents).",
-  contexte=["docs/CONTRACTS.md (C-17)"])
+  contexte=["docs/contracts/C-17.md"])
 
 t("S48.4", "apercu", "Aperçu avant partage", "D", "V", ["S48.2"],
-  ["`ui/snapshot_preview.gd` et `.tscn` : montre exactement ce qui sera exporté (champs, exclusions, lacunes) ; l'export ne se fait qu'après confirmation ; aucun envoi réseau."],
-  ["addons/godot_dev_mapper/ui/snapshot_preview.gd", "addons/godot_dev_mapper/ui/snapshot_preview.tscn", "rapports/S48.4/"],
-  ["Écrire l'aperçu.", "Le brancher au panneau.", "Captures."],
+  ["Onglet `ui/vues/apercu/` (snapshot_preview.gd et .tscn, et son vue.gd selon la convention de S39.12) : montre exactement ce qui sera exporté (champs, exclusions, lacunes) ; l'export ne se fait qu'après confirmation ; aucun envoi réseau."],
+  ["addons/godot_dev_mapper/ui/vues/apercu/", "rapports/S48.4/"],
+  ["Écrire l'aperçu.", "Écrire `vue.gd` : l'onglet apparaît sans autre fichier modifié.", "Captures par `capture_onglet.sh`."],
   [("S48.4-a", "grep -rnE \"HTTPRequest|HTTPClient|StreamPeerTCP\" addons/godot_dev_mapper/ | wc -l", "0 (aucun envoi réseau)"),
-   ("S48.4-b", "ls rapports/S48.4/*.png | wc -l", "au moins 1")],
+   ("S48.4-b", "GODOT=\"$B\" tools/harness/editor_driver/capture_onglet.sh apercu rapports/S48.4/apercu.png && ls rapports/S48.4/*.png | wc -l", "au moins 1")],
   ["(CE) Exporter sans passer par l'aperçu : le vérificateur le constate et refuse ; annuler."],
   "P15 (aperçu avant partage, export local).",
-  contexte=["docs/CONTRACTS.md (C-17)"])
+  contexte=["docs/contracts/C-17.md"])
 
 t("S48.5", "snapshot-essai-ia", "Essai de l'export sur des diagnostics réels", "V", "C", ["S48.3", "S48.4"],
   ["Exporter l'AI Snapshot de deux bugs déjà diagnostiqués (T19 ou P13) ; le donner, dans une conversation neuve, à l'une des trois IA avec la seule question « où est le bug ? » ; noter ce qui lui a manqué.",
@@ -1242,7 +1283,7 @@ t("S48.5", "snapshot-essai-ia", "Essai de l'export sur des diagnostics réels", 
   ["docs/mesures/ai-snapshot.md", "rapports/S48.5/ (exports utilisés)"],
   ["Produire les deux exports.", "Mener les deux essais.", "Écrire la mesure et les améliorations proposées."],
   [("S48.5-a", "ls rapports/S48.5/*.json | wc -l", "2"),
-   ("S48.5-b", "python3 tools/validate_fixtures.py --file rapports/S48.5/*.json; echo $?", "0")],
+   ("S48.5-b", "for f in rapports/S48.5/*.json; do python3 tools/validate_fixtures.py --file \"$f\" || exit 1; done; echo $?", "0")],
   ["(CE) Le vérificateur cherche un champ exclu dans les deux exports : absent."],
   "P15 (amélioration : essai avec une IA).",
   contexte=["docs/mesures/valeur-v1-substitution.md"])
@@ -1283,7 +1324,7 @@ t("S49.3", "doc-installation", "Documentation : installation et premiers pas", "
   "Porte de la V1 (documentation testée).",
   contexte=["docs/utilisateur/installation.md (S41.5)"])
 
-t("S49.4", "doc-modes", "Documentation des modes", "V", "D", ["S49"],
+t("S49.4", "doc-modes", "Documentation des modes", "V", "D", ["S49.3"],
   ["`docs/utilisateur/modes.md` : Map, Game Flow, Logic, Data Flow, Runtime, Debug, Explain et Tune, Performance, AI Context ; pour chacun : question à laquelle il répond, limites de preuve, capture."],
   ["docs/utilisateur/modes.md", "docs/utilisateur/images/"],
   ["Écrire une section par mode.", "Ajouter les captures des démonstrations.", "Écrire les limites de preuve de chaque mode."],
@@ -1292,7 +1333,7 @@ t("S49.4", "doc-modes", "Documentation des modes", "V", "D", ["S49"],
   "Plan §3 (modes = projections des capacités) ; INV-04, INV-05.",
   contexte=["docs/plan-directeur.md §3"])
 
-t("S49.5", "doc-instrumentation", "Guide d'instrumentation", "V", "D", ["S49"],
+t("S49.5", "doc-instrumentation", "Guide d'instrumentation", "V", "D", ["S49.3"],
   ["`docs/utilisateur/instrumentation.md` : règles d'appel de FlowTrace (clés littérales, `if FlowTrace.enabled:`), blocs, paramètres, await, coût, désinstallation ; exemples vérifiés par le contrôle des extraits."],
   ["docs/utilisateur/instrumentation.md"],
   ["Écrire le guide.", "Vérifier chaque exemple."],
@@ -1301,7 +1342,7 @@ t("S49.5", "doc-instrumentation", "Guide d'instrumentation", "V", "D", ["S49"],
   "C-07 (règles d'appel) ; plan §6.",
   contexte=["docs/CONTRACTS.md (C-07)"])
 
-t("S49.6", "installation-froid", "Installation à froid par la documentation seule", "C", "D", ["S49.3", "S49.5"],
+t("S49.6", "installation-froid", "Installation à froid par la documentation seule", "C", "D", ["S49.4", "S49.5", "S49.8", "S49.9"],
   ["Dans un projet Godot vierge et un environnement neuf, suivre la seule documentation, sans lire le code ; noter chaque blocage, chaque commande à deviner, chaque écart.",
    "Corriger la documentation ; ce qui demande du code devient une unité de correction."],
   ["docs/utilisateur/", "docs/mesures/installation-froid.md"],
@@ -1323,7 +1364,7 @@ t("S49.7", "demos-v1", "Démonstrations de CAP-12 à CAP-18 rejouées", "D", "V"
   contexte=["docs/construction/v1.md, Porte de la V1"],
   recette=["Démonstrations de la V1 sur ta machine, avec GPU."])
 
-t("S49.8", "desinstallation-v1", "Installation et désinstallation propres de la V1", "V", "D", ["S49.7"],
+t("S49.8", "desinstallation-v1", "Installation et désinstallation propres de la V1", "V", "D", ["S49.3", "S49.7"],
   ["Rejouer `tests/integration/run_install.sh` avec toutes les fonctions de la V1 utilisées : caches retirés, fichiers versionnés du projet (graphes déclarés, attentes, annotations) conservés et listés, aucun autre résidu."],
   ["tests/integration/run_install.sh", "docs/utilisateur/installation.md (section désinstallation)"],
   ["Étendre le scénario.", "Lancer et comparer.", "Documenter ce qui reste volontairement."],

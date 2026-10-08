@@ -19,7 +19,7 @@
 
 - Exécuter chaque point de contrôle de l'étape 1 sur `main` à jour, et noter commande, attendu, obtenu, OK ou KO.
 - Décider selon la règle : **passer** si tout est OK (un point « sur ta machine » passe par son équivalent sous écran virtuel, l'humain le revoit à la recette) ; **corriger d'abord** si un point est KO.
-- Si un point est KO : la décision est « corriger d'abord », avec, dans le rapport, pour chaque point KO, l'unité fautive et la correction attendue. Le vérificateur fusionne alors avec `fusionner S09 --porte-ko` (la ligne **S09** reste ouverte) et crée une unité de correction par point KO avec `python3 suivi/outil.py correction S09 --fautive <Syy> --titre "<correction>" --realise <n> --verifie <m> --ia <n>`, placée juste avant la porte, dans sa piste. La porte se rejoue quand les corrections sont fusionnées : `prendre` remet ses cases à zéro.
+- Si un point est KO : la décision est « corriger d'abord », avec, dans le rapport, pour chaque point KO, l'unité fautive et la correction attendue. La ligne « - Décision : CORRIGER D'ABORD » du rapport (« - Décision : PASSER » sinon) commande la fusion : `fusionner S09 --ia <n>` laisse alors la ligne **S09** ouverte, et le vérificateur crée une unité de correction par point KO avec `python3 suivi/outil.py correction S09 --fautive <Syy> --titre "<correction>" --realise <n> --verifie <m> --ia <n>`, placée juste avant la porte, dans sa piste. La porte se rejoue quand les corrections sont fusionnées : `prendre` remet ses cases à zéro.
 
 ## Fichiers autorisés
 
@@ -69,7 +69,7 @@ RÈGLES NON NÉGOCIABLES
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée : tu colles sa sortie réelle dans le rapport.
 - Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status. Tu ne pousses jamais avec --force.
 - Deux échecs au même contrôle : statut ESCALADE, avec ton diagnostic.
-- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre.
+- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre : python3 suivi/outil.py arreter --ia <n> --unite S09 --raison "<raison>", puis fin du créneau.
 
 TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
 1. git add <les fichiers de la sous-étape> (jamais git add -A).
@@ -129,7 +129,7 @@ Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil
 - [ ] R8 PC1.8 exécuté et noté (adaptation de la fiche s’il y en a une). ⟶ cocher S09 R8
 - [ ] R9 PC1.9 exécuté et noté (adaptation de la fiche s’il y en a une). ⟶ cocher S09 R9
 - [ ] R10 PC1.10 exécuté et noté (adaptation de la fiche s’il y en a une). ⟶ cocher S09 R10
-- [ ] R11 Décision écrite dans le rapport : passer, ou corriger d’abord avec, par point KO, l’unité fautive et la correction attendue. ⟶ cocher S09 R11
+- [ ] R11 Décision écrite dans le rapport, sur la ligne « - Décision : PASSER » ou « - Décision : CORRIGER D'ABORD » (la commande `cocher` de la dernière case R la contrôle) ; si corriger d’abord : par point KO, l’unité fautive et la correction attendue. ⟶ cocher S09 R11
 - [ ] R12 « Statut : TERMINÉ » dans le rapport ⟶ cocher S09 R12
 
 ## Prompt de vérification
@@ -141,6 +141,7 @@ PRISE, depuis ton clone principal
 python3 suivi/outil.py prendre S09 --ia <n> --verification
 - « VÉRIFICATION PRISE » : copie neuve ../verif-S09-porte-1 créée sur origin/tache/S09-porte-1, verdict EN COURS écrit, V1 cochée. cd ../verif-S09-porte-1 : toute la vérification se fait dans ce dossier.
 - « REFUSÉ » : une autre IA vérifie déjà, tu es auteur, ou l'unité n'est pas terminée : reviens au prompt de créneau.
+- Créneau fini avant le verdict : au créneau suivant, etat te propose la même commande ; elle recrée la copie (« VÉRIFICATION REPRISE ») et tu reprends à la première case V ouverte.
 GODOT : même procédure que le prompt de réalisation.
 Tu ne modifies aucun fichier de l'unité. Tu écris seulement ton verdict et tes cases V.
 
@@ -169,9 +170,9 @@ VERDICT dans rapports/S09-verif-<tentative>.md (créé par la prise) :
 - Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
 - Doutes non bloquants : liste courte
 
-SI ACCEPTÉE — FUSION, depuis ton clone principal
-1. python3 suivi/outil.py fusionner S09 --ia <n> --godot "$B" [--porte-ko si la décision est « corriger d'abord »]
-   Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S09-porte-1, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
+SI ACCEPTÉE — FUSION, depuis ton clone principal (cd hors de ../verif-S09-porte-1)
+1. python3 suivi/outil.py fusionner S09 --ia <n>   (la ligne « Décision » du rapport fait foi : CORRIGER D'ABORD laisse la ligne de la porte ouverte)
+   Elle trouve Godot (--godot, $GODOT, cache du bloc GODOT ou tools/ci/fetch_godot.sh ; sans Godot : REFUSÉ, verdict inchangé), prend le verrou de main (et attend s'il est pris), revérifie l'unité, fusionne dans ../fusion-S09-porte-1, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité. La fusion te revient parce que tu as signé le verdict ; une autre IA ne la fait qu'après 12 h.
 2. cd ../fusion-S09-porte-1 ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S09 F<k> --ia <n> (commit local, sans poussée).
    Porte KO : dans ../fusion-S09-porte-1, pour chaque point KO : python3 suivi/outil.py correction S09 --fautive <Syy> --titre "<correction>" --realise <n> --verifie <m> --ia <n>.
 3. python3 suivi/outil.py publier S09 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
@@ -201,7 +202,7 @@ Dans `../verif-S09-porte-1`, après chaque sous-étape : `git add` du verdict, p
 
 F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S09-porte-1`, par `python3 suivi/outil.py cocher S09 F<k> --ia <n>` (commit local).
 
-- [ ] F1 Fusion : `python3 suivi/outil.py fusionner S09 --ia <n> --godot "$B"` (ajoute `--porte-ko` si la décision est « corriger d'abord » : la ligne reste ouverte) : verrou de `main`, fusion `--no-ff` dans `../fusion-S09-porte-1`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S09** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F1 Fusion, depuis le clone principal : `python3 suivi/outil.py fusionner S09 --ia <n>` (la décision du rapport fait foi : « CORRIGER D'ABORD » laisse la ligne ouverte) : Godot trouvé seul (--godot, $GODOT, cache du bloc GODOT ou fetch_godot.sh), verrou de `main`, fusion `--no-ff` dans `../fusion-S09-porte-1`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S09** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
 - [ ] F2 Porte KO : une unité de correction par point KO, créée par `python3 suivi/outil.py correction S09 …` ; porte passée : « sans objet » dans le verdict. ⟶ cocher S09 F2
 - [ ] F3 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S09 F3
 - [ ] F4 Publication : `python3 suivi/outil.py publier S09 --ia <n>` (verifier OK, `main` poussée, branche `tache/S09-porte-1` supprimée, verrou rendu) ⟶ cochée par `publier`

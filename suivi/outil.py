@@ -7,15 +7,17 @@ Pour les IA, pendant un créneau (toujours avec ton numéro d'IA) :
     python3 suivi/outil.py prendre Sxx --ia N --verification prendre sa vérification (copie neuve, coche V1)
     python3 suivi/outil.py cocher Sxx R3 --ia N              cocher et signer une sous-étape, commit, push
     python3 suivi/outil.py cocher Sxx V8 --ia N --verdict ACCEPTÉE
-    python3 suivi/outil.py fusionner Sxx --ia N [--godot B] [--porte-ko]
+    python3 suivi/outil.py fusionner Sxx --ia N [--godot B]  fusion sous le verrou de main (Godot trouvé seul sinon)
     python3 suivi/outil.py publier Sxx --ia N                pousser main, supprimer la branche, rendre le verrou
     python3 suivi/outil.py correction Sxx --fautive Syy --titre "…" --realise N --verifie M --ia N
+    python3 suivi/outil.py arreter --ia N --raison "…" [--unite Sxx]   arrêt obligatoire : rapports/ARRET.md sur main
     python3 suivi/outil.py verrou etat | prendre --ia N --motif "…" | rendre --ia N
 
 Pour la cohérence et l'affichage :
     python3 suivi/outil.py verifier                          cohérence de SUIVI.md et des fiches
     python3 suivi/outil.py generer [--force]                 régénère SUIVI.md et les fiches depuis le guide
     python3 suivi/outil.py tableau [--sans-fetch]            régénère suivi/tableau.html
+    python3 suivi/outil.py calendrier                        fin estimée du POC, du MVP et de la V1, par simulation
 
 Bibliothèque standard seulement. Règles : docs/construction/sequence.md.
 """
@@ -70,6 +72,16 @@ def main():
     co.add_argument("--realise", type=numero_ia, required=True)
     co.add_argument("--verifie", type=numero_ia, required=True)
     co.add_argument("--ia", type=numero_ia, required=True)
+    ar = sp.add_parser("arreter")
+    ar.add_argument("--ia", type=numero_ia, required=True)
+    ar.add_argument("--raison", required=True)
+    ar.add_argument("--unite", default=None)
+    ar.add_argument("--preuve", default=None)
+    ar.add_argument("--humain", default=None, help="ce qu'il faut de l'humain")
+    ca = sp.add_parser("calendrier")
+    ca.add_argument("--mode", choices=["rotation", "simultane"], default=None)
+    ca.add_argument("--ratio", type=float, default=None)
+    ca.add_argument("--relais", type=float, default=None, help="heures avant relais (12 par défaut)")
     v = sp.add_parser("verrou")
     v.add_argument("action", choices=["etat", "prendre", "rendre"])
     v.add_argument("--ia", type=numero_ia)
@@ -85,6 +97,11 @@ def main():
         import tableau
         tableau.ecrire(fetch=not a.sans_fetch, sortie=a.sortie)
         return
+    if a.cmd == "calendrier":
+        import calendrier
+        import commun
+        calendrier.calendrier(a.mode, a.ratio, a.relais if a.relais is not None else commun.RELAIS_H)
+        return
     import travail
     if a.cmd == "etat":
         travail.etat(a.ia)
@@ -98,6 +115,8 @@ def main():
         travail.publier(a.unite, a.ia)
     elif a.cmd == "correction":
         travail.correction(a.porte, a.fautive, a.titre, a.realise, a.verifie, a.ia)
+    elif a.cmd == "arreter":
+        travail.arreter(a.ia, a.raison, a.unite, a.preuve, a.humain)
     elif a.cmd == "verrou":
         if a.action != "etat" and a.ia is None:
             ap.error("verrou prendre et verrou rendre demandent --ia")

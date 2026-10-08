@@ -18,7 +18,7 @@
 
 - Préparer `fake_editor.gd --record` et `tools/gdm_query.gd`, puis diagnostiquer les trois bugs : 1 avec l'outil, 2 sans, 3 avec, sans avoir lu l'enveloppe.
 - Compter pour chaque bug les exécutions, lectures, modifications temporaires et le temps ; proposer la cause ; ouvrir l'enveloppe seulement après ; écrire `docs/mesures/valeur-poc-substitution.md`.
-- Appliquer le critère d'arrêt : si l'outil n'a aidé sur aucun des bugs 1 et 3, écrire `rapports/ARRET.md`.
+- Appliquer le critère d'arrêt : si l'outil n'a aidé sur aucun des bugs 1 et 3, déclencher l'arrêt obligatoire avec `python3 suivi/outil.py arreter` (il écrit `rapports/ARRET.md` sur `main`, sous le verrou) ; sinon, écrire « critère d'arrêt : non atteint » dans la mesure.
 
 ## Fichiers autorisés
 
@@ -64,7 +64,7 @@ RÈGLES NON NÉGOCIABLES
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée : tu colles sa sortie réelle dans le rapport.
 - Tu n'ajoutes à Git que des fichiers nommés : jamais git add -A sans relire git status. Tu ne pousses jamais avec --force.
 - Deux échecs au même contrôle : statut ESCALADE, avec ton diagnostic.
-- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre.
+- Une décision réservée à l'humain (docs/construction/sequence.md §5) : arrêt obligatoire, rien d'autre : python3 suivi/outil.py arreter --ia <n> --unite S34 --raison "<raison>", puis fin du créneau.
 
 TRACE OBLIGATOIRE, après CHAQUE sous-étape et avant la suivante
 1. git add <les fichiers de la sous-étape> (jamais git add -A).
@@ -91,7 +91,7 @@ Ensuite seulement, récupère l'enveloppe, note l'heure, et note pour chaque bug
 
 RAPPORT dans docs/mesures/valeur-poc-substitution.md : le tableau de T19 adapté (colonnes : bug, branche, avec l'outil, préparation, exécutions, lectures, modifications, temps, cause proposée, confiance, cause exacte), puis une conclusion qualitative. Écris en tête : « Signal mesuré pour un agent, pas pour une personne ; la mesure humaine se fait à la recette. »
 
-CRITÈRE D'ARRÊT : l'outil a aidé sur un bug s'il a permis de trouver la cause exacte avec moins d'exécutions qu'au bug 2, ou là où le bug 2 n'a pas été trouvé. S'il n'a aidé ni sur le bug 1 ni sur le bug 3, écris rapports/ARRET.md (raison, preuves, ce qu'il faut de l'humain), pousse-le sur main et arrête-toi.
+CRITÈRE D'ARRÊT : l'outil a aidé sur un bug s'il a permis de trouver la cause exacte avec moins d'exécutions qu'au bug 2, ou là où le bug 2 n'a pas été trouvé. S'il n'a aidé ni sur le bug 1 ni sur le bug 3 : python3 suivi/outil.py arreter --ia <n> --unite S34 --raison "S34 : aucun signal d'utilité au POC" --preuve "docs/mesures/valeur-poc-substitution.md sur la branche de S34", puis arrête-toi. La commande écrit rapports/ARRET.md sur main, sous le verrou ; ta branche n'est jamais poussée sur main.
 TRAVAIL TECHNIQUE — fin
 
 CONTRÔLES DE LA FICHE
@@ -148,6 +148,7 @@ PRISE, depuis ton clone principal
 python3 suivi/outil.py prendre S34 --ia <n> --verification
 - « VÉRIFICATION PRISE » : copie neuve ../verif-S34-T19-diagnostic créée sur origin/tache/S34-T19-diagnostic, verdict EN COURS écrit, V1 cochée. cd ../verif-S34-T19-diagnostic : toute la vérification se fait dans ce dossier.
 - « REFUSÉ » : une autre IA vérifie déjà, tu es auteur, ou l'unité n'est pas terminée : reviens au prompt de créneau.
+- Créneau fini avant le verdict : au créneau suivant, etat te propose la même commande ; elle recrée la copie (« VÉRIFICATION REPRISE ») et tu reprends à la première case V ouverte.
 GODOT : même procédure que le prompt de réalisation.
 Tu ne modifies aucun fichier de l'unité. Tu écris seulement ton verdict et tes cases V.
 
@@ -175,9 +176,9 @@ VERDICT dans rapports/S34-verif-<tentative>.md (créé par la prise) :
 - Problèmes : numérotés, avec fichier, ligne et preuve ; « aucun » sinon
 - Doutes non bloquants : liste courte
 
-SI ACCEPTÉE — FUSION, depuis ton clone principal
-1. python3 suivi/outil.py fusionner S34 --ia <n> --godot "$B"
-   Elle prend le verrou de main (et attend s'il est pris), fusionne dans ../fusion-S34-T19-diagnostic, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité.
+SI ACCEPTÉE — FUSION, depuis ton clone principal (cd hors de ../verif-S34-T19-diagnostic)
+1. python3 suivi/outil.py fusionner S34 --ia <n>
+   Elle trouve Godot (--godot, $GODOT, cache du bloc GODOT ou tools/ci/fetch_godot.sh ; sans Godot : REFUSÉ, verdict inchangé), prend le verrou de main (et attend s'il est pris), revérifie l'unité, fusionne dans ../fusion-S34-T19-diagnostic, lance run_all_checks.sh, coche la ligne dans SUIVI.md et la case F1. Si les contrôles échouent : verdict passé à REFUSÉE, main inchangée, verrou rendu ; arrête-toi sur cette unité. La fusion te revient parce que tu as signé le verdict ; une autre IA ne la fait qu'après 12 h.
 2. cd ../fusion-S34-T19-diagnostic ; fais les sous-étapes F suivantes de la fiche, et coche chacune : python3 suivi/outil.py cocher S34 F<k> --ia <n> (commit local, sans poussée).
 3. python3 suivi/outil.py publier S34 --ia <n> : dernière case cochée, verifier relancé, main poussée, branche supprimée, verrou rendu.
 SI REFUSÉE : arrête-toi sur cette unité ; son auteur la reprendra avec prendre.
@@ -204,7 +205,7 @@ Dans `../verif-S34-T19-diagnostic`, après chaque sous-étape : `git add` du ver
 
 F1 et la dernière se cochent par `fusionner` et `publier` ; les autres, dans `../fusion-S34-T19-diagnostic`, par `python3 suivi/outil.py cocher S34 F<k> --ia <n>` (commit local).
 
-- [ ] F1 Fusion : `python3 suivi/outil.py fusionner S34 --ia <n> --godot "$B"` : verrou de `main`, fusion `--no-ff` dans `../fusion-S34-T19-diagnostic`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S34** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F1 Fusion, depuis le clone principal : `python3 suivi/outil.py fusionner S34 --ia <n>` : Godot trouvé seul (--godot, $GODOT, cache du bloc GODOT ou fetch_godot.sh), verrou de `main`, fusion `--no-ff` dans `../fusion-S34-T19-diagnostic`, `tools/ci/run_all_checks.sh` sur `main` → ALL_CHECKS OK s'il existe (sinon fusion annulée et verdict passé à REFUSÉE), ligne **S34** cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
 - [ ] F2 `PROJECT_STATE.md` (s'il existe) : mesures de l'unité ; éléments « Pour la recette » du rapport ajoutés à la liste de recette ⟶ cocher S34 F2
 - [ ] F3 Publication : `python3 suivi/outil.py publier S34 --ia <n>` (verifier OK, `main` poussée, branche `tache/S34-T19-diagnostic` supprimée, verrou rendu) ⟶ cochée par `publier`
 

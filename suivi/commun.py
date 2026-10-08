@@ -12,8 +12,8 @@ RACINE = pathlib.Path(__file__).resolve().parent.parent
 DEPOT = "francoisduperier167-jpg/GODOT_DEV_MAPPER"
 IA_NOMS = {1: "IA 1", 2: "IA 2", 3: "IA 3"}
 IA_ROLES = {1: "conception", 2: "développement", 3: "vérification"}
-ABANDON_H = 6      # sans signature depuis 6 h : une unité en cours peut être reprise
-RELAIS_H = 12      # prête ou à vérifier depuis 12 h : une autre IA peut la prendre
+ABANDON_H = 20     # sans activité datée depuis 20 h (plus que l'écart, nuit comprise, entre deux créneaux d'une IA) : reprise par une autre IA
+RELAIS_H = 12      # prête, à vérifier ou à fusionner depuis 12 h : une autre IA peut la prendre
 VERROU_MIN = 45    # verrou de main plus vieux : périmé
 REF_VERROU = "refs/heads/verrou/main"
 
@@ -25,6 +25,7 @@ RE_FAIT = re.compile(r"fait le (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC")
 RE_ETAPE = re.compile(r"^- \[( |x)\] ((?:Rc|R|V|F)\d+(?:\.\d+)?) (.*)$")
 RE_SIGNE = re.compile(r" — IA ([123]) · (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC(?: · (ACCEPTÉE|REFUSÉE))?$")
 RE_SATELLITE = re.compile(r"^S\d\d\.(\d+|c\d+)$")
+RE_REPRISE = re.compile(r"(?m)^\W*Reprise\s*:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC")
 
 
 def maintenant():
@@ -95,10 +96,21 @@ def prerequis_manquants(S, uid):
     return [d for d in deps_reelles(S, uid) if d not in S["unites"] or not S["unites"][d]["coche"]]
 
 
-def pret_depuis(S, uid):
-    """Date à laquelle le dernier prérequis a été fusionné (None si inconnue ou sans prérequis)."""
+def pret_depuis(S, uid, ref="origin/main", cwd=None):
+    """Date à laquelle l'unité est devenue prête : fusion de son dernier prérequis ou, sans prérequis daté,
+    commit qui a ajouté sa ligne dans SUIVI.md (S01, unités de correction). None si introuvable."""
     dates = [S["unites"][d]["fait"] for d in deps_reelles(S, uid) if d in S["unites"] and S["unites"][d]["fait"]]
-    return lire_date(max(dates)) if dates else None
+    if dates:
+        return lire_date(max(dates))
+    return ligne_ajoutee_le(uid, ref, cwd)
+
+
+def ligne_ajoutee_le(uid, ref="origin/main", cwd=None):
+    p = git("log", "--format=%ct", f"-S**{uid}** ·", ref, "--", "SUIVI.md", cwd=cwd, check=False)
+    ts = p.stdout.split()
+    if p.returncode != 0 or not ts:
+        return None
+    return datetime.datetime.fromtimestamp(int(ts[-1]), datetime.timezone.utc)
 
 
 def branche_de(u):
@@ -128,8 +140,11 @@ def lire_etapes(texte):
     return out
 
 
-def derniere_activite(etapes):
+def derniere_activite(etapes, *autres):
+    """Date la plus récente parmi les signatures des cases et les lignes « Reprise » du rapport et du verdict."""
     dates = [e["date"] for e in etapes if e["date"]]
+    for a in autres:
+        dates += (a or {}).get("reprises", [])
     return lire_date(max(dates)) if dates else None
 
 
@@ -146,7 +161,7 @@ def decocher_ligne(ligne):
 # ---------------------------------------------------------------- rapports
 
 def lire_rapport(texte):
-    r = dict(statut=None, auteurs=[], tentative=1, creneaux=0)
+    r = dict(statut=None, auteurs=[], tentative=1, creneaux=0, reprises=[], escalades=0, decision=None)
     if not texte:
         return r
     m = re.search(r"(?m)^\W*Statut\s*:\s*([A-ZÉ]+)", texte)
@@ -161,11 +176,16 @@ def lire_rapport(texte):
     m = re.search(r"(?m)^\W*Créneaux utilisés\s*:\s*(\d+)", texte)
     if m:
         r["creneaux"] = int(m.group(1))
+    r["reprises"] = RE_REPRISE.findall(texte)
+    r["escalades"] = len(re.findall(r"(?m)^\W*Reprise\s*:.*\bESCALADE\b", texte)) + (r["statut"] == "ESCALADE")
+    m = re.search(r"(?m)^\W*Décision\s*:\s*(PASSER|CORRIGER D['’]ABORD)", texte)
+    if m:
+        r["decision"] = "PASSER" if m.group(1) == "PASSER" else "CORRIGER D'ABORD"
     return r
 
 
 def lire_verdict(texte):
-    v = dict(verdict=None, verificateur=None)
+    v = dict(verdict=None, verificateur=None, reprises=[])
     if not texte:
         return v
     m = re.search(r"(?m)^\W*Verdict\s*:\s*(EN COURS|ACCEPTÉE|REFUSÉE)", texte)
@@ -174,7 +194,30 @@ def lire_verdict(texte):
     m = re.search(r"(?m)^\W*Vérificateur\s*:\s*IA ([123])", texte)
     if m:
         v["verificateur"] = int(m.group(1))
+    v["reprises"] = RE_REPRISE.findall(texte)
     return v
+
+
+def est_porte(u):
+    return u["titre"].startswith("Porte")
+
+
+def resolveur(rap):
+    """IA qui traite une QUESTION ou une ESCALADE : IA 1, ou IA 3 si IA 1 est auteur (§3)."""
+    return 3 if 1 in rap["auteurs"] else 1
+
+
+def arret_requis(etat, rap):
+    """Raison d'un arrêt obligatoire n° 2 (§5) que l'état de l'unité impose, ou None."""
+    if etat == "refusee" and rap["tentative"] >= 3:
+        return f"refusée trois fois (tentative {rap['tentative']})"
+    if etat == "bloquee" and rap["escalades"] >= 2:
+        return "passée deux fois en ESCALADE"
+    if etat == "bloquee" and resolveur(rap) not in rap["auteurs"] and len(rap["auteurs"]) >= 2:
+        return f"{rap['statut']} à traiter par IA {resolveur(rap)}, qui serait la troisième IA auteur : plus personne ne pourrait la vérifier"
+    if len(set(rap["auteurs"])) >= 3:
+        return "les trois IA sont auteurs : plus personne ne peut la vérifier"
+    return None
 
 
 # ---------------------------------------------------------------- état d'une unité
@@ -211,8 +254,9 @@ def carres_unite(S, uid, etapes, branche):
     return carres(etapes, False) if branche else [0.0] * 5
 
 
-def etat_unite(S, uid, etapes, rapport, branche, t=None):
-    """Code d'état, selon docs/construction/sequence.md §3."""
+def etat_unite(S, uid, etapes, rapport, branche, t=None, verdict=None):
+    """Code d'état, selon docs/construction/sequence.md §3. L'activité est la date la plus récente des signatures
+    et des lignes « Reprise » du rapport et du verdict : une reprise remet le compteur d'abandon à zéro."""
     t = t or maintenant()
     u = S["unites"][uid]
     if u["coche"]:
@@ -223,7 +267,7 @@ def etat_unite(S, uid, etapes, rapport, branche, t=None):
         return "bloquee"
     R = [e for e in etapes if e["g"] == "R"]
     V = [e for e in etapes if e["g"] == "V"]
-    act = derniere_activite(etapes)
+    act = derniere_activite(etapes, rapport, verdict)
     vieux = act is not None and (t - act).total_seconds() > ABANDON_H * 3600
     if V and V[-1]["coche"]:
         return "refusee" if V[-1]["verdict"] == "REFUSÉE" else "a_fusionner"
@@ -306,7 +350,7 @@ Les fichiers autorisés de la fiche de {fautive}. Toujours autorisés en plus : 
 ```text
 Tu corriges le défaut relevé par la porte {porte} du projet GODOT_DEV_MAPPER. Réalisation prévue : IA {realise}. Ton numéro d'IA est celui du prompt de créneau.
 1. python3 suivi/outil.py prendre {cid} --ia <n>   (code non nul : l'unité n'est pas pour toi maintenant)
-2. Lis rapports/{porte}.md (point KO, correction attendue) et la fiche de {fautive} dans suivi/ : ses règles, ses fichiers autorisés et ses contrôles s'appliquent.
+2. Lis rapports/{porte}.md (point KO, correction attendue) et la fiche de {fautive} dans suivi/ : ses règles, son bloc GODOT, ses fichiers autorisés et ses contrôles s'appliquent.
 3. Fais la plus petite correction qui rend le point OK sans affaiblir aucun test. Colle les sorties des contrôles dans rapports/{cid}.md.
 TRACE OBLIGATOIRE : après chaque sous-étape, git add des fichiers de la sous-étape, puis python3 suivi/outil.py cocher {cid} <sous-étape> --ia <n>. Une sous-étape non cochée par cette commande est considérée comme non faite.
 ```
@@ -325,7 +369,7 @@ Tu vérifies la correction {cid} du projet GODOT_DEV_MAPPER. Vérification prév
 1. python3 suivi/outil.py prendre {cid} --ia <n> --verification, puis cd dans la copie neuve indiquée.
 2. Périmètre : fichiers de {fautive} seulement. Relance les contrôles de {fautive} et le point KO de la porte {porte}.
 3. Verdict dans rapports/{cid}-verif-<tentative>.md ; dernière case : cocher {cid} V4 --ia <n> --verdict ACCEPTÉE (ou REFUSÉE).
-4. Si ACCEPTÉE : python3 suivi/outil.py fusionner {cid} --ia <n>, puis les cases F, puis python3 suivi/outil.py publier {cid} --ia <n>. La porte {porte} redevient alors disponible : elle sera rejouée.
+4. Si ACCEPTÉE : depuis ton clone principal, python3 suivi/outil.py fusionner {cid} --ia <n> (Godot : la commande le trouve seule, par --godot, $GODOT, le cache du bloc GODOT ou tools/ci/fetch_godot.sh), puis, dans la copie de fusion, les cases F, puis python3 suivi/outil.py publier {cid} --ia <n>. La porte {porte} redevient alors disponible : elle sera rejouée.
 TRACE OBLIGATOIRE : python3 suivi/outil.py cocher {cid} <sous-étape> --ia <n> après chaque sous-étape.
 ```
 
@@ -338,7 +382,7 @@ TRACE OBLIGATOIRE : python3 suivi/outil.py cocher {cid} <sous-étape> --ia <n> a
 
 ## Sous-étapes de fusion (vérificateur, si ACCEPTÉE)
 
-- [ ] F1 `fusionner` : verrou de `main`, fusion, contrôles sur `main`, ligne cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
+- [ ] F1 `fusionner {cid} --ia <n>` depuis le clone principal : verrou de `main`, fusion, contrôles sur `main` avec Godot, ligne cochée dans `SUIVI.md` ⟶ cochée par `fusionner`
 - [ ] F2 `PROJECT_STATE.md` : mesures de l'unité ⟶ cocher {cid} F2
 - [ ] F3 `publier` : `main` poussé, branche supprimée, verrou rendu ⟶ cochée par `publier`
 

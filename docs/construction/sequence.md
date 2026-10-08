@@ -2,7 +2,7 @@
 
 Révision SQ-0.3 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.5 (décision D-09), GC-0.4, OR-0.5 et MC-0.5 · remplace SQ-0.2
 
-**Changements depuis SQ-0.2** : les rôles s'appellent IA 1, IA 2 et IA 3, et tu choisis quelle IA tient chaque numéro ; chaque sous-étape se coche et se signe par une commande, qui commite et pousse ; l'accès simultané au suivi est réglé (prise atomique d'une unité, verrou de `main` pour toute écriture partagée) ; `SUIVI.md` s'organise en pistes autonomes et en rendez-vous ; un tableau de bord graphique, `suivi/tableau.html`, le dessine.
+**Changements depuis SQ-0.2** : les rôles s'appellent IA 1, IA 2 et IA 3, et tu choisis quelle IA tient chaque numéro ; chaque sous-étape se coche et se signe par une commande, qui commite et pousse ; l'accès simultané au suivi est réglé (prise atomique d'une unité, verrou de `main` pour toute écriture partagée, rendu même quand une commande échoue) ; `SUIVI.md` s'organise en pistes autonomes et en rendez-vous ; un tableau de bord graphique, `suivi/tableau.html`, le dessine ; l'arrêt obligatoire passe par `outil.py arreter` ; le calendrier (§8) est calculé par simulation, `outil.py calendrier`.
 
 Ce document fixe les règles quand trois IA construisent le projet à tour de rôle, ou en même temps, sans humain jusqu'à la recette finale.
 
@@ -10,7 +10,7 @@ Ce document fixe les règles quand trois IA construisent le projet à tour de r�
 | --- | --- |
 | `SUIVI.md` | Liste de progression : une ligne par unité, rangée dans sa piste autonome ou son rendez-vous, cochée à la fusion ; recette finale |
 | `suivi/Sxx-*.md` | Fiche d'exécution d'une unité : ce qu'il faut faire, fichiers autorisés, prompts de réalisation et de vérification, sous-étapes R, V et F à cocher |
-| `suivi/outil.py` | Commandes des IA (`etat`, `prendre`, `cocher`, `fusionner`, `publier`, `correction`, `verrou`) ; cohérence (`verifier`) ; génération (`generer`) ; tableau de bord (`tableau`) |
+| `suivi/outil.py` | Commandes des IA (`etat`, `prendre`, `cocher`, `fusionner`, `publier`, `correction`, `arreter`, `verrou`) ; cohérence (`verifier`) ; génération (`generer`) ; tableau de bord (`tableau`) ; calendrier simulé (`calendrier`) |
 | `suivi/tableau.html` | Tableau de bord : cinq carrés par unité, du rouge au vert ; un carré de fond par piste ; bouton « Actualiser » qui relit `SUIVI.md` et les branches sur GitHub |
 | `suivi/_modele-tache.md`, `suivi/_modele-correction.md` | Modèles des fiches créées en cours de route : tâches du MVP et de la V1, corrections demandées par une porte |
 | `docs/construction/etape-*.md`, `mvp.md`, `v1.md` | Conception de chaque tâche. Les fiches en recopient le travail technique à l'identique ; `python3 suivi/outil.py verifier` signale tout écart |
@@ -47,9 +47,9 @@ La colonne « réalise » et la colonne « vérifie » de `SUIVI.md` donnent l'I
 | En attente | Un prérequis n'est pas coché dans `SUIVI.md` |
 | Prête | Prérequis cochés ; aucune branche `tache/<fiche>` sur le dépôt |
 | En cours | Branche présente ; R0 cochée, dernière case R non cochée |
-| Abandonnée | En cours, sans case signée depuis 6 heures |
+| Abandonnée | En cours, sans activité depuis 20 heures : ni case signée, ni ligne « Reprise » datée dans le rapport |
 | À vérifier | Dernière case R cochée (rapport « TERMINÉ »), V1 non cochée |
-| En vérification | V1 cochée, dernière case V non cochée ; abandonnée après 6 heures sans case signée |
+| En vérification | V1 cochée, dernière case V non cochée ; abandonnée après 20 heures sans activité (case signée, ou ligne « Reprise » du verdict) |
 | Refusée | Dernière case V signée « REFUSÉE » |
 | À fusionner | Dernière case V signée « ACCEPTÉE », ligne non cochée dans `SUIVI.md` |
 | Bloquée | Rapport au statut QUESTION ou ESCALADE |
@@ -59,12 +59,12 @@ La colonne « réalise » et la colonne « vérifie » de `SUIVI.md` donnent l'I
 
 Après chaque sous-étape, l'IA ajoute les fichiers de la sous-étape (`git add`, fichiers nommés), puis lance `python3 suivi/outil.py cocher <unité> <sous-étape> --ia <n>`. La commande :
 
-1. refuse une case déjà cochée, une case dont la précédente ne l'est pas, une IA qui n'est pas auteur (cases R) ou pas le vérificateur inscrit (cases V et F) ;
-2. refuse la dernière case R si le rapport ne dit pas « Statut : TERMINÉ », et la dernière case V si le verdict passé à `--verdict` diffère de celui du fichier ;
+1. refuse une case déjà cochée, une case dont la précédente ne l'est pas, une IA qui n'est pas auteur (cases R), pas le vérificateur inscrit (cases V) ou pas celle qui a lancé `fusionner` (cases F) ;
+2. lit le rapport et le verdict tels qu'ils seront commités (après `git add`) : elle refuse la dernière case R si le rapport ne dit pas « Statut : TERMINÉ » (et, pour une porte, « Décision : PASSER » ou « Décision : CORRIGER D'ABORD »), et la dernière case V si le verdict passé à `--verdict` diffère de celui du fichier ;
 3. coche la case et la signe : `— IA n · AAAA-MM-JJ HH:MM UTC`, plus le verdict pour la dernière case V ;
 4. commite, puis pousse sur la branche de l'unité, en se rebasant si une autre poussée l'a précédée. Les cases F sont commitées sur la copie de fusion et poussées par `publier`.
 
-R0 se coche par `prendre`, V1 par `prendre --verification`, F1 par `fusionner` et la dernière case F par `publier`. `python3 suivi/outil.py verifier` refuse une case cochée sans signature, une case cochée après une case ouverte, et une ligne cochée dans `SUIVI.md` dont la fiche a une case ouverte. Le vérificateur contrôle en V2 que chaque case R a son commit.
+R0 se coche par `prendre`, V1 par `prendre --verification`, F1 par `fusionner` et la dernière case F par `publier`. `python3 suivi/outil.py verifier` refuse une case cochée sans signature, une case cochée après une case ouverte, une ligne cochée dans `SUIVI.md` dont la fiche a une case ouverte, et une fiche dont les rôles ou les prérequis diffèrent de sa ligne de `SUIVI.md`. Le vérificateur contrôle en V2 que chaque case R a son commit.
 
 ### Accès simultané
 
@@ -75,25 +75,27 @@ Toutes les IA peuvent lire `SUIVI.md`, les fiches et les branches en même temps
 | Prise d'une unité | `prendre` : crée `tache/<fiche>` depuis `main`, rapport « EN COURS », R0 signée, puis poussée sans `--force` | Si deux IA prennent la même unité au même moment, le dépôt refuse la seconde poussée ; la commande nettoie et répond REFUSÉ |
 | Fiche et rapport d'une unité | L'IA qui la tient, sur sa branche, par `cocher` | Une seule IA par branche ; une reprise ajoute un commit, et deux reprises simultanées se départagent comme une prise |
 | Prise d'une vérification | `prendre --verification` : copie neuve `../verif-<fiche>`, `rapports/Sxx-verif-<t>.md` au verdict EN COURS, V1 signée, poussée sur la branche | Même garantie : la seconde IA est refusée |
-| `main` : `SUIVI.md`, `PROJECT_STATE.md`, `docs/DECISIONS.md`, `rapports/ARRET.md` | Seulement sous le verrou de `main` : `fusionner` puis `publier`, `correction`, ou `verrou prendre` puis `verrou rendre` | Le verrou est la branche `verrou/main`, créée par une poussée qui échoue si elle existe déjà (`--force-with-lease=refs/heads/verrou/main:`). Une IA qui le trouve pris attend jusqu'à 30 minutes. Un verrou de plus de 45 minutes est périmé et supprimé. Seule l'IA qui le tient le rend |
-| Branches `banc/<nom>-*` | L'unité qui les crée (S08, S25, S33) | Une seule unité par branche |
+| `main` : `SUIVI.md`, `PROJECT_STATE.md`, `docs/DECISIONS.md`, `rapports/ARRET.md` | Seulement sous le verrou de `main` : `fusionner` puis `publier`, `correction` (pendant la fusion d'une porte), `arreter`, ou `verrou prendre` puis `verrou rendre` | Le verrou est la branche `verrou/main`, créée par une poussée qui échoue si elle existe déjà (`--force-with-lease=refs/heads/verrou/main:`). Une IA qui le trouve pris attend jusqu'à 30 minutes. Un verrou de plus de 45 minutes est périmé et supprimé. Seule l'IA qui le tient le rend ; une commande qui échoue en route le rend elle-même |
+| Branches `banc/<nom>-*` | L'unité qui les crée (S08, S25, S33) ; ensuite, les tâches qui instrumentent le banc (S40.6, S42.6, S43.6, S44.9, S47.6) y ajoutent leurs commits | Une poussée refusée se rebase sur la branche distante puis repart, jamais `--force` |
 
 Aucune IA ne modifie `SUIVI.md` à la main. Les commandes ne poussent jamais avec `--force`, sauf pour créer et rendre le verrou, toujours avec la garantie `--force-with-lease`.
 
 ### Relais, abandon, questions
 
-- **Abandon.** Une unité en cours ou en vérification sans case signée depuis 6 heures peut être reprise par une autre IA : `prendre` l'inscrit parmi les auteurs (ou comme vérificateur) et l'IA reprend à la première case ouverte.
-- **Relais.** Une unité prête, ou à vérifier, depuis 12 heures sans que l'IA prévue l'ait prise, peut être prise par une autre IA, jamais par un auteur pour la vérifier.
+- **Reprise par la même IA.** L'auteur d'une unité en cours, ou le vérificateur d'une vérification en cours, la reprend au créneau suivant avec la même commande (`prendre`, ou `prendre --verification`, qui recrée la copie `../verif-*`) ; `etat` la lui propose.
+- **Abandon.** Une unité en cours ou en vérification sans activité depuis 20 heures (plus que l'écart normal, nuit comprise, entre deux créneaux d'une même IA) peut être reprise par une autre IA : `prendre` l'inscrit parmi les auteurs (ou comme vérificateur) et l'IA reprend à la première case ouverte. Chaque reprise écrit une ligne « Reprise » datée dans le rapport (ou le verdict), qui remet le compteur à zéro : deux IA ne reprennent jamais la même unité l'une après l'autre.
+- **Relais.** Une unité prête, à vérifier ou à fusionner depuis 12 heures sans que l'IA prévue l'ait prise peut être prise par une autre IA, jamais par un auteur pour la vérifier ou la fusionner. Sans prérequis daté (S01, unités de correction), les 12 heures partent de l'ajout de la ligne dans `SUIVI.md`. Si le vérificateur prévu est devenu auteur, la vérification revient tout de suite à une IA non auteur.
+- **Trois auteurs, jamais.** `prendre` refuse d'inscrire une troisième IA auteur : plus personne ne pourrait vérifier l'unité. Si elle ne peut plus avancer autrement, c'est l'arrêt obligatoire n° 2 (§5), que `etat` signale en tête.
 - **Question ou escalade.** IA 1 répond dans le rapport et reprend l'unité ; si IA 1 en est l'auteur, c'est IA 3. Une question qui demande une décision réservée à l'humain est un arrêt obligatoire.
-- **Refus.** L'auteur relance `prendre` : la commande ajoute une case « Rc » (problèmes du verdict corrigés), rouvre la dernière case R et les cases V, et passe à la tentative suivante.
+- **Refus.** L'auteur relance `prendre` : la commande ajoute une case « Rc » (problèmes du verdict corrigés), rouvre la dernière case R et les cases V, et passe à la tentative suivante. Au troisième refus, `prendre` et `etat` demandent l'arrêt obligatoire.
 
 ### Fusion
 
-Le vérificateur qui accepte lance `python3 suivi/outil.py fusionner Sxx --ia <n> --godot "$B"` depuis son clone principal. La commande prend le verrou de `main`, fusionne la branche avec `--no-ff` dans une copie `../fusion-<fiche>`, lance `tools/ci/run_all_checks.sh` (dès que S06 l'a créé), coche la ligne dans `SUIVI.md` avec la date, les auteurs et le vérificateur, et coche F1. Si les contrôles échouent, elle annule tout, passe le verdict à REFUSÉE sur la branche et rend le verrou. Le vérificateur fait ensuite les cases F suivantes dans la copie de fusion, puis `publier` : `verifier` relancé, `main` poussée, branche de l'unité supprimée, verrou rendu.
+Le vérificateur qui accepte lance `python3 suivi/outil.py fusionner Sxx --ia <n>` depuis son clone principal ; une autre IA non auteur ne le fait qu'après 12 heures. La commande trouve Godot seule (`--godot`, `$GODOT`, le cache du bloc GODOT des fiches, puis `tools/ci/fetch_godot.sh` sur la version stable de `versions.json`) ; sans Godot, elle répond REFUSÉ sans toucher au verdict. Elle prend ensuite le verrou de `main`, revérifie l'unité (ligne non cochée, branche présente, verdict ACCEPTÉE), fusionne la branche avec `--no-ff` dans une copie `../fusion-<fiche>`, lance `tools/ci/run_all_checks.sh` (dès que S06 l'a créé), coche la ligne dans `SUIVI.md` avec la date, les auteurs et le vérificateur qui a signé le verdict, et coche F1. Si les contrôles échouent, elle passe le verdict à REFUSÉE sur la branche ; dans tous les cas d'échec, elle supprime sa copie et rend le verrou. L'IA qui a lancé `fusionner` fait ensuite les cases F suivantes dans la copie de fusion, puis `publier` : copie sans modification non commitée, `verifier` relancé, `main` poussée, branche de l'unité supprimée, verrou rendu.
 
 ### Porte KO
 
-Si une porte décide « corriger d'abord », le vérificateur fusionne son rapport avec `fusionner Sxx --porte-ko` (la ligne de la porte reste ouverte), puis crée une unité de correction par point KO : `python3 suivi/outil.py correction Sxx --fautive Syy --titre "…" --realise <n> --verifie <m> --ia <n>`. La correction se place juste avant la porte, dans sa piste, et la porte l'attend. Quand les corrections sont fusionnées, la porte redevient prête ; `prendre` remet ses cases à zéro pour la rejouer.
+Le rapport d'une porte porte une ligne « - Décision : PASSER » ou « - Décision : CORRIGER D'ABORD ». Si la porte décide « corriger d'abord », `fusionner` le lit et ne fusionne que le rapport (la ligne de la porte reste ouverte) ; le vérificateur crée alors, dans la copie de fusion et sous le même verrou, une unité de correction par point KO : `python3 suivi/outil.py correction Sxx --fautive Syy --titre "…" --realise <n> --verifie <m> --ia <n>`. La correction se place juste avant la porte, dans sa piste, et la porte l'attend. Quand les corrections sont fusionnées, la porte redevient prête ; `prendre` remet ses cases à zéro pour la rejouer.
 
 ## 4. Prompt de créneau
 
@@ -107,7 +109,7 @@ Tu es IA {N} pour un créneau du projet GODOT_DEV_MAPPER. Ce numéro est le tien
 1. RÈGLES. Lis docs/construction/sequence.md, puis REGLES_AGENTS.md s'il existe.
 
 2. CHOIX. python3 suivi/outil.py etat --ia {N}
-   La commande lit SUIVI.md et les branches sur le dépôt, puis liste ce que tu peux faire, par ordre de priorité : questions à traiter, vérifications, fusions, tes unités à reprendre, unités prêtes pour toi, relais. Prends la première ligne et lance la commande qu'elle donne. Si elle répond REFUSÉ, une autre IA vient de la prendre : passe à la ligne suivante.
+   La commande lit SUIVI.md et les branches sur le dépôt, puis liste ce que tu peux faire, par ordre de priorité : arrêt obligatoire à déclencher (ligne 0), questions à traiter, vérifications (dont la tienne à reprendre), fusions, tes unités à reprendre, unités prêtes pour toi, relais. Prends la première ligne et lance python3 suivi/outil.py suivi de la commande qu'elle donne. Si elle répond REFUSÉ, une autre IA vient de la prendre : passe à la ligne suivante.
 
 3. TRAVAIL. Ouvre la fiche suivi/<fiche>.md de l'unité et applique son prompt : de réalisation après prendre, de vérification après prendre --verification. Après chaque sous-étape : git add des fichiers de la sous-étape, puis python3 suivi/outil.py cocher <unité> <sous-étape> --ia {N}. Une sous-étape non cochée par cette commande est considérée comme non faite.
 
@@ -118,13 +120,13 @@ Tu es IA {N} pour un créneau du projet GODOT_DEV_MAPPER. Ce numéro est le tien
 RÈGLES
 - Tu ne vérifies jamais une unité dont tu es auteur ; les commandes le refusent.
 - Tu ne modifies jamais SUIVI.md à la main, et tu ne pousses jamais avec --force.
-- Arrêt obligatoire (§5 de sequence.md) : python3 suivi/outil.py verrou prendre --ia {N} --motif "Arrêt" ; git fetch origin ; git switch --detach origin/main ; écris rapports/ARRET.md (raison, unité, preuve, ce qu'il faut de l'humain) ; git add rapports/ARRET.md ; git commit ; git push origin HEAD:main ; python3 suivi/outil.py verrou rendre --ia {N} ; termine.
+- Arrêt obligatoire (§5 de sequence.md) : python3 suivi/outil.py arreter --ia {N} --raison "<raison>" [--unite Sxx] [--preuve "<preuve>"] [--humain "<ce qu'il faut de l'humain>"] ; la commande écrit rapports/ARRET.md sur main, sous le verrou ; puis termine en citant la raison.
 - Tu n'écris jamais qu'une commande a réussi sans l'avoir exécutée.
 ```
 
 ## 5. Arrêts obligatoires
 
-L'IA écrit `rapports/ARRET.md` sur `main`, sous le verrou (procédure du prompt de créneau), et s'arrête. Tous les créneaux suivants s'arrêtent aussi, et les commandes refusent de prendre ou de fusionner, jusqu'à ce que tu supprimes le fichier.
+L'IA lance `python3 suivi/outil.py arreter --ia <n> --raison "…" [--unite Sxx]` : la commande écrit `rapports/ARRET.md` sur `main`, sous le verrou, avec la date, l'IA, l'unité et son état, la raison, la preuve et ce qu'il faut de toi. Puis l'IA s'arrête. Tous les créneaux suivants s'arrêtent aussi, et les commandes refusent de prendre ou de fusionner, jusqu'à ce que tu supprimes le fichier. `etat` signale en tête (ligne 0) les arrêts n° 2 que l'état des unités impose.
 
 1. **Aucun signal d'utilité au POC** (S34) : c'est le critère d'arrêt du plan.
 2. **File bloquée** : une unité refusée trois fois, ou passée deux fois en ESCALADE ; ou une unité dont les trois IA sont auteurs, que plus personne ne peut vérifier.
@@ -169,19 +171,25 @@ C'est ta seule intervention prévue. Sa liste est en fin de `SUIVI.md`, complét
 
 ## 8. Calendrier et suivi
 
-Un créneau vérifie une unité et en réalise une autre. Chaque fiche estime ses créneaux (1, ou 2 pour les unités longues) ; reprises comprises, il faut compter 1 à 1,5 fois cette estimation. À six créneaux par jour :
+Un créneau vérifie une unité, puis en réalise une autre. Chaque fiche estime ses créneaux (1, ou 2 pour les unités longues). `python3 suivi/outil.py calendrier` simule le déroulé d'après `SUIVI.md` : rôles, prérequis, estimations, relais à 12 heures, six créneaux de deux heures par jour (deux par IA). Résultat pour les 172 unités du plan :
 
-| Bloc | Unités | Créneaux | Fin estimée |
-| --- | --- | --- | --- |
-| POC, S01 à S35 | 35 | 39 à 58 | Jour 7 à 10 |
-| MVP, S36 à S41.P | 61 : 6 revues de découpage, 6 portes, 49 tâches | 63 à 94 | Jour 17 à 26 |
-| V1, S42 à S49.P | 74 : 8 revues de découpage, 8 portes, 58 tâches | 75 à 112 | Jour 30 à 44 |
+| Organisation | Reprises | Fin du POC (S35) | Fin du MVP (S41.P) | Fin de la V1 (S49.P) |
+| --- | --- | --- | --- | --- |
+| IA l'une après l'autre | aucune (ratio 1) | jour 16 | jour 35 | jour 57 |
+| IA l'une après l'autre | une unité sur deux refusée une fois (ratio 1,5) | jour 21 | jour 49 | jour 81 |
+| Trois IA en même temps, deux fois par jour | aucune (ratio 1) | jour 24 | jour 53 | jour 88 |
+
+La somme des estimations ne fixe pas la durée : c'est le chemin critique qui la fixe. Une chaîne d'unités réalisées par une IA et vérifiées par une autre avance d'environ deux unités par jour, quel que soit le nombre de pistes ouvertes : après chaque unité, il faut attendre le créneau du vérificateur, puis celui de l'auteur de l'unité suivante. Faire travailler les trois IA en même temps n'aide pas à six créneaux par jour : une IA ne peut pas vérifier ce qu'une autre réalise au même moment.
+
+**Trente jours ne suffisent pas avec ces règles.** Deux leviers, à décider par toi :
+- **Relais immédiat** (`RELAIS_H = 0` dans `suivi/commun.py`) : une IA qui n'a rien de son rôle prend aussitôt une unité prête d'un autre rôle, jamais pour vérifier son propre travail. Simulation (`calendrier --relais 0`) : POC au jour 10, MVP au jour 22, V1 au jour 37 sans reprise ; jours 16, 36 et 59 avec le ratio 1,5. Le prix : les rôles de conception, de développement et de vérification se mélangent davantage.
+- **Plus de créneaux par jour** : la durée baisse à peu près en proportion.
+
+Deux limites ne dépendent pas des IA : la sortie de Godot 4.8 stable, nécessaire à la porte de la V1, et les quotas d'usage de chaque IA, à mesurer dès la première semaine.
 
 Le MVP et la V1 sont découpés en tâches dès le départ (`suivi/plan_phases.py`), d'après `mvp.md`, `v1.md` et le plan directeur : chaque tâche a sa fiche complète, et `SUIVI.md` et le tableau de bord les montrent toutes. Ce découpage est provisoire. Au début de chaque phase, son unité de revue (S36, S37…) le confronte aux résultats du POC et des phases précédentes, et garde, modifie, retire ou ajoute des tâches, dans le budget de la phase ; le calendrier se recalcule alors.
 
-Les pistes autonomes ne raccourcissent pas ce calendrier quand les IA passent l'une après l'autre. Elles évitent les créneaux perdus : quand l'unité suivante d'une piste attend une autre IA, l'IA de service en prend une dans une autre piste. Si tu fais tourner deux ou trois IA en même temps, chacune peut tenir une piste différente ; le verrou de `main` n'est tenu que le temps d'une fusion.
-
-Trente jours couvrent le POC et le MVP. La V1 n'y tient pas à six créneaux par jour : elle finit entre le jour 30 et le jour 44. Pour la faire tenir dans trente jours, il faut plus de créneaux par jour, par exemple trois IA qui travaillent en même temps sur des pistes ou des sous-pistes différentes au lieu de passer l'une après l'autre. Deux limites ne dépendent pas des IA : la sortie de Godot 4.8 stable, nécessaire à la porte de la V1, et les quotas d'usage de chaque IA, à mesurer dès la première semaine.
+Les pistes autonomes évitent les créneaux perdus : quand l'unité suivante d'une piste attend une autre IA, l'IA de service en prend une dans une autre piste. Le verrou de `main` n'est tenu que le temps d'une fusion.
 
 **Pour suivre l'avancement**, ouvre `suivi/tableau.html` (depuis une copie du dépôt) et clique « Actualiser » : la page relit `SUIVI.md` et les branches sur GitHub. Chaque unité y a cinq carrés : prise en charge, réalisation, contrôles et rapport, vérification, fusion, qui passent du rouge au vert. `python3 suivi/outil.py tableau` régénère l'instantané embarqué dans la page.
 
@@ -191,12 +199,13 @@ Trente jours couvrent le POC et le MVP. La V1 n'y tient pas à six créneaux par
 - par bloc : créneaux consommés contre l'estimation ;
 - la liste de recette.
 
-Le recalibrage se fait à S35, avec le ratio observé sur le POC.
+Le recalibrage se fait à S35, avec le ratio observé sur le POC : relance alors `python3 suivi/outil.py calendrier --ratio <ratio observé>`.
 
 ## 9. Environnement de chaque IA
 
 - Un clone du dépôt, avec le droit de pousser sur `main` et sur les branches `tache/*`, `banc/*` et `verrou/main`. Les copies `../verif-*` et `../fusion-*` se créent à côté du clone.
 - git 2.42 ou plus (`worktree`, `--force-with-lease`), Python 3, `pip install -r requirements-dev.txt` (gdtoolkit 4.5.0, après S06).
 - Un accès réseau à github.com, pour le dépôt et pour les binaires officiels de Godot (procédure dans chaque fiche).
+- Godot 4.7.2 pour les contrôles de fusion : `fusionner` le trouve seule (`--godot`, `$GODOT`, le cache `~/.cache/gdm-godot/` du bloc GODOT des fiches, puis `tools/ci/fetch_godot.sh`) et vérifie sa version avant de prendre le verrou.
 - Pour S10, S26, S31 et les captures d'écran : Xvfb et Mesa. Un conteneur cloud avec ces paquets suffit ; c'est vérifié le 8 octobre 2026.
 - Si le dépôt n'exécute pas les workflows GitHub, PC1.8 passe à la recette ; `run_all_checks.sh` en local fait foi en attendant.
