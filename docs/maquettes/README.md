@@ -7,6 +7,8 @@ Simulations fictives du rendu de l'outil, appliquées à un roguelike imaginaire
 | `ember-atlas-roguelike.html` | Version d'origine |
 | `ember-atlas-roguelike-v2.html` | Version améliorée, le 8 octobre 2026 |
 | `ember-atlas-roguelike-v3.html` | Version complète : personnages, monde et inventaire. C'est celle qui est publiée. |
+| `ember-atlas-roguelike-v3.1.html` | v3 corrigée par GPT-6 : pas de physique fixe à 60 Hz, dégâts appliqués au pas suivant, inspecteur et journal stables pendant le survol, export figé à l'ouverture, bandeaux utilisables sur petit écran |
+| `ember-en-direct.html` | Mode en direct : le jeu tourne, l'interface de l'outil se superpose à l'image et pilote les étapes |
 
 ## Ce que la version améliorée change
 
@@ -57,3 +59,15 @@ La v2 couvrait le déroulé de la partie, les scripts, les chargements et la sau
 **Mesures** : sur les sept vues, aucune relation ne traverse une carte et aucune étiquette n'est masquée par une carte ou une autre étiquette. La vue Personnages affiche 21 étiquettes de transition sur 24, dont les deux branches de la décision. Les 15 vérifications de la v2 passent toujours, et 13 vérifications nouvelles aussi, sans erreur JavaScript.
 
 **Piste pour le plan** : relever les couches et masques de collision dans l'inventaire des scènes (MVP). Ce n'est pas encore au plan directeur.
+
+## Ce que la version en direct ajoute
+
+Les atlas montrent la carte hors exécution. `ember-en-direct.html` montre l'outil pendant que le jeu tourne dans l'onglet Jeu de l'éditeur, salle des sentinelles.
+
+- **Superposition** : étiquettes d'instance, anneaux de portée de la décision « À portée ? », hitbox. Elles viennent des positions reçues : un léger retard en marche, exactes en pause.
+- **Pilotage** : suspendre, avancer d'un pas de physique, aller jusqu'au prochain changement de décision, aller jusqu'à la fin d'une étape, vitesse. Les arrêts tombent toujours à la fin du pas.
+- **Étapes** : bandeau du déroulé ; un clic sur une étape à venir arme un arrêt à son entrée. Les étapes passées avant la collecte restent « non observées ».
+- **Arrêts** : conditions évaluées dans le jeu (fin du pas) ou dans l'éditeur (quelques pas plus tard, après l'aller-retour).
+- **Scénarios** : parcours nominal, masque de collision erroné, événement perdu, jeu interrompu.
+
+**Écart au plan** : la superposition et le pilotage ne sont pas au plan directeur. La page les marque « hors plan » et propose CAP-21 (pilotage, MVP), CAP-22 (superposition, V1) et SPIKE-07. Rien n'est vérifié sur Godot.
