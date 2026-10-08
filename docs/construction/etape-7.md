@@ -29,10 +29,10 @@ Le POC ne valide pas non plus l'expérience visuelle complète du produit. Il mo
 
 ## Méthodologie
 
-1. **Injection.** Gemini prépare trois variantes isolées du banc d'essai, une par bug. Il te remet seulement leurs symptômes. La description complète va dans une enveloppe scellée : un fichier que tu n'ouvres qu'à la fin.
+1. **Injection.** IA 3 prépare trois variantes isolées du banc d'essai, une par bug. Elle te remet seulement leurs symptômes. La description complète va dans une enveloppe scellée : un fichier que tu n'ouvres qu'à la fin.
 2. **Diagnostic chronométré.** Bug 1 avec l'outil, bug 2 sans, bug 3 avec. Une deuxième personne, si tu en as une, fait l'ordre inverse.
 3. **Observation.** Pour chaque bug, tu notes : temps jusqu'à la cause, étapes suivies, confiance, ce qui a aidé, ce qui a gêné. Tu ouvres ensuite l'enveloppe et compares la cause trouvée à la cause réelle.
-4. **Revue de continuation (T20).** Opus rassemble tout ; tu décides.
+4. **Revue de continuation (T20).** IA 1 rassemble tout ; tu décides.
 
 La valeur de la cartographie elle-même (retrouver un appelant, comprendre un système inconnu) se mesure à la porte du MVP, quand la carte statique existe.
 
@@ -42,9 +42,9 @@ La valeur de la cartographie elle-même (retrouver un appelant, comprendre un sy
 | --- | --- | --- | --- |
 | PC7.1 | Variantes isolées | Une branche par bug dans la copie de travail du banc d'essai | Chaque symptôme se reproduit seul |
 | PC7.2 | Mesure complète | `docs/mesures/valeur-poc.md` | Durées indicatives, coûts, observations qualitatives, cause trouvée contre cause réelle |
-| PC7.3 | Revue préparée | Synthèse d'Opus | Budgets consommés contre prévus, réussite par modèle, signal d'utilité, risques |
+| PC7.3 | Revue préparée | Synthèse d'IA 1 | Budgets consommés contre prévus, réussite par IA, signal d'utilité, risques |
 | PC7.4 | Décision | `docs/DECISIONS.md` | Continuer, réduire, réorienter ou arrêter, avec sa justification |
-| PC7.5 | Plan à jour | Amendement du plan (PD-0.5) | Budgets recalibrés ; décisions sur SPIKE-03, SPIKE-04 et la reprise d'AST Flow |
+| PC7.5 | Plan à jour | Amendement du plan (PD-0.6) | Budgets recalibrés ; décisions sur SPIKE-03, SPIKE-04 et la reprise d'AST Flow |
 
 ## Cheminement d'amélioration
 
@@ -55,9 +55,9 @@ La valeur de la cartographie elle-même (retrouver un appelant, comprendre un sy
 
 ## T19 — Mesure de valeur, exploratoire
 
-Toi, avec Gemini pour l'injection · A0 · contexte : `docs/benches/<nom>.md`, plan §9
+Toi, avec IA 3 pour l'injection · A0 · contexte : `docs/benches/<nom>.md`, plan §9
 
-Prompt d'injection, pour Gemini :
+Prompt d'injection, pour IA 3 :
 
 ```text
 Tu prépares la mesure de valeur, exploratoire, du POC du projet GODOT_DEV_MAPPER. Tu travailles dans la copie de travail ../benches/{nom}.
@@ -88,11 +88,11 @@ Sous le tableau, quelques lignes de conclusion qualitative : utilité observée,
 | T19-a | Chaque branche reproduit son symptôme seule | Trois symptômes reproduits |
 | T19-b | Enveloppe ouverte seulement après les trois diagnostics | Heure d'ouverture notée après le dernier diagnostic |
 | T19-c | Tableau et conclusion complets, coûts compris, durées marquées « indicatives » | Aucune case vide |
-| T19-d | Gemini relit le tableau contre l'enveloppe | Concordance des causes vérifiée |
+| T19-d | IA 3 relit le tableau contre l'enveloppe | Concordance des causes vérifiée |
 
 ## T20 — Revue de continuation
 
-Opus, puis toi · A0 · contexte : tous les rapports, `PROJECT_STATE.md`, `docs/mesures/valeur-poc.md`, plan §9
+IA 1, puis toi · A0 · contexte : tous les rapports, `PROJECT_STATE.md`, `docs/mesures/valeur-poc.md`, plan §9
 
 ```text
 Tu prépares la revue de continuation du POC du projet GODOT_DEV_MAPPER. Tu ne décides pas : la décision est humaine.
@@ -101,23 +101,23 @@ ENTRÉES : PROJECT_STATE.md, docs/mesures/valeur-poc.md, docs/spikes/, les verdi
 
 PRODUIS docs/revues/revue-poc.md avec :
 1. Budgets : heures humaines et temps agent consommés par étape, contre le budget ; ratio global.
-2. Fiabilité : taux de réussite au premier essai, escalades et refus du vérificateur, par modèle.
+2. Fiabilité : taux de réussite au premier essai, escalades et refus du vérificateur, par IA.
 3. Signal d'utilité : lecture qualitative de T19, avec ses limites (trois bugs, une seule personne, durées indicatives).
 4. Risques : ceux du plan, mis à jour ; les nouveaux.
 5. Options : continuer, réduire, réorienter ou arrêter. Pour chacune : conditions, conséquences, budget restant estimé avec le ratio observé.
 6. Décisions à prendre :
    - SPIKE-03 (rendu) et SPIKE-04 (AST Flow ou extraction maison) au début du MVP ;
    - reprise d'AST Flow comme backend statique ;
-   - routage des modèles pour le MVP ;
+   - répartition des tâches entre les trois IA pour le MVP ;
    - besoin, ou non, d'une mesure de valeur plus large au MVP.
-7. Proposition d'amendement du plan (PD-0.5) : budgets recalibrés et décisions retenues. Le diff exact, sans l'appliquer.
+7. Proposition d'amendement du plan (PD-0.6) : budgets recalibrés et décisions retenues. Le diff exact, sans l'appliquer.
 ```
 
 **Contrôles**
 
 | ID | Contrôle | Attendu |
 | --- | --- | --- |
-| T20-a | Chiffres de la revue recalculés par Gemini depuis `PROJECT_STATE.md` | Mêmes totaux |
+| T20-a | Chiffres de la revue recalculés par IA 3 depuis `PROJECT_STATE.md` | Mêmes totaux |
 | T20-b | Décision consignée et datée dans `docs/DECISIONS.md` | Présente |
-| T20-c | Amendement du plan appliqué après ta validation | PD-0.5 en tête du plan |
+| T20-c | Amendement du plan appliqué après ta validation | PD-0.6 en tête du plan |
 | T20-d | Si la décision est de continuer | Découpage de P4a lancé avec le prompt de `mvp.md` |

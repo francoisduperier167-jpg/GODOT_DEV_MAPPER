@@ -1,6 +1,12 @@
 # Plan directeur — Godot Visual Program & Execution Explorer
 
-Révision PD-0.4 · statut : **proposé** · 8 octobre 2026 · entrée : `prompts/conception.txt` v2.2 · remplace PD-0.3
+Révision PD-0.5 · statut : **proposé** · 8 octobre 2026 · entrée : `prompts/conception.txt` v2.2 · remplace PD-0.4
+
+**Changements depuis PD-0.4**, après une vérification de cohérence et les consignes de l'utilisateur :
+
+- Mode d'exécution : trois IA en rotation, deux créneaux chacune par jour, une unité après l'autre ; présence humaine à la recette finale (§0, §9, D-03, nouvelle D-09). Le déroulé est `docs/construction/sequence.md`.
+- Fait vérifié le 8 octobre 2026 : l'éditeur 4.7.2 tourne avec un rendu logiciel sous écran virtuel ; SPIKE-01b peut s'exécuter sans la machine du développeur (§10).
+- Phrase périmée corrigée : SPIKE-01a a bien été exécuté (en-tête).
 
 **Changements depuis PD-0.3**, après une relecture du guide de construction :
 
@@ -32,7 +38,7 @@ Révision PD-0.4 · statut : **proposé** · 8 octobre 2026 · entrée : `prompt
 - Mesure de valeur élargie à la cartographie (§9).
 - Références normatives intégrées au dossier de passage (§10).
 
-Ce document est une proposition. Une décision reste une proposition tant qu'elle n'est pas marquée « validée » dans le dossier de passage. Aucun prototype n'a été exécuté pour l'écrire, et aucune performance n'est mesurée.
+Ce document est une proposition. Une décision reste une proposition tant qu'elle n'est pas marquée « validée » dans le dossier de passage. Le seul prototype exécuté est SPIKE-01a ; ses mesures, prises sans rendu, ne valent pas performance de l'outil.
 
 ## 0. Contexte et unités
 
@@ -41,8 +47,8 @@ Ce document est une proposition. Une décision reste une proposition tant qu'ell
 | Moteur | Godot 4.7.2 stable, référence reproductible | Proposé (D-01) | CI bloquante sur 4.7.2 | Télécharger 4.7.2 depuis l'archive officielle |
 | Préversion | 4.8, au snapshot dev 7 du 29 septembre 2026, en gel des fonctionnalités | Connu | Contrôle séparé, non bloquant | Relancer sur chaque nouvelle préversion |
 | Langage analysé | GDScript uniquement | Connu | C#, GDExtension et sources absentes hors MVP | — |
-| Équipe | Un développeur ; Opus 5.5, Sonnet, Gemini, Qwen3.8-27B en local | Connu | Orchestration multi-modèles | Mesurer la réussite par modèle sur les dix premières tâches |
-| Disponibilité | Hypothèse : 10 h par semaine | À compléter | Deux files actives au plus | Confirmer |
+| Équipe | Un développeur ; trois IA à tour de rôle, IA 1, IA 2 et IA 3, qu'il choisit | Connu | Orchestration de plusieurs IA | Mesurer la réussite par IA sur les dix premières tâches |
+| Disponibilité | Trois IA en rotation, deux créneaux chacune par jour, soit environ 12 h d'agent par jour ; présence humaine à la recette finale | Exprimé par l'utilisateur le 8 octobre 2026 (D-03, D-09) | Une seule file : une unité après l'autre (`docs/construction/sequence.md`) | Mesurer les créneaux consommés par unité sur le POC |
 | Bancs d'essai | Jeux open source disponibles | À lister (D-02) | Choix en T04 | Nom, dépôt, licences, version d'origine |
 | Instrumentation | Explicite, sur des copies de travail des jeux | Hypothèse | POC possible sans instrumentation automatique | — |
 | IA dans le plugin | Aucune au MVP | Hypothèse | L'AI Snapshot est un export local | — |
@@ -449,7 +455,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | P9 à P16 : V1 | CAP-12 à CAP-18, deux versions stables | 65–110 | 75–120 | 190–285 | Démonstrations CAP-12 à 18 |
 | **V1 cumulée** | | **129–198** | **143–234** | **345–528** | |
 
-À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. Ce sont des objectifs de travail, à recalibrer après T17.
+À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. En mode autonome (D-09), le calendrier se compte en créneaux d'IA et se calcule par simulation du chemin critique (`python3 suivi/outil.py calendrier`, `docs/construction/sequence.md` §8) : à six créneaux par jour, POC vers le jour 16 à 21, MVP vers le jour 35 à 48, V1 vers le jour 57 à 79 ; avec un relais immédiat entre IA, POC vers le jour 10 à 16, MVP vers le jour 22 à 34, V1 vers le jour 37 à 59. Ce sont des objectifs de travail, à recalibrer après le POC.
 
 **Mesure de valeur, élargie**
 
@@ -480,14 +486,14 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | 5 | Analyse statique trompeuse | Élevée | Moyen | Provenance, résolution, « non résolu » |
 | 6 | Saturation de la relecture humaine | Élevée | Moyen | Deux files à 10 h par semaine, petites tâches |
 | 7 | Rupture ciblée d'API entre versions | Moyenne | Moyen | Façade, CI 4.7.2, contrôle de la préversion |
-| 8 | Échecs des modèles sur les API Godot | Moyenne | Moyen | Packs autonomes, escalade, mesure par modèle |
+| 8 | Échecs des IA sur les API Godot | Moyenne | Moyen | Packs autonomes, escalade, mesure par IA |
 | 9 | Graphe illisible | Élevée | Moyen | Projections, expansion bornée, SPIKE-03 |
 | 10 | Outil tiers abandonné | Moyenne | Moyen | Façade, version épinglée, plan de sortie |
 | 11 | Licences des bancs d'essai | Faible | Moyen | Référencer sans copier |
 
 ## 10. Dossier de passage vers la méthodologie
 
-**Identité.** PD-0.4, proposé, 8 octobre 2026, fondé sur `prompts/conception.txt` v2.2 et sur SPIKE-01a. Méthode associée : MC-0.4 ; orchestration : OR-0.4 ; guide de construction : GC-0.3.
+**Identité.** PD-0.5, proposé, 8 octobre 2026, fondé sur `prompts/conception.txt` v2.2 et sur SPIKE-01a. Méthode associée : MC-0.5 ; orchestration : OR-0.5 ; guide de construction : GC-0.4, avec son déroulé séquentiel.
 
 **Versions.** 4.7.2 bloquante (D-01) ; dernière préversion 4.8 contrôlée sans bloquer.
 
@@ -524,7 +530,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | ID | Question | Phase |
 | --- | --- | --- |
 | SPIKE-01a | Partie jeu : aller-retour, débit, arrêt et redémarrage, classe statique, coupure | Fait : KEEP avec modifications |
-| SPIKE-01b | Partie éditeur : capture du plugin, envoi par la session, lancements répétés, désactivation pendant une collecte, débit avec rendu | POC, T05 |
+| SPIKE-01b | Partie éditeur : capture du plugin, envoi par la session, lancements répétés, désactivation pendant une collecte, débit avec rendu. Exécutable sous écran virtuel, rendu logiciel (vérifié le 8 octobre 2026) ; la mesure sur GPU passe à la recette | POC, T05 |
 | SPIKE-02 | Façade, détection de capacités, UID et isolation de compilation tiennent-ils sur 4.7.2 et sur la préversion ? | POC |
 | SPIKE-03 | Quel rendu tient 300 éléments visibles ? | MVP |
 | SPIKE-04 | GDScript AST Flow ou extraction maison ? | MVP |
@@ -537,12 +543,13 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | --- | --- | --- |
 | D-01 | 4.7.2 comme référence reproductible | Oui |
 | D-02 | Jeux open source retenus | Oui, pour l'étape 5 |
-| D-03 | Disponibilité hebdomadaire | Non |
+| D-03 | Disponibilité : trois IA, deux créneaux chacune par jour | Non |
 | D-04 | Politique de dépendances tierces | Avant SPIKE-04 |
 | D-05 | Runner de tests : maison minimal, ou framework existant compatible | Oui |
 | D-06 | Licence du plugin | Avant toute diffusion |
 | D-07 | Fenêtre initiale : 4.7.2 bloquant, préversion suivie | Oui |
 | D-08 | Emplacement des traces et des fichiers déclarés | Non pour le POC |
+| D-09 | Mode d'exécution : autonome et séquentiel, décisions de démarrage adoptées par défaut, recette humaine finale | Oui |
 
 **Vérification de cohérence**
 

@@ -11,15 +11,15 @@ Geler les sept contrats du POC assez précisément pour déléguer l'implémenta
 - **Gabarit complet.** Chaque contrat a sept rubriques : objet, format ou API, exemples valides, exemples invalides, comportement en erreur, version, tests de contrat.
 - **Validation en deux niveaux.** Les formats JSON (graphe déclaré, enveloppe runtime) ont un schéma dans `contracts/schemas/`, au format JSON Schema 2020-12 : types, champs requis, variantes d'événements, nombre maximal d'éléments. Un validateur complémentaire vérifie ce qu'un schéma ne garantit pas : références résolues, unicité d'une clé entre éléments, ordre des séquences, taille sérialisée en octets. En JSON Schema, `uniqueItems` compare des éléments entiers et `maxLength` compte des caractères, pas des octets. Chaque règle a un code d'erreur, commun au validateur Python et à l'implémentation GDScript.
 - **Motif de rejet vérifié.** Une fixture invalide se nomme `invalid_<CODE>__<description>.json` et doit être rejetée avec ce code, et lui seul. Rejetée pour un autre motif, elle ne prouve rien.
-- **Tests écrits par l'auteur du contrat.** Opus les écrit, pas l'implémenteur. Ils vont dans `tests/contract/`, chacun avec un marqueur dans `tests/pending/` qui nomme la tâche qui l'activera.
-- **Fidélité aux sources.** Les contrats reprennent PD-0.4 et les rapports de spike. Tout écart est signalé, jamais glissé.
+- **Tests écrits par l'auteur du contrat.** IA 1 les écrit, pas l'implémenteur. Ils vont dans `tests/contract/`, chacun avec un marqueur dans `tests/pending/` qui nomme la tâche qui l'activera.
+- **Fidélité aux sources.** Les contrats reprennent le plan directeur en vigueur (PD-0.5) et les rapports de spike. Tout écart est signalé, jamais glissé.
 - **Gel.** Tu valides avant le gel. Après, toute modification passe par une analyse d'impact et un changement de version.
 
 ## Méthodologie
 
 1. **T07** : C-01 identités, C-02 ancrage, C-05 graphe déclaré, avec le schéma, les fixtures et les tests.
 2. **T08** : préparé en parallèle, finalisé après la validation de T07, car il s'appuie sur les identités et les clés de sonde. Il couvre C-03 façades, C-04 enveloppe, C-06 Event Store et C-07 FlowTrace.
-3. **Relecture** : Gemini relit chaque contrat et cherche contradictions avec le plan, cas non spécifiés et exemples incohérents. Tu tranches.
+3. **Relecture** : IA 3 relit chaque contrat et cherche contradictions avec le plan, cas non spécifiés et exemples incohérents. Tu tranches.
 4. **Règle de travail** : chaque règle du contrat a au moins un exemple invalide et un test qui le rejette.
 5. **Testabilité** : un comportement qui ne se teste pas sans interface est découpé en une passerelle mince, non testée, et une logique pure, testée. Le contrat porte sur la logique pure.
 
@@ -34,7 +34,7 @@ Geler les sept contrats du POC assez précisément pour déléguer l'implémenta
 | PC3.4b | (CE) Règle sémantique vigilante | Dupliquer une clé de sonde dans une fixture valide, relancer PC3.2 | Code 1, avec le code de doublon |
 | PC3.5 | Tests en attente | Runner | Code 0 et pending ≥ 6 ; chaque test de `tests/contract/` a son marqueur dans `tests/pending/` |
 | PC3.6 | Couverture du protocole de session | Chaque transition de la table d'états de C-07 a un test | Liste croisée dans le rapport de T08 |
-| PC3.7 | Relecture | Rapport de Gemini | Aucune contradiction ouverte |
+| PC3.7 | Relecture | Rapport d'IA 3 | Aucune contradiction ouverte |
 | PC3.8 | Gel | En-tête de `docs/CONTRACTS.md` | « Statut : validé », avec la date |
 
 Dès la fin de T07, deux scripts de `tools/ci/checks.d/` rejouent PC3.1 et PC3.2 à chaque passage.
@@ -48,7 +48,7 @@ Dès la fin de T07, deux scripts de `tools/ci/checks.d/` rejouent PC3.1 et PC3.2
 
 ## T07 — Contrats C-01, C-02, C-05
 
-Opus · A1 · file A · vérification : Gemini, puis toi · contexte : plan §5 et §10, `docs/spikes/SPIKE-02.md`, `docs/DECISIONS.md`
+IA 1 · A1 · file A · vérification : IA 3, puis toi · contexte : plan §5 et §10, `docs/spikes/SPIKE-02.md`, `docs/DECISIONS.md`
 
 Fichiers autorisés :
 - `docs/CONTRACTS.md`, sections C-01, C-02 et C-05 ;
@@ -95,7 +95,7 @@ T07-g  godot --headless --path . --check-only -s res://tests/contract/test_c05_d
 
 ## T08 — Contrats C-03, C-04, C-06, C-07
 
-Opus · A1 · file B · préparé en parallèle de T07, finalisé après sa validation · vérification : Gemini, puis toi · contexte : plan §4, §6 et §8, `docs/spikes/SPIKE-01.md` (01a et 01b), `docs/spikes/SPIKE-02.md`, C-01 validé
+IA 1 · A1 · file B · préparé en parallèle de T07, finalisé après sa validation · vérification : IA 3, puis toi · contexte : plan §4, §6 et §8, `docs/spikes/SPIKE-01.md` (01a et 01b), `docs/spikes/SPIKE-02.md`, C-01 validé
 
 Fichiers autorisés :
 - `docs/CONTRACTS.md`, sections C-03, C-04, C-06 et C-07 ;
@@ -135,4 +135,4 @@ T08-d  Tableau croisé dans le rapport : chaque transition de C-07 avec le test 
 T08-e  godot --headless --path . -s res://tests/run_all.gd ; echo $?         → 0, pending=6
 ```
 
-Une fois T07 et T08 relus par Gemini, tu passes l'en-tête de `docs/CONTRACTS.md` à « Statut : validé », avec la date. Les contrats sont gelés.
+Une fois T07 et T08 relus par IA 3, tu passes l'en-tête de `docs/CONTRACTS.md` à « Statut : validé », avec la date. Les contrats sont gelés.

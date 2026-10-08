@@ -1,0 +1,742 @@
+<title>Suivi GODOT_DEV_MAPPER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Plan : un chantier lu de haut en bas. Chaque section (étape, MVP, V1) aligne ses pistes autonomes
+   côte à côte, chacune dans un carré de fond teinté, puis le rendez-vous qui les attend, en bande pleine largeur. */
+:root {
+  --bg: #f3f5f4; --surface: #ffffff; --surface-2: #f8faf9; --ink: #1b2226; --muted: #5d6970; --line: #d6dddd; --accent: #2c6c9c; --accent-ink: #ffffff;
+  --n1: #d14343; --n2: #e17a2e; --n3: #d9a514; --n4: #7fb236; --n5: #2e9654; --vide: #e3e8e7;
+  --ia1: #5650c8; --ia2: #0e8277; --ia3: #b0701a;
+  --ok: #2e9654; --warn: #b0701a; --bad: #c0392b; --info: #2c6c9c;
+  --t1: rgba(44,108,156,.07); --t1b: rgba(44,108,156,.30);
+  --t2: rgba(14,130,119,.07); --t2b: rgba(14,130,119,.30);
+  --t3: rgba(86,80,200,.07); --t3b: rgba(86,80,200,.30);
+  --t4: rgba(176,112,26,.08); --t4b: rgba(176,112,26,.32);
+  --rdv: rgba(27,34,38,.04); --rdvb: rgba(27,34,38,.35);
+  --ombre: 0 1px 2px rgba(20,30,35,.06), 0 2px 8px rgba(20,30,35,.05);
+  --f-titre: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-texte: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-code: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111619; --surface: #192024; --surface-2: #151b1f; --ink: #e4e9eb; --muted: #98a5ac; --line: #2c363c; --accent: #6badde; --accent-ink: #0d1418;
+  --n1: #e05a5a; --n2: #ec8d45; --n3: #e2b53a; --n4: #93c652; --n5: #45b06c; --vide: #2a3338;
+  --ia1: #9a95f2; --ia2: #3fc0b2; --ia3: #e0a34e;
+  --ok: #45b06c; --warn: #e0a34e; --bad: #ec6a5c; --info: #6badde;
+  --t1: rgba(107,173,222,.08); --t1b: rgba(107,173,222,.34);
+  --t2: rgba(63,192,178,.08); --t2b: rgba(63,192,178,.34);
+  --t3: rgba(154,149,242,.09); --t3b: rgba(154,149,242,.36);
+  --t4: rgba(224,163,78,.08); --t4b: rgba(224,163,78,.34);
+  --rdv: rgba(228,233,235,.04); --rdvb: rgba(228,233,235,.30);
+  --ombre: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111619; --surface: #192024; --surface-2: #151b1f; --ink: #e4e9eb; --muted: #98a5ac; --line: #2c363c; --accent: #6badde; --accent-ink: #0d1418;
+  --n1: #e05a5a; --n2: #ec8d45; --n3: #e2b53a; --n4: #93c652; --n5: #45b06c; --vide: #2a3338;
+  --ia1: #9a95f2; --ia2: #3fc0b2; --ia3: #e0a34e;
+  --ok: #45b06c; --warn: #e0a34e; --bad: #ec6a5c; --info: #6badde;
+  --t1: rgba(107,173,222,.08); --t1b: rgba(107,173,222,.34);
+  --t2: rgba(63,192,178,.08); --t2b: rgba(63,192,178,.34);
+  --t3: rgba(154,149,242,.09); --t3b: rgba(154,149,242,.36);
+  --t4: rgba(224,163,78,.08); --t4b: rgba(224,163,78,.34);
+  --rdv: rgba(228,233,235,.04); --rdvb: rgba(228,233,235,.30);
+  --ombre: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 15px; line-height: 1.45; margin: 0; }
+.page { max-width: 1320px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 32px); padding-block: 20px 64px; display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--f-titre); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.1rem); font-weight: 700; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+code, .mono { font-family: var(--f-code); font-size: .86em; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* en-tête */
+.tete { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+.tete .sur { font-family: var(--f-code); font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.tete p { margin: 6px 0 0; color: var(--muted); max-width: 68ch; }
+.global { display: grid; gap: 6px; justify-items: end; }
+.global .pct { font-family: var(--f-titre); font-size: 2.2rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+@media (max-width: 720px) { .tete { grid-template-columns: 1fr; } .global { justify-items: start; } }
+
+.bandeau { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.bandeau .compte { display: flex; flex-wrap: wrap; gap: 6px; }
+.source { font-size: .85rem; color: var(--muted); }
+.note-cmd { margin: 12px 0 4px; font-size: .85rem; color: var(--muted); }
+.source.erreur { color: var(--bad); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 7px 12px; cursor: pointer; font-weight: 500; }
+.btn:hover { border-color: var(--accent); }
+.btn.primaire { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+select.btn { padding-right: 8px; }
+
+.prochaines { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.prochaine { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; min-width: 0; }
+.prochaine .qui { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.prochaine .quoi { font-size: .9rem; color: var(--muted); overflow-wrap: anywhere; }
+.prochaine .quoi b { color: var(--ink); font-weight: 600; }
+
+.filtres { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.filtres span { color: var(--muted); font-size: .85rem; margin-right: 4px; }
+.filtre { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 11px; cursor: pointer; font-size: .88rem; }
+.filtre[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.legende { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: .85rem; color: var(--muted); align-items: center; }
+.legende .item { display: flex; gap: 8px; align-items: center; }
+.legende .echantillon { width: 26px; height: 18px; border-radius: 5px; background: var(--t1); border: 1px solid var(--t1b); }
+.legende .echantillon.rdv { background: var(--rdv); border: 1px dashed var(--rdvb); }
+.etapes5 { display: grid; grid-template-columns: repeat(5, auto); gap: 2px 10px; font-size: .8rem; color: var(--muted); }
+.etapes5 b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* barres de cinq carrés */
+.barre { display: inline-flex; gap: 3px; vertical-align: middle; --c: 13px; }
+.barre i { width: var(--c); height: var(--c); border-radius: 3px; background: var(--vide); position: relative; overflow: hidden; display: block; }
+.barre i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: calc(var(--f, 0) * 100%); background: var(--niv, var(--vide)); }
+.barre.grande { --c: 26px; gap: 5px; }
+.barre.grande i { border-radius: 5px; }
+.barre.moyenne { --c: 17px; gap: 4px; }
+.niv1 { --niv: var(--n1); } .niv2 { --niv: var(--n2); } .niv3 { --niv: var(--n3); } .niv4 { --niv: var(--n4); } .niv5 { --niv: var(--n5); }
+
+/* puces d'état et d'IA */
+.puce { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; line-height: 1.5; }
+.puce::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.e-faite { color: var(--ok); } .e-prete { color: var(--accent); } .e-attente { color: var(--muted); }
+.e-en_cours, .e-a_verifier, .e-en_verification, .e-a_fusionner { color: var(--info); }
+.e-a_verifier, .e-en_verification { color: var(--warn); }
+.e-a_fusionner { color: var(--ia2); }
+.e-refusee, .e-bloquee { color: var(--bad); } .e-abandonnee, .e-verif_abandonnee { color: var(--muted); }
+.ia { font-family: var(--f-code); font-size: .74rem; font-weight: 500; padding: 1px 6px; border-radius: 5px; color: var(--surface); white-space: nowrap; }
+.ia1 { background: var(--ia1); } .ia2 { background: var(--ia2); } .ia3 { background: var(--ia3); }
+
+/* sections, pistes, rendez-vous */
+#sections { display: grid; gap: 28px; }
+.section { display: grid; gap: 12px; }
+.section > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding-block: 6px; border-bottom: 1px solid var(--line); }
+.section > summary::-webkit-details-marker { display: none; }
+.section > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; }
+.section[open] > summary::before { transform: rotate(90deg); }
+.section .compteur { color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; }
+.section .fini { color: var(--ok); font-size: .8rem; font-weight: 600; }
+.pistes { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; margin-top: 12px; }
+.piste { flex: 1 1 280px; max-width: 100%; min-width: 0; background: var(--teinte, var(--t1)); border: 1px solid var(--bord, var(--t1b)); border-radius: 14px; padding: 12px; display: grid; gap: 10px; align-content: start; }
+.piste[data-t="2"] { --teinte: var(--t2); --bord: var(--t2b); }
+.piste[data-t="3"] { --teinte: var(--t3); --bord: var(--t3b); }
+.piste[data-t="4"] { --teinte: var(--t4); --bord: var(--t4b); }
+.piste header { display: grid; gap: 2px; }
+.piste .nom { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.piste .nom .id { font-family: var(--f-code); font-size: .78rem; font-weight: 500; letter-spacing: .04em; color: var(--muted); }
+.piste .nom strong { font-family: var(--f-titre); font-weight: 700; font-size: 1.02rem; }
+.piste .note { font-size: .82rem; color: var(--muted); }
+.suite { display: grid; gap: 0; }
+.suite > .lien { height: 14px; display: flex; justify-content: center; }
+.suite > .lien::before { content: ""; width: 2px; background: var(--bord, var(--t1b)); border-radius: 1px; }
+.rdv { background: var(--rdv); border: 1.5px dashed var(--rdvb); border-radius: 14px; padding: 12px; display: grid; gap: 10px; margin-top: 14px; }
+.rdv header { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.rdv header strong { font-family: var(--f-titre); font-size: 1rem; }
+.rdv .suite-h { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.rdv .suite-h > .carte { flex: 1 1 260px; }
+.rdv .suite-h > .fleche { align-self: center; color: var(--muted); }
+.sous { border-left: 2px solid var(--bord, var(--t1b)); margin: 2px 0 2px 10px; padding-left: 10px; display: grid; gap: 6px; }
+.sous > .titre-sous { font-size: .78rem; color: var(--muted); }
+.sous .sous-pistes { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+.sous.prevu { border-left-style: dashed; padding-block: 6px; }
+.sous.prevu .titre-sous { font-size: .82rem; }
+.sous.prevu b { color: var(--ink); font-weight: 600; }
+.sous .sous-piste { flex: 1 1 200px; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 6px; display: grid; gap: 6px; align-content: start; background: var(--surface-2); }
+
+/* cartes d'unité */
+.carte { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; display: grid; gap: 6px; text-align: left; cursor: pointer; box-shadow: var(--ombre); min-width: 0; width: 100%; transition: opacity .15s, border-color .15s; }
+.carte:hover { border-color: var(--accent); }
+.carte .l1 { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.carte .uid { font-family: var(--f-code); font-weight: 500; font-size: .85rem; flex: none; }
+.carte .titre { font-weight: 500; font-size: .92rem; overflow-wrap: anywhere; }
+.carte .l2 { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.carte .pc { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 3ch; }
+.carte .l3 { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .78rem; color: var(--muted); }
+.carte .attend { color: var(--warn); font-weight: 500; }
+.carte.porte { border-style: solid; border-width: 1px 1px 1px 4px; border-left-color: var(--muted); }
+.carte.correction { border-left: 4px solid var(--bad); }
+.carte.prete-ia { outline: 2px solid var(--accent); outline-offset: 1px; }
+.carte.estompee { opacity: .28; }
+.carte.estompee:hover { opacity: .7; }
+
+/* panneau de détail */
+.voile { position: fixed; inset: 0; background: rgba(10,15,18,.35); z-index: 10; }
+.panneau { position: fixed; z-index: 11; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--surface); border-left: 1px solid var(--line); box-shadow: -8px 0 24px rgba(0,0,0,.12); display: grid; grid-template-rows: auto 1fr; padding-top: env(safe-area-inset-top, 0px); }
+.panneau .haut { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; padding: 16px 18px 12px; border-bottom: 1px solid var(--line); }
+.panneau .corps { overflow-y: auto; padding: 14px 18px calc(28px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 16px; align-content: start; }
+.panneau h2 { font-size: 1.15rem; }
+.fermer { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; flex: none; font-size: 1.1rem; }
+.champs { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: .9rem; margin: 0; }
+.champs dt { color: var(--muted); }
+.champs dd { margin: 0; overflow-wrap: anywhere; }
+.champs a { color: var(--accent); }
+.cmd { display: flex; gap: 8px; align-items: center; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.cmd code { flex: 1; overflow-x: auto; white-space: nowrap; }
+.groupe-e h3 { font-family: var(--f-texte); font-size: .8rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 6px; }
+.etape { display: grid; grid-template-columns: 18px 52px minmax(0, 1fr); gap: 2px 8px; padding: 5px 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.etape:last-child { border-bottom: 0; }
+.etape .ck { color: var(--muted); }
+.etape.fait .ck { color: var(--ok); }
+.etape .eid { font-family: var(--f-code); font-size: .8rem; color: var(--muted); }
+.etape .sig { grid-column: 3; font-family: var(--f-code); font-size: .74rem; color: var(--muted); }
+.etape .sig.refus { color: var(--bad); }
+.exemple { background: var(--t4); border: 1px solid var(--t4b); border-radius: 10px; padding: 10px 14px; font-size: .9rem; }
+.arret { background: var(--bad); color: var(--surface); border-radius: 10px; padding: 12px 14px; font-weight: 500; }
+.arret pre { white-space: pre-wrap; margin: 6px 0 0; font-family: var(--f-code); font-size: .8rem; }
+.vide-msg { color: var(--muted); font-size: .9rem; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+<!--CORPS-->
+<div class="page">
+  <header class="tete">
+    <div>
+      <div class="sur">Mode autonome · IA 1, IA 2, IA 3</div>
+      <h1>Suivi de la construction</h1>
+      <p>Chaque unité de <code>SUIVI.md</code> avec ses cinq carrés d'avancement, du rouge au vert. Les carrés de fond regroupent les pistes autonomes : leurs unités se font à la suite, et les pistes d'une même section avancent en même temps.</p>
+    </div>
+    <div class="global" id="global"></div>
+  </header>
+
+  <div id="arret" hidden></div>
+
+  <div class="bandeau">
+    <div class="compte" id="compte"></div>
+    <div class="actions">
+      <button type="button" class="btn primaire" id="actualiser">Actualiser depuis GitHub</button>
+      <label class="source" for="ia-prompt">Prompt de créneau</label>
+      <select class="btn" id="ia-prompt"><option value="1">IA 1</option><option value="2">IA 2</option><option value="3">IA 3</option></select>
+      <button type="button" class="btn" id="copier">Copier</button>
+      <button type="button" class="btn" id="exemple" aria-pressed="false">Voir un exemple d'avancement</button>
+    </div>
+    <div class="source" id="source"></div>
+  </div>
+
+  <div id="bandeau-exemple" class="exemple" hidden>Exemple fictif pour voir les couleurs : aucune de ces unités n'a réellement avancé. Rebascule sur l'état réel avec le même bouton.</div>
+
+  <section class="prochaines" id="prochaines" aria-label="Prochaine action de chaque IA"></section>
+
+  <div class="filtres" role="group" aria-label="Filtrer les unités">
+    <span>Mettre en avant</span>
+    <button type="button" class="filtre" data-f="tout" aria-pressed="true">Tout</button>
+    <button type="button" class="filtre" data-f="dispo" aria-pressed="false">Disponible maintenant</button>
+    <button type="button" class="filtre" data-f="1" aria-pressed="false">IA 1</button>
+    <button type="button" class="filtre" data-f="2" aria-pressed="false">IA 2</button>
+    <button type="button" class="filtre" data-f="3" aria-pressed="false">IA 3</button>
+  </div>
+
+  <div class="legende" aria-label="Légende">
+    <div class="item"><span class="barre niv1"><i style="--f:1"></i><i></i><i></i><i></i><i></i></span><span class="barre niv3"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i></i><i></i></span><span class="barre niv5"><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i><i style="--f:1"></i></span></div>
+    <div class="etapes5"><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><span>prise</span><span>réalisation</span><span>contrôles</span><span>vérification</span><span>fusion</span></div>
+    <div class="item"><span class="echantillon"></span>piste autonome : unités à la suite</div>
+    <div class="item"><span class="echantillon rdv"></span>rendez-vous : attend les pistes</div>
+  </div>
+
+  <main id="sections"></main>
+</div>
+<div class="voile" id="voile" hidden></div>
+<aside class="panneau" id="panneau" hidden aria-modal="true" role="dialog" aria-labelledby="p-titre">
+  <div class="haut"><div><div class="mono" id="p-uid"></div><h2 id="p-titre"></h2></div><button type="button" class="fermer" id="fermer" aria-label="Fermer">×</button></div>
+  <div class="corps" id="p-corps"></div>
+</aside>
+<script>
+(function () {
+"use strict";
+var D = /*DONNEES*/null;
+var DATA = D, EXEMPLE = false, FILTRE = "tout";
+var LIB = { faite: "Faite", prete: "Prête", attente: "En attente", en_cours: "En cours", abandonnee: "Abandonnée", a_verifier: "À vérifier",
+  en_verification: "En vérification", verif_abandonnee: "Vérification abandonnée", refusee: "Refusée", a_fusionner: "À fusionner", bloquee: "Bloquée" };
+var ROLES = { 1: "conception", 2: "développement", 3: "vérification" };
+/* seuils de suivi/commun.py, transmis par tableau.py (valeurs par défaut si absents) */
+function seuil(nom, defaut) { return DATA && DATA[nom] != null ? DATA[nom] : defaut; }
+var RE_SECTION = /^## (.+)$/, RE_PISTE = /^### Piste (\S+) · (.+?)(?: — (.+))?$/, RE_RDV = /^### Rendez-vous(?: (.+?))?(?: — (.+))?$/;
+var RE_LIGNE = /^- \[( |x)\] \*\*(S\d\d(?:\.[0-9A-Za-z]+)?)\*\* · (.*?) · réalise IA ([123]) · vérifie IA ([123]) · après (.*?) · fiche `(suivi\/[^`]+)`(.*)$/;
+var RE_FAIT = /fait le (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC/;
+var RE_ETAPE = /^- \[( |x)\] ((?:Rc|R|V|F)\d+(?:\.\d+)?) (.*)$/;
+var RE_SIGNE = / — IA ([123]) · (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC(?: · (ACCEPTÉE|REFUSÉE))?$/;
+var RE_ESTIME = /^  - Tâches à créer au découpage : (\d+) à (\d+) \(budget de la phase : (\d+) à (\d+) h/;
+var RE_REPRISE = /^\W*Reprise\s*:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC(?: par IA ([123]))?/gm;
+var RE_LEVEE = /^- Arrêt levé\s*:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC/gm;
+var RE_AJOUTEE = /ajoutée le (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC/;
+
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function md(s) { return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>"); }
+function date(s) { return s ? new Date(s.replace(" ", "T") + ":00Z") : null; }
+function stem(p) { return p.replace(/^suivi\//, "").replace(/\.md$/, ""); }
+
+/* ---------- lecture, comme suivi/commun.py ---------- */
+function lireSuivi(t) {
+  var sections = [], unites = {}, ordre = [], sec = null, grp = null, der = null;
+  t.split("\n").forEach(function (l) {
+    var m;
+    if (der && (m = RE_ESTIME.exec(l))) { unites[der].estime = { tmin: +m[1], tmax: +m[2], hmin: +m[3], hmax: +m[4] }; return; }
+    if ((m = RE_SECTION.exec(l))) { sec = { titre: m[1].trim(), groupes: [] }; sections.push(sec); grp = null; return; }
+    if (sec && (m = RE_PISTE.exec(l))) { grp = { type: "piste", id: m[1], nom: m[2].trim(), note: (m[3] || "").trim(), unites: [] }; sec.groupes.push(grp); return; }
+    if (sec && (m = RE_RDV.exec(l))) { grp = { type: "rdv", id: "rdv", nom: (m[1] || "").trim(), note: (m[2] || "").trim(), unites: [] }; sec.groupes.push(grp); return; }
+    if (l.indexOf("### ") === 0) { grp = null; return; }
+    if ((m = RE_LIGNE.exec(l))) {
+      var f = RE_FAIT.exec(m[8]);
+      unites[m[2]] = { id: m[2], coche: m[1] === "x", titre: m[3], r: +m[4], v: +m[5], apres: m[6].trim() === "—" ? [] : m[6].split(",").map(function (x) { return x.trim(); }),
+        fiche: m[7], fait: f ? f[1] : null, ajoutee: (RE_AJOUTEE.exec(m[8]) || [])[1] || null, groupe: grp };
+      ordre.push(m[2]); der = m[2];
+      if (grp) grp.unites.push(m[2]);
+    }
+  });
+  return { sections: sections.filter(function (s) { return s.groupes.length; }), unites: unites, ordre: ordre };
+}
+function depsReelles(S, uid) {
+  var out = [];
+  S.unites[uid].apres.forEach(function (d) {
+    if (/\.\*$/.test(d)) { var b = d.slice(0, -2); S.ordre.forEach(function (x) { if (x.indexOf(b + ".") === 0 && x !== b + ".P") out.push(x); }); }
+    else out.push(d);
+  });
+  return out;
+}
+function taches(S, uid) { var re = new RegExp("^" + uid.replace(".", "\\.") + "\\.\\d+$"); return S.ordre.filter(function (x) { return re.test(x); }); }
+function aCreer(S, ids) {
+  var r = { tmin: 0, tmax: 0, mil: 0 };
+  ids.forEach(function (uid) { var e = S.unites[uid].estime; if (e && !taches(S, uid).length) { r.tmin += e.tmin; r.tmax += e.tmax; r.mil += (e.tmin + e.tmax) / 2; } });
+  return r;
+}
+function prevu(S, uid) {
+  var e = S.unites[uid].estime;
+  if (!e || taches(S, uid).length) return "";
+  return '<div class="lien"></div><div class="sous prevu"><div class="titre-sous"><b>' + e.tmin + " à " + e.tmax + " tâches à créer</b> par ce découpage (budget de la phase : " + e.hmin + " à " + e.hmax + " h). Elles apparaîtront ici, rangées en sous-pistes.</div></div>";
+}
+function manquants(S, uid) { return depsReelles(S, uid).filter(function (d) { return !S.unites[d] || !S.unites[d].coche; }); }
+function lireEtapes(t) {
+  var out = [];
+  (t || "").split("\n").forEach(function (l) {
+    var m = RE_ETAPE.exec(l); if (!m) return;
+    var s = RE_SIGNE.exec(m[3]);
+    var txt = (s ? m[3].slice(0, s.index) : m[3]).split(" ⟶ ")[0].trim();
+    out.push({ id: m[2], g: m[2][0] === "R" ? "R" : m[2][0], coche: m[1] === "x", texte: txt, ia: s ? +s[1] : null, date: s ? s[2] : null, verdict: s ? s[3] || null : null });
+  });
+  return out;
+}
+function reprises(t, avecIA) { var out = [], m; RE_REPRISE.lastIndex = 0; while ((m = RE_REPRISE.exec(t || ""))) { if (!avecIA) out.push(m[1]); else if (m[2]) out.push([m[1], +m[2]]); } return out; }
+function lireRapport(t) {   /* comme commun.lire_rapport : tentative en cours seulement, comptes depuis le dernier « Arrêt levé » */
+  var r = { statut: null, auteurs: [], tentative: 1, creneaux: 0, reprises: [], acteurs: [], escalades: 0, refus: 0, decision: null, levee: null }, m;
+  if (!t) return r;
+  t = t.split("\n## Tentatives précédentes")[0];
+  if ((m = /^\W*Statut\s*:\s*([A-ZÉ]+)/m.exec(t))) r.statut = m[1];
+  if ((m = /^\W*Auteurs?\s*:\s*(.*)$/m.exec(t))) r.auteurs = (m[1].match(/IA [123]/g) || []).map(function (x) { return +x.slice(3); });
+  if ((m = /^\W*Tentative\s*:\s*(\d+)/m.exec(t))) r.tentative = +m[1];
+  if ((m = /^\W*Créneaux utilisés\s*:\s*(\d+)/m.exec(t))) r.creneaux = +m[1];
+  r.reprises = reprises(t); r.acteurs = reprises(t, true);
+  var fin = 0; RE_LEVEE.lastIndex = 0;
+  while ((m = RE_LEVEE.exec(t))) { r.levee = m[1]; fin = RE_LEVEE.lastIndex; }
+  var apres = t.slice(fin);
+  r.escalades = (apres.match(/^\W*Reprise\s*:.*\bESCALADE\b/gm) || []).length + (r.statut === "ESCALADE" ? 1 : 0);
+  r.refus = (apres.match(/^\W*Reprise\s*:.*\(état : Refusée/gm) || []).length;
+  if ((m = /^\W*Décision\s*:\s*(PASSER|CORRIGER D['’]ABORD)/m.exec(t))) r.decision = m[1] === "PASSER" ? "PASSER" : "CORRIGER D'ABORD";
+  return r;
+}
+function lireVerdict(t) {
+  var v = { verdict: null, verificateur: null, reprises: [], acteurs: [] }, m;
+  if (!t) return v;
+  if ((m = /^\W*Verdict\s*:\s*(EN COURS|ACCEPTÉE|REFUSÉE)/m.exec(t))) v.verdict = m[1];
+  if ((m = /^\W*Vérificateur\s*:\s*IA ([123])/m.exec(t))) v.verificateur = +m[1];
+  v.reprises = reprises(t); v.acteurs = reprises(t, true);
+  return v;
+}
+function uniques(a) { return a.filter(function (x, i) { return a.indexOf(x) === i; }); }
+function resolveur(rap) { return rap.auteurs.indexOf(1) >= 0 ? 3 : 1; }
+function arretRequis(e, rap) {   /* comme commun.arret_requis */
+  if (e === "refusee" && rap.refus + 1 >= 3) return "refusée trois fois (tentative " + rap.tentative + ")";
+  if (e === "bloquee" && rap.escalades >= 2) return "passée deux fois en ESCALADE";
+  if (rap.levee) return null;
+  if (e === "bloquee" && rap.auteurs.indexOf(resolveur(rap)) < 0 && uniques(rap.auteurs).length >= 2) return rap.statut + " à traiter par IA " + resolveur(rap) + ", qui serait la troisième IA auteur";
+  if (uniques(rap.auteurs).length >= 3) return "les trois IA sont auteurs";
+  return null;
+}
+function carres(E, faite, branche) {
+  if (faite) return [1, 1, 1, 1, 1];
+  if (!branche) return [0, 0, 0, 0, 0];
+  var R = E.filter(function (e) { return e.g === "R"; }), V = E.filter(function (e) { return e.g === "V"; }), F = E.filter(function (e) { return e.g === "F"; });
+  if (!R.length) return [0, 0, 0, 0, 0];
+  var mid = R.slice(1, -1), n = function (a) { return a.filter(function (e) { return e.coche; }).length; };
+  var c1 = R[0].coche ? 1 : 0, c3 = R[R.length - 1].coche ? 1 : 0;
+  return [c1, mid.length ? n(mid) / mid.length : c3, c3, V.length ? n(V) / V.length : c3, F.length ? n(F) / F.length : 0];
+}
+function derniere(E, rap, ver) {
+  var d = E.filter(function (e) { return e.date; }).map(function (e) { return e.date; }).concat((rap && rap.reprises) || [], (ver && ver.reprises) || []).sort();
+  return d.length ? d[d.length - 1] : null;
+}
+function etat(S, uid, E, rap, branche, ver) {
+  var u = S.unites[uid];
+  if (u.coche) return "faite";
+  if (!branche) return manquants(S, uid).length ? "attente" : "prete";
+  if (rap.statut === "QUESTION" || rap.statut === "ESCALADE") return "bloquee";
+  var R = E.filter(function (e) { return e.g === "R"; }), V = E.filter(function (e) { return e.g === "V"; });
+  var act = date(derniere(E, rap, ver)), vieux = act && (Date.now() - act.getTime()) > seuil("abandon_h", 20) * 3600e3;
+  if (V.length && V[V.length - 1].coche) return V[V.length - 1].verdict === "REFUSÉE" ? "refusee" : "a_fusionner";
+  if (V.length && V[0].coche) return vieux ? "verif_abandonnee" : "en_verification";
+  if (R.length && R[R.length - 1].coche) return "a_verifier";
+  return vieux ? "abandonnee" : "en_cours";
+}
+
+/* ---------- modèle complet ---------- */
+function modele(data) {
+  var S = lireSuivi(data.suivi), br = {};
+  (data.branches || []).forEach(function (b) { br[b] = true; });
+  var M = { S: S, u: {}, verrou: data.verrou || "", arret: !!data.arret };
+  S.ordre.forEach(function (uid) {
+    var u = S.unites[uid], b = "tache/" + stem(u.fiche), branche = !!br[b];
+    var E = lireEtapes((data.fiches || {})[uid]), rap = lireRapport(branche ? (data.rapports || {})[uid] : null);
+    var ver = lireVerdict(branche ? (data.verdicts || {})[uid] : null);
+    var c = carres(E, u.coche, branche), e = etat(S, uid, E, rap, branche, ver);
+    M.u[uid] = { u: u, E: E, rap: rap, ver: ver, branche: branche ? b : null, c: c, e: e, p: c.reduce(function (a, x) { return a + x; }, 0) };
+  });
+  M.actions = { 1: actions(M, 1), 2: actions(M, 2), 3: actions(M, 3) };
+  M.dispo = {};
+  [1, 2, 3].forEach(function (n) { M.actions[n].forEach(function (a) { (M.dispo[a.uid] = M.dispo[a.uid] || []).push(n); }); });
+  return M;
+}
+
+/* ---------- ce que chaque IA peut faire, comme `outil.py etat` (suivi/travail.py) ---------- */
+function pretDepuis(M, uid) {
+  var d = depsReelles(M.S, uid).map(function (x) { return M.S.unites[x] && M.S.unites[x].fait; }).filter(Boolean).sort();
+  return date(d.length ? d[d.length - 1] : M.S.unites[uid].ajoutee);   /* S01 : null, pas de relais */
+}
+function tenueParAutre(x, n) {   /* comme travail.tenue_par_autre : un autre auteur a agi en dernier, il y a moins de ABANDON_H */
+  var l = x.E.filter(function (e) { return e.date && e.ia; }).map(function (e) { return [e.date, e.ia]; }).concat(x.rap.acteurs, x.ver.acteurs).sort();
+  if (!l.length) return false;
+  var d = l[l.length - 1], qui = d[1];
+  return qui !== n && x.rap.auteurs.indexOf(qui) >= 0 && Date.now() - date(d[0]).getTime() < seuil("abandon_h", 20) * 3600e3;
+}
+function fusionTenue(M, uid) {   /* verrou « … · Fusion Sxx · date UTC » encore valide (45 min) */
+  if (M.verrou.indexOf(" · Fusion " + uid + " · ") < 0) return false;
+  var m = / · (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC$/.exec(M.verrou);
+  return !m || Date.now() - date(m[1]).getTime() <= seuil("verrou_min", 45) * 60e3;
+}
+function actions(M, n) {
+  if (M.arret) return [];
+  var out = [], now = Date.now();
+  var vieux = function (d) { return !!d && now - d.getTime() > seuil("relais_h", 12) * 3600e3; };
+  M.S.ordre.forEach(function (uid) {
+    var x = M.u[uid], u = x.u, e = x.e, aut = x.branche && !u.coche ? x.rap.auteurs : [];
+    var R = x.E.filter(function (y) { return y.g === "R"; }), V = x.E.filter(function (y) { return y.g === "V"; });
+    var add = function (cat, quoi, cmd) { out.push({ cat: cat, uid: uid, quoi: quoi, cmd: "python3 suivi/outil.py " + cmd }); };
+    var raison = aut.length ? arretRequis(e, x.rap) : null;
+    if (raison) add(0, "arrêt obligatoire à déclencher : " + raison, "arreter --ia " + n + " --unite " + uid + ' --raison "' + uid + " : " + raison + '"');
+    else if (e === "bloquee") { if (n === resolveur(x.rap) && (aut.indexOf(n) >= 0 || uniques(aut).length < 2)) add(1, "à débloquer (" + x.rap.statut + ")", "prendre " + uid + " --ia " + n); }
+    else if (e === "en_verification") { if (x.ver.verificateur === n) add(2, "ta vérification en cours, à reprendre", "prendre " + uid + " --ia " + n + " --verification"); }
+    else if ((e === "a_verifier" || e === "verif_abandonnee") && aut.indexOf(n) < 0) {
+      if (e === "verif_abandonnee" || u.v === n || aut.indexOf(u.v) >= 0) add(2, LIB[e].toLowerCase(), "prendre " + uid + " --ia " + n + " --verification");
+      else if (vieux(R.length ? date(R[R.length - 1].date) : null)) add(7, "à vérifier, relais (prévue IA " + u.v + ")", "prendre " + uid + " --ia " + n + " --verification");
+    }
+    else if (e === "a_fusionner" && aut.indexOf(n) < 0) {
+      var sig = V[V.length - 1];
+      if (fusionTenue(M, uid)) return;
+      if (sig.ia === n) add(3, "à fusionner", "fusionner " + uid + " --ia " + n);
+      else if (vieux(date(sig.date))) add(7, "à fusionner, relais (vérifiée par IA " + sig.ia + ")", "fusionner " + uid + " --ia " + n);
+    }
+    else if ((e === "en_cours" || e === "refusee") && (aut.indexOf(n) >= 0 || (e === "refusee" && u.r === n && uniques(aut).length < 2))) {
+      if (!(e === "en_cours" && aut.indexOf(n) >= 0 && tenueParAutre(x, n))) add(4, LIB[e].toLowerCase() + ", à reprendre", "prendre " + uid + " --ia " + n);
+    }
+    else if (e === "abandonnee") {
+      if (aut.indexOf(n) >= 0 || (u.r === n && uniques(aut).length < 2)) add(5, "abandonnée, à reprendre", "prendre " + uid + " --ia " + n);
+      else if (uniques(aut).length < 2) add(7, "abandonnée, relais (prévue IA " + u.r + ")", "prendre " + uid + " --ia " + n);
+    }
+    else if (e === "prete") {
+      if (u.r === n) add(6, "prête", "prendre " + uid + " --ia " + n);
+      else if (vieux(pretDepuis(M, uid))) add(7, "prête, relais (prévue IA " + u.r + ")", "prendre " + uid + " --ia " + n);
+    }
+  });
+  return out.sort(function (a, b) { return a.cat - b.cat || M.S.ordre.indexOf(a.uid) - M.S.ordre.indexOf(b.uid); });
+}
+
+/* ---------- exemple fictif ---------- */
+function exemple(data) {
+  var S = lireSuivi(data.suivi), plan = { S01: 5, S02: 5, S03: 5, S04: 5, S07: 5, S05: 4.4, S08: 3, S10: 1.6 };
+  var fiches = {}, rapports = {}, branches = [], suivi = data.suivi.split("\n");
+  var horo = new Date(Date.now() - 3600e3).toISOString().slice(0, 16).replace("T", " ");
+  S.ordre.forEach(function (uid) {
+    var u = S.unites[uid], p = plan[uid] || 0, t = (data.fiches || {})[uid] || "";
+    if (p >= 5) { suivi = suivi.map(function (l) { return l.indexOf("- [ ] **" + uid + "** ·") === 0 ? l.replace("- [ ]", "- [x]") + " · fait le " + horo + " UTC" : l; }); }
+    if (!p || p >= 5) { fiches[uid] = t; return; }
+    var E = lireEtapes(t), R = E.filter(function (e) { return e.g === "R"; }), V = E.filter(function (e) { return e.g === "V"; });
+    var faits = {};
+    R.forEach(function (e, i) { if (i === 0 || (p >= 3) || (i < R.length - 1 && (i / Math.max(1, R.length - 2)) <= p - 1)) faits[e.id] = u.r; });
+    if (p >= 3) V.forEach(function (e, i) { if (i / V.length < p - 3 - 0.01) faits[e.id] = u.v; });
+    fiches[uid] = t.split("\n").map(function (l) { var m = RE_ETAPE.exec(l); return m && faits[m[2]] ? l.replace("- [ ]", "- [x]") + " — IA " + faits[m[2]] + " · " + horo + " UTC" : l; }).join("\n");
+    rapports[uid] = "- Statut : " + (p >= 3 ? "TERMINÉ" : "EN COURS") + "\n- Auteurs : IA " + u.r + "\n- Tentative : 1\n";
+    branches.push("tache/" + stem(u.fiche));
+  });
+  return { depot: data.depot, suivi: suivi.join("\n"), fiches: fiches, rapports: rapports, verdicts: {}, abandon_h: data.abandon_h, relais_h: data.relais_h, verrou_min: data.verrou_min, branches: branches, verrou: null, arret: null, genere: data.genere, source: "exemple fictif", prompt_creneau: data.prompt_creneau };
+}
+
+/* ---------- rendu ---------- */
+function niveau(p) { return p <= 0 ? 0 : Math.min(5, Math.ceil(p - 1e-9)); }
+function barre(c, cls) {
+  var p = c.reduce(function (a, x) { return a + x; }, 0), n = niveau(p);
+  var lab = "Avancement " + Math.round(p * 20) + " % : " + ["prise en charge", "réalisation", "contrôles et rapport", "vérification", "fusion"].map(function (x, i) { return x + " " + Math.round(c[i] * 100) + " %"; }).join(", ");
+  return '<span class="barre ' + (cls || "") + (n ? " niv" + n : "") + '" role="img" aria-label="' + esc(lab) + '">' + c.map(function (f) { return '<i style="--f:' + f.toFixed(3) + '"></i>'; }).join("") + "</span>";
+}
+function puce(e) { return '<span class="puce e-' + e + '">' + esc(LIB[e]) + "</span>"; }
+function ia(n) { return '<span class="ia ia' + n + '">IA ' + n + "</span>"; }
+
+function carte(M, uid, groupe) {
+  var x = M.u[uid], u = x.u, cls = "carte";
+  if (/^Porte/.test(u.titre)) cls += " porte";
+  if (/\.c\d+$/.test(uid)) cls += " correction";
+  var ext = depsReelles(M.S, uid).filter(function (d) { return groupe.indexOf(d) < 0 && M.S.unites[d] && !M.S.unites[d].coche; });
+  var pc = Math.round(x.p * 20);
+  return '<button type="button" class="' + cls + '" data-uid="' + esc(uid) + '" data-r="' + u.r + '" data-v="' + u.v + '" data-e="' + x.e + '">' +
+    '<span class="l1"><span class="uid">' + esc(uid) + '</span><span class="titre">' + md(u.titre) + "</span></span>" +
+    '<span class="l2">' + barre(x.c) + '<span class="pc">' + pc + " %</span>" + puce(x.e) + "</span>" +
+    '<span class="l3">' + ia(u.r) + "<span>→</span>" + ia(u.v) + (ext.length && !u.coche ? '<span class="attend">attend ' + esc(ext.join(", ")) + "</span>" : "") + "</span></button>";
+}
+function sousPistes(M, taches) {
+  var chaines = [];
+  taches.forEach(function (t) {
+    var d = M.S.unites[t].apres, c = null;
+    for (var i = 0; i < chaines.length; i++) { var der = chaines[i][chaines[i].length - 1]; if (d.indexOf(der) >= 0) { c = chaines[i]; break; } }
+    if (c) c.push(t); else chaines.push([t]);
+  });
+  return chaines;
+}
+function suiteVerticale(M, ids) {
+  var html = [], principales = ids;
+  var i = 0;
+  while (i < principales.length) {
+    var uid = principales[i];
+    if (/^S\d\d\.\d+$/.test(uid)) {
+      var base = uid.split(".")[0], taches = [];
+      while (i < principales.length && new RegExp("^" + base + "\\.\\d+$").test(principales[i])) { taches.push(principales[i]); i++; }
+      var ch = sousPistes(M, taches);
+      html.push('<div class="lien"></div><div class="sous"><div class="titre-sous">Tâches de la phase ' + esc(base) + " · " + ch.length + " sous-piste" + (ch.length > 1 ? "s" : "") + " en parallèle</div><div class=\"sous-pistes\">" +
+        ch.map(function (c) { return '<div class="sous-piste">' + c.map(function (t) { return carte(M, t, c.concat([base])); }).join("") + "</div>"; }).join("") + "</div></div>");
+      continue;
+    }
+    if (html.length) html.push('<div class="lien"></div>');
+    html.push(carte(M, uid, ids));
+    html.push(prevu(M.S, uid));
+    i++;
+  }
+  return html.join("");
+}
+function rendreSections(M) {
+  var out = [], t = 0;
+  M.S.sections.forEach(function (sec) {
+    var ids = []; sec.groupes.forEach(function (g) { ids = ids.concat(g.unites); });
+    var faites = ids.filter(function (u) { return M.u[u].e === "faite"; }).length;
+    var ac = aCreer(M.S, ids);
+    var c = [0, 0, 0, 0, 0], tot = ids.reduce(function (a, u) { return a + M.u[u].p; }, 0) / Math.max(1, ids.length + ac.mil);
+    for (var k = 0; k < 5; k++) c[k] = Math.max(0, Math.min(1, tot - k));
+    var fini = faites === ids.length && !ac.tmax;
+    var pistes = sec.groupes.filter(function (g) { return g.type === "piste"; }), rdv = sec.groupes.filter(function (g) { return g.type === "rdv"; });
+    var h = '<details class="section"' + (fini ? "" : " open") + "><summary><h2>" + esc(sec.titre) + "</h2>" + barre(c, "moyenne") +
+      '<span class="compteur">' + faites + " / " + ids.length + " faites" + (ac.tmax ? " · + " + ac.tmin + " à " + ac.tmax + " tâches à créer" : "") + " · " + pistes.length + " piste" + (pistes.length > 1 ? "s" : "") + " autonome" + (pistes.length > 1 ? "s" : "") + "</span>" + (fini ? '<span class="fini">Terminée</span>' : "") + "</summary>";
+    h += '<div class="pistes">' + pistes.map(function (g) {
+      t = t % 4 + 1;
+      return '<section class="piste" data-t="' + t + '"><header><div class="nom"><span class="id">PISTE ' + esc(g.id) + "</span><strong>" + esc(g.nom) + '</strong></div><div class="note">' + esc(g.note) + " · " +
+        g.unites.filter(function (x) { return !/^S\d\d\.\d+$/.test(x); }).length + " unité" + (g.unites.length > 1 ? "s" : "") + ' à la suite</div></header><div class="suite">' + suiteVerticale(M, g.unites) + "</div></section>";
+    }).join("") + "</div>";
+    rdv.forEach(function (g) {
+      var parts = [], i = 0, U = g.unites;
+      while (i < U.length) {
+        if (/^S\d\d\.\d+$/.test(U[i])) { var j = i; while (j < U.length && /^S\d\d\.\d+$/.test(U[j])) j++; parts.push('<div class="sous" style="flex:1 1 100%"><div class="titre-sous">Tâches de la phase</div><div class="sous-pistes">' + sousPistes(M, U.slice(i, j)).map(function (c) { return '<div class="sous-piste">' + c.map(function (x) { return carte(M, x, c.concat([x.split(".")[0]])); }).join("") + "</div>"; }).join("") + "</div></div>"); i = j; continue; }
+        if (parts.length) parts.push('<span class="fleche" aria-hidden="true">→</span>');
+        parts.push(carte(M, U[i], U));
+        if (prevu(M.S, U[i])) parts.push('<div class="sous prevu" style="flex:1 1 100%"><div class="titre-sous">' + prevu(M.S, U[i]).replace(/^.*?<div class="titre-sous">/, "").replace(/<\/div><\/div>$/, "") + "</div></div>");
+        i++;
+      }
+      h += '<section class="rdv"><header><strong>Rendez-vous ' + esc(g.nom) + '</strong><span class="note source">' + esc(g.note) + '</span></header><div class="suite-h">' + parts.join("") + "</div></section>";
+    });
+    out.push(h + "</details>");
+  });
+  return out.join("");
+}
+function prochaine(M, n) {
+  var a = M.actions[n];
+  return a.length ? { uid: a[0].uid, quoi: a[0].quoi, reste: a.length - 1 } : null;
+}
+function commande(M, uid) {
+  /* la commande que `etat` proposerait : la plus prioritaire des trois IA, l'IA prévue d'abord à égalité */
+  var x = M.u[uid], meilleure = null;
+  [1, 2, 3].forEach(function (n) {
+    M.actions[n].forEach(function (a) {
+      if (a.uid !== uid) return;
+      var prevue = n === (/(vérif|fusion)/.test(a.quoi) ? x.u.v : x.u.r) ? 0 : 1;
+      if (!meilleure || a.cat < meilleure.cat || (a.cat === meilleure.cat && prevue < meilleure.prevue)) meilleure = { cat: a.cat, prevue: prevue, n: n, cmd: a.cmd };
+    });
+  });
+  return meilleure;
+}
+function rendreTete(M) {
+  var ids = M.S.ordre, ac = aCreer(M.S, ids), tot = ids.reduce(function (a, u) { return a + M.u[u].p; }, 0) / Math.max(1, ids.length + ac.mil), c = [];
+  for (var k = 0; k < 5; k++) c.push(Math.max(0, Math.min(1, tot - k)));
+  document.getElementById("global").innerHTML = '<div class="pct">' + Math.round(tot * 20) + " %</div>" + barre(c, "grande") + '<div class="source">' + ids.filter(function (u) { return M.u[u].e === "faite"; }).length + " unités faites sur " + ids.length + " listées" +
+    (ac.tmax ? ", plus " + ac.tmin + " à " + ac.tmax + " tâches que créeront les découpages" : "") + "</div>";
+  var cpt = {}; ids.forEach(function (u) { cpt[M.u[u].e] = (cpt[M.u[u].e] || 0) + 1; });
+  document.getElementById("compte").innerHTML = ["faite", "en_cours", "en_verification", "a_verifier", "a_fusionner", "refusee", "bloquee", "abandonnee", "verif_abandonnee", "prete", "attente"].filter(function (e) { return cpt[e]; }).map(function (e) { return '<span class="puce e-' + e + '">' + esc(LIB[e]) + " · " + cpt[e] + "</span>"; }).join("");
+  document.getElementById("prochaines").innerHTML = [1, 2, 3].map(function (n) {
+    var p = prochaine(M, n);
+    return '<div class="prochaine"><div class="qui">' + ia(n) + "<span>" + esc(ROLES[n]) + '</span></div><div class="quoi">' +
+      (M.arret ? "Arrêt : rien à faire tant que rapports/ARRET.md existe" :
+       p ? "<b>" + esc(p.uid) + "</b> " + esc(p.quoi) + " · " + md(M.u[p.uid].u.titre) + (p.reste > 0 ? " · et " + p.reste + " autre" + (p.reste > 1 ? "s" : "") : "") : "Rien à faire pour l'instant") + "</div></div>";
+  }).join("");
+  var a = document.getElementById("arret");
+  if (DATA.arret) { a.hidden = false; a.innerHTML = '<div class="arret">Arrêt obligatoire : <code>rapports/ARRET.md</code> existe sur main. Les créneaux s\'arrêtent jusqu\'à ce que tu le supprimes.<pre>' + esc(DATA.arret.slice(0, 1200)) + "</pre></div>"; }
+  else a.hidden = true;
+  var s = document.getElementById("source");
+  s.className = "source";
+  s.textContent = (DATA.source || "instantané") + " · " + (DATA.genere || "") + " · verrou de main : " + (DATA.verrou || "libre");
+}
+var M = null;
+function rendre() {
+  M = modele(EXEMPLE ? exemple(D) : DATA);
+  rendreTete(M);
+  document.getElementById("sections").innerHTML = rendreSections(M);
+  appliquerFiltre();
+}
+function appliquerFiltre() {
+  document.querySelectorAll(".carte").forEach(function (el) {
+    var qui = (M && M.dispo[el.dataset.uid]) || [];
+    var dispo = FILTRE === "dispo" ? qui.length > 0 : qui.indexOf(+FILTRE) >= 0;
+    var garde = FILTRE === "tout" || dispo || (FILTRE !== "dispo" && (el.dataset.r === FILTRE || el.dataset.v === FILTRE));
+    el.classList.toggle("estompee", !garde);
+    el.classList.toggle("prete-ia", FILTRE !== "tout" && dispo);
+  });
+}
+
+/* ---------- panneau de détail ---------- */
+function ouvrir(uid) {
+  var x = M.u[uid], u = x.u;
+  document.getElementById("p-uid").textContent = uid;
+  document.getElementById("p-titre").innerHTML = md(u.titre);
+  var g = u.groupe, dep = depsReelles(M.S, uid);
+  var gh = "https://github.com/" + (DATA.depot || D.depot);
+  var prop = commande(M, uid), cmd = prop ? prop.cmd : "";
+  var h = '<div class="l2" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + barre(x.c, "moyenne") + "<b>" + Math.round(x.p * 20) + " %</b>" + puce(x.e) + "</div>";
+  if (cmd) h += '<p class="note-cmd">Commande que <code>etat --ia ' + prop.n + "</code> propose" + (prop.cat === 7 ? " (relais)" : "") + " :</p>" +
+    '<div class="cmd"><code id="p-cmd">' + esc(cmd) + '</code><button type="button" class="btn" id="p-copier">Copier</button></div>';
+  else if (x.e === "en_cours" || x.e === "en_verification") h += '<p class="note-cmd">En cours chez ' + (x.e === "en_cours" ? x.rap.auteurs : [x.ver.verificateur]).filter(Boolean).map(function (k) { return "IA " + k; }).join(", ") + " : rien à prendre pour une autre IA avant " + seuil("abandon_h", 20) + " h sans activité.</p>";
+  else if (x.e === "a_fusionner" && fusionTenue(M, uid)) h += '<p class="note-cmd">Fusion en cours : ' + esc(M.verrou) + ".</p>";
+  h += '<dl class="champs"><dt>Réalise</dt><dd>' + ia(u.r) + " " + ROLES[u.r] + "</dd><dt>Vérifie</dt><dd>" + ia(u.v) + " " + ROLES[u.v] + ", jamais un auteur</dd>" +
+    "<dt>Groupe</dt><dd>" + (g ? (g.type === "piste" ? "Piste " + esc(g.id) + " · " + esc(g.nom) : "Rendez-vous " + esc(g.nom)) : "—") + "</dd>" +
+    "<dt>Commence après</dt><dd>" + (dep.length ? dep.map(function (d) { return M.u[d] ? '<span class="puce e-' + M.u[d].e + '">' + esc(d) + "</span>" : esc(d); }).join(" ") : "rien") + "</dd>" +
+    (x.rap.auteurs.length ? "<dt>Auteurs</dt><dd>" + x.rap.auteurs.map(ia).join(" ") + " · tentative " + x.rap.tentative + "</dd>" : "") +
+    (derniere(x.E, x.rap, x.ver) && x.branche ? "<dt>Dernière activité</dt><dd>" + esc(derniere(x.E, x.rap, x.ver)) + " UTC</dd>" : "") +
+    (x.ver.verificateur && x.branche ? "<dt>Vérificateur</dt><dd>" + ia(x.ver.verificateur) + " · verdict " + esc((x.ver.verdict || "—").toLowerCase()) + "</dd>" : "") +
+    (x.rap.decision && x.branche ? "<dt>Décision</dt><dd>" + esc(x.rap.decision) + "</dd>" : "") +
+    (u.fait ? "<dt>Fusionnée</dt><dd>" + esc(u.fait) + " UTC</dd>" : "") +
+    '<dt>Fiche</dt><dd><a href="' + gh + "/blob/main/" + esc(u.fiche) + '" target="_blank" rel="noopener">' + esc(u.fiche) + "</a></dd>" +
+    (x.branche ? '<dt>Branche</dt><dd><a href="' + gh + "/tree/" + esc(x.branche) + '" target="_blank" rel="noopener">' + esc(x.branche) + "</a></dd>" : "") + "</dl>";
+  var noms = { R: "Réalisation", V: "Vérification", F: "Fusion" };
+  ["R", "V", "F"].forEach(function (k) {
+    var E = x.E.filter(function (e) { return e.g === k; });
+    if (!E.length) return;
+    var vu = u.coche || x.branche;
+    h += '<div class="groupe-e"><h3>' + noms[k] + " · " + (vu ? E.filter(function (e) { return e.coche; }).length : 0) + " / " + E.length + "</h3>" + E.map(function (e) {
+      var fait = u.coche || (x.branche && e.coche);
+      return '<div class="etape' + (fait ? " fait" : "") + '"><span class="ck" aria-hidden="true">' + (fait ? "✓" : "○") + '</span><span class="eid">' + esc(e.id) + "</span><span>" + md(e.texte) + "</span>" +
+        (e.ia && (x.branche || u.coche) ? '<span class="sig' + (e.verdict === "REFUSÉE" ? " refus" : "") + '">IA ' + e.ia + " · " + esc(e.date) + " UTC" + (e.verdict ? " · " + e.verdict : "") + "</span>" : "") + "</div>";
+    }).join("") + "</div>";
+  });
+  if (!x.E.length) h += '<p class="vide-msg">Sous-étapes non chargées : actualise depuis GitHub.</p>';
+  document.getElementById("p-corps").innerHTML = h;
+  var b = document.getElementById("p-copier");
+  if (b) b.addEventListener("click", function () { copier(cmd, b); });
+  document.getElementById("panneau").hidden = false;
+  document.getElementById("voile").hidden = false;
+  document.getElementById("fermer").focus();
+}
+function fermer() { document.getElementById("panneau").hidden = true; document.getElementById("voile").hidden = true; }
+function copier(texte, bouton) {
+  var fin = function (ok) { var t = bouton.textContent; bouton.textContent = ok ? "Copié" : "Sélectionne et copie"; setTimeout(function () { bouton.textContent = t; }, 1600); };
+  try { navigator.clipboard.writeText(texte).then(function () { fin(true); }, function () { fin(false); }); } catch (e) { fin(false); }
+}
+
+/* ---------- actualisation en direct ---------- */
+function brut(sha, chemin, facultatif) {
+  return fetch("https://raw.githubusercontent.com/" + DATA.depot + "/" + sha + "/" + chemin.split("/").map(encodeURIComponent).join("/"), { cache: "no-store" }).then(function (r) {
+    if (r.status === 404 && facultatif) return null;
+    if (!r.ok) throw new Error(chemin + " : HTTP " + r.status);
+    return r.text();
+  });
+}
+function filtrer(t) { return (t || "").split("\n").filter(function (l) { return RE_ETAPE.test(l); }).join("\n"); }
+function branchesDistantes() {
+  var tout = {};
+  function page(n) {
+    return fetch("https://api.github.com/repos/" + DATA.depot + "/branches?per_page=100&page=" + n, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("liste des branches : HTTP " + r.status + (r.status === 403 ? " (limite de l'API GitHub atteinte, réessaie dans une heure)" : ""));
+      return r.json();
+    }).then(function (l) { l.forEach(function (b) { tout[b.name] = b.commit.sha; }); return l.length === 100 ? page(n + 1) : tout; });
+  }
+  return page(1);
+}
+function actualiser() {
+  var s = document.getElementById("source"), bouton = document.getElementById("actualiser");
+  s.className = "source"; s.textContent = "Lecture de GitHub…"; bouton.disabled = true;
+  var nouv = { depot: DATA.depot, prompt_creneau: DATA.prompt_creneau, fiches: {}, rapports: {}, verdicts: {}, abandon_h: DATA.abandon_h, relais_h: DATA.relais_h, verrou_min: DATA.verrou_min, branches: [], verrou: null, arret: null };
+  branchesDistantes().then(function (br) {
+    if (!br.main) throw new Error("branche main introuvable");
+    nouv.branches = Object.keys(br);
+    return brut(br.main, "SUIVI.md").then(function (suivi) {
+      nouv.suivi = suivi;
+      if (!lireSuivi(suivi).ordre.length) throw new Error("SUIVI.md sur main n'a encore aucune ligne au format des pistes (les changements ne sont peut-être pas encore fusionnés dans main)");
+      var S = lireSuivi(suivi), avant = D ? lireSuivi(D.suivi).unites : {}, travaux = [];
+      S.ordre.forEach(function (uid) {
+        var u = S.unites[uid], b = "tache/" + stem(u.fiche);
+        if (br[b]) {
+          travaux.push(brut(br[b], u.fiche, true).then(function (t) { nouv.fiches[uid] = filtrer(t); }));
+          travaux.push(brut(br[b], "rapports/" + uid + ".md", true).then(function (t) {
+            nouv.rapports[uid] = t;
+            return brut(br[b], "rapports/" + uid + "-verif-" + lireRapport(t).tentative + ".md", true).then(function (v) { nouv.verdicts[uid] = v; });
+          }));
+        } else if (!avant[uid] || avant[uid].coche !== u.coche || !(D.fiches || {})[uid]) {
+          travaux.push(brut(br.main, u.fiche, true).then(function (t) { nouv.fiches[uid] = filtrer(t); }));
+        } else nouv.fiches[uid] = D.fiches[uid];
+      });
+      travaux.push(brut(br.main, "rapports/ARRET.md", true).then(function (t) { nouv.arret = t; }));
+      if (br["verrou/main"]) travaux.push(fetch("https://api.github.com/repos/" + DATA.depot + "/commits/" + br["verrou/main"]).then(function (r) { return r.ok ? r.json() : null; }).then(function (c) { nouv.verrou = c ? c.commit.message.split("\n")[0] : "pris"; }));
+      return Promise.all(travaux);
+    });
+  }).then(function () {
+    var d = new Date();
+    nouv.genere = d.toISOString().slice(0, 16).replace("T", " ") + " UTC";
+    nouv.source = "GitHub, en direct";
+    DATA = nouv; EXEMPLE = false; majExemple(); rendre();
+  }).catch(function (e) {
+    s.className = "source erreur";
+    s.textContent = "Actualisation impossible : " + e.message + ". Dans claude.ai, la page ne peut pas joindre GitHub : ouvre suivi/tableau.html depuis une copie du dépôt sur ton ordinateur. L'affichage reste celui de l'instantané du " + (DATA.genere || "?") + ".";
+  }).then(function () { bouton.disabled = false; });
+}
+function majExemple() {
+  var b = document.getElementById("exemple");
+  b.setAttribute("aria-pressed", EXEMPLE ? "true" : "false");
+  b.textContent = EXEMPLE ? "Revenir à l'état réel" : "Voir un exemple d'avancement";
+  document.getElementById("bandeau-exemple").hidden = !EXEMPLE;
+}
+
+/* ---------- branchements ---------- */
+document.getElementById("sections").addEventListener("click", function (ev) { var c = ev.target.closest(".carte"); if (c) ouvrir(c.dataset.uid); });
+document.getElementById("fermer").addEventListener("click", fermer);
+document.getElementById("voile").addEventListener("click", fermer);
+document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") fermer(); });
+document.getElementById("actualiser").addEventListener("click", actualiser);
+document.getElementById("exemple").addEventListener("click", function () { EXEMPLE = !EXEMPLE; majExemple(); rendre(); });
+document.getElementById("copier").addEventListener("click", function (ev) {
+  var n = document.getElementById("ia-prompt").value;
+  copier((DATA.prompt_creneau || "").split("{N}").join(n), ev.currentTarget);
+});
+document.querySelectorAll(".filtre").forEach(function (b) {
+  b.addEventListener("click", function () {
+    FILTRE = b.dataset.f;
+    document.querySelectorAll(".filtre").forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+    try { localStorage.setItem("gdm-filtre", FILTRE); } catch (e) {}
+    appliquerFiltre();
+  });
+});
+try { var f = localStorage.getItem("gdm-filtre"); if (f) { var bf = document.querySelector('.filtre[data-f="' + f + '"]'); if (bf) bf.click(); } } catch (e) {}
+if (!D) { document.getElementById("sections").innerHTML = '<p class="vide-msg">Aucune donnée : génère la page avec python3 suivi/outil.py tableau.</p>'; return; }
+rendre();
+})();
+</script>

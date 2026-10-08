@@ -2,7 +2,7 @@
 
 Budget : 43 à 74 h humaines (39 à 68 h si AST Flow sert de backend statique) · Prérequis : revue T20 qui décide de continuer
 
-Le MVP est décrit phase par phase. Son découpage en tâches dépend des résultats du POC : le prompt de découpage, en fin de page, le produit au début de chaque phase, au format des fiches du POC. Chaque tâche suit ensuite les prompts universels de réalisation et de vérification.
+Le MVP est décrit phase par phase. Son découpage en tâches dépend des résultats du POC : le prompt de découpage, en fin de page, le produit au début de chaque phase, au format des fiches du POC. En mode autonome, un découpage provisoire existe déjà (`suivi/plan_phases.py`, fiches `suivi/S36.1-…` à `suivi/S41.7-…`) : le prompt de découpage sert à le revoir. Chaque tâche suit ensuite les prompts universels de réalisation et de vérification.
 
 ## Ordre et files
 
@@ -23,7 +23,7 @@ Deux files à 10 h par semaine : l'acquisition et la navigation d'un côté, le 
   - SPIKE-03 : GraphEdit, canevas dessiné ou hybride, à 50, 300 et 1 000 éléments visibles ;
   - SPIKE-04 : GDScript AST Flow ou extraction maison, sur le banc d'essai.
 - **Obligations.** Code jetable dans `spikes/`. Mesures avec version et machine. Pour AST Flow : licence, version épinglée, plan de sortie, et passage obligé par une façade de syntaxe.
-- **Méthodologie.** Opus conduit les deux spikes. Pour SPIKE-04, un jeu de relations attendues, écrit à la main sur une partie du banc d'essai, sert d'étalon. On compte les relations justes, fausses et manquées.
+- **Méthodologie.** IA 1 conduit les deux spikes. Pour SPIKE-04, un jeu de relations attendues, écrit à la main sur une partie du banc d'essai, sert d'étalon. On compte les relations justes, fausses et manquées.
 - **Points de contrôle.**
   - Temps de frame et latence d'interaction mesurés pour chaque option de rendu (objectif : 16 ms à 300 éléments).
   - Pour chaque backend : relations justes, fausses et manquées sur l'étalon (objectif : 90 % des appels directs résolus, aucune relation certaine fausse) ; coût d'intégration estimé.
@@ -67,7 +67,7 @@ Deux files à 10 h par semaine : l'acquisition et la navigation d'un côté, le 
   - Négociation de capacités dans le protocole.
   - Frames et ticks physiques horodatés.
   - Toute rupture d'un format persisté exige ta validation.
-- **Méthodologie.** Une tâche de révision de contrat, confiée à Opus, étend C-04 et C-06 avec un changement de version : elle liste `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés, et passe par ta validation. Qwen implémente ensuite sous contrat. Les sessions enregistrées du POC deviennent des fixtures de compatibilité ascendante.
+- **Méthodologie.** Une tâche de révision de contrat, confiée à IA 1, étend C-04 et C-06 avec un changement de version : elle liste `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés, et passe par ta validation. IA 2 implémente ensuite sous contrat. Les sessions enregistrées du POC deviennent des fixtures de compatibilité ascendante.
 - **Points de contrôle.**
   - Une session du POC rechargée par le MVP.
   - Reconnexion testée sur le banc sans éditeur.
@@ -92,7 +92,7 @@ Deux files à 10 h par semaine : l'acquisition et la navigation d'un côté, le 
   - L'outil de désinstallation liste les appels FlowTrace et refuse de retirer le dossier runtime s'il en reste.
   - Les adaptateurs par version n'apparaissent que si une rupture est constatée.
   - Toute rupture se corrige dans la frontière de compatibilité.
-- **Méthodologie.** Qwen trie les échecs de la préversion ; Opus intervient si une API change de sens. Tu fais une installation propre de bout en bout.
+- **Méthodologie.** IA 2 trie les échecs de la préversion ; IA 1 intervient si une API change de sens. Tu fais une installation propre de bout en bout.
 - **Points de contrôle.**
   - CI verte sur la fenêtre de support.
   - Matrice publiée.
@@ -116,7 +116,7 @@ Le prompt de porte d'étape du `README.md` s'applique, avec ces critères.
 ```text
 Tu découpes la phase {Px} du projet GODOT_DEV_MAPPER en tâches exécutables, au format des fiches de docs/construction/etape-4.md.
 
-ENTRÉES : docs/plan-directeur.md (§3, capacités {CAP} ; §9, porte de la phase) ; docs/construction/mvp.md, section {Px} ; docs/DECISIONS.md ; docs/spikes/ ; PROJECT_STATE.md (budget consommé, taux de réussite par modèle) ; docs/revues/revue-poc.md.
+ENTRÉES : docs/plan-directeur.md (§3, capacités {CAP} ; §9, porte de la phase) ; docs/construction/mvp.md, section {Px} ; docs/DECISIONS.md ; docs/spikes/ ; PROJECT_STATE.md (budget consommé, taux de réussite par IA) ; docs/revues/revue-poc.md.
 
 PRODUIS docs/construction/mvp-{Px}.md :
 - objectif, obligations, méthodologie, points de contrôle et cheminement d'amélioration de la phase, précisés par les résultats du POC ;
@@ -124,8 +124,8 @@ PRODUIS docs/construction/mvp-{Px}.md :
 
 RÈGLES
 - Une tâche tient en 1 à 3 h de travail agent et en 1 h de relecture humaine au plus.
-- Une tâche qui touche un format persisté, le protocole ou une façade est vérifiée par Opus.
-- Les contrats et leurs tests précèdent l'implémentation, comme à l'étape 3. Une tâche qui révise un contrat liste explicitement `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés ; Opus la réalise, Gemini la vérifie, tu la valides.
+- Une tâche qui touche un format persisté, le protocole ou une façade est vérifiée par IA 1.
+- Les contrats et leurs tests précèdent l'implémentation, comme à l'étape 3. Une tâche qui révise un contrat liste explicitement `docs/CONTRACTS.md`, `contracts/` et `tests/contract/` dans ses fichiers autorisés ; IA 1 la réalise, IA 3 la vérifie, tu la valides.
 - Chaque tâche précise les marqueurs de `tests/pending/` qu'elle crée ou supprime, et les scripts de `tools/ci/checks.d/` qu'elle ajoute. Aucune ne modifie `PROJECT_STATE.md` ni `docs/DECISIONS.md`.
 - Le total reste dans le budget de la phase ({budget} h humaines). Sinon, tu signales le dépassement et proposes quoi retirer.
 - Ne réalise aucune tâche.

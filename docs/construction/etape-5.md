@@ -17,8 +17,8 @@ Faire arriver dans l'Event Store de l'éditeur les événements d'un vrai jeu in
 
 ## Méthodologie
 
-- **T14.** Sonnet réalise, Gemini vérifie. Le contrôleur se teste avec les sessions enregistrées de `tests/contract/fixtures/sessions/` : normale, coupée, avec trous, mêlée de messages du moteur, avec commande en réentrance. La passerelle se vérifie en chargeant l'éditeur sans interface, puis sur ta machine dans l'éditeur réel.
-- **T15.** Qwen réalise, Gemini vérifie. L'instrumentation suit les règles d'appel de C-07 : clés en StringName littéraux, et `if FlowTrace.enabled:` devant toute charge coûteuse.
+- **T14.** IA 2 réalise, IA 3 vérifie. Le contrôleur se teste avec les sessions enregistrées de `tests/contract/fixtures/sessions/` : normale, coupée, avec trous, mêlée de messages du moteur, avec commande en réentrance. La passerelle se vérifie en chargeant l'éditeur sans interface, puis sur ta machine dans l'éditeur réel.
+- **T15.** IA 2 réalise, IA 3 vérifie. L'instrumentation suit les règles d'appel de C-07 : clés en StringName littéraux, et `if FlowTrace.enabled:` devant toute charge coûteuse.
 
 ## Points de contrôle
 
@@ -41,7 +41,7 @@ PC5.6 attend ta machine. Les autres contrôles passent sans elle.
 
 ## T14 — Réception côté éditeur
 
-Sonnet · A1 · file A · dépend de T09, T11, T12, T13a · vérification : Gemini · pack de contexte EDITOR
+IA 2 · A1 · file A · dépend de T09, T11, T12, T13a · vérification : IA 3 · pack de contexte EDITOR
 
 Fichiers autorisés : `addons/godot_dev_mapper/editor/debugger_bridge.gd`, `addons/godot_dev_mapper/editor/session_controller.gd`, `addons/godot_dev_mapper/plugin.gd` (enregistrement de la passerelle uniquement), `tests/unit/test_session_controller.gd`, `tools/ci/checks.d/50-bridge.sh`.
 
@@ -74,7 +74,7 @@ SUR MA MACHINE, plus tard (PC5.6) : la procédure exacte pour vérifier une vrai
 
 ## T15 — Instrumentation du banc d'essai
 
-Qwen · A1 · file B · dépend de T04 et T13b · vérification : Gemini · contexte : `docs/benches/<nom>.md`, C-01, C-05, C-07
+IA 2 · A1 · file B · dépend de T04 et T13b · vérification : IA 3 · contexte : `docs/benches/<nom>.md`, C-01, C-05, C-07
 
 Fichiers autorisés dans le dépôt : `benches/<nom>/flow.json`, `tools/check_probe_keys.py`, `tests/integration/run_bench.sh`, `docs/benches/<nom>.md`, `tools/ci/checks.d/55-bench.sh`. Dans la copie de travail du jeu : la branche `gdm-instrumentation` uniquement.
 

@@ -1,6 +1,10 @@
 # Guide de construction, étape par étape
 
-Révision GC-0.3 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.4, OR-0.4, MC-0.4 et SPIKE-01a
+Révision GC-0.4 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.5, OR-0.5, MC-0.5 et SPIKE-01a
+
+**Changements depuis GC-0.3** : mode autonome (`sequence.md`, `SUIVI.md`, fiches `suivi/`, tableau de bord `suivi/tableau.html`) ; les IA s'appellent IA 1, IA 2 et IA 3, au choix de l'humain ; `.godot-bin/` ignoré par T01 ; amendement de fin de POC numéroté PD-0.6 ; T05 ne dépend plus de T01 ; PC2.1 compte six critères ; T05 exécutable sous écran virtuel.
+
+**En mode autonome (D-09)**, les règles, les rôles d'IA 1, IA 2 et IA 3, l'accès simultané et le prompt de créneau sont dans `sequence.md` ; la liste de progression est `SUIVI.md`, à la racine, rangée en pistes autonomes ; chaque unité a sa fiche d'exécution dans `suivi/`, avec ses prompts et ses sous-étapes, que les IA cochent et signent par `python3 suivi/outil.py cocher` ; `suivi/tableau.html` dessine l'avancement. Ce guide reste la conception de chaque tâche : les fiches en recopient le travail technique à l'identique, et `python3 suivi/outil.py verifier` signale tout écart.
 
 **Changements depuis GC-0.2**, après une relecture externe :
 - copies de travail isolées pour chaque tâche et pour son vérificateur ;
@@ -10,7 +14,7 @@ Révision GC-0.3 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.4
 - T13 découpée en trois tâches ; latence mesurée en deux parties ; mesure de valeur exploratoire ;
 - permissions et prérequis de T05, T06, T07, T17, T18 et P6 mis en cohérence.
 
-**Pour savoir quoi faire maintenant**, ouvre la carte interactive `carte.html` : elle affiche une seule action à la fois, le modèle à lancer, le prompt à copier, et ce qui se passe selon le résultat. Ce guide en est la référence détaillée.
+**Pour savoir quoi faire maintenant**, ouvre la carte interactive `carte.html` : elle affiche une seule action à la fois, l'IA à lancer, le prompt à copier, et ce qui se passe selon le résultat. Ce guide en est la référence détaillée.
 
 Ce guide décrit chaque étape de la construction du plugin, de l'étape 0 à la V1. Chaque étape a les mêmes six parties :
 - objectif ;
@@ -69,7 +73,8 @@ L'étape de fusion est aussi l'étape d'intégration : `run_all_checks.sh` y est
 
 | Fichier | Contenu |
 | --- | --- |
-| `etape-0.md` | Décisions, squelettes de documents, environnement de Qwen (T00) |
+| `sequence.md` | Règles du mode autonome : IA 1, IA 2, IA 3, trace des sous-étapes, accès simultané et verrou de `main`, fusion, prompt de créneau, arrêts obligatoires, recette finale |
+| `etape-0.md` | Décisions, squelettes de documents, environnement d'une IA locale facultative (T00) |
 | `etape-1.md` | Fondations : projet, runner, contrôle de dépendances, CI, banc d'essai (T01 à T04) |
 | `etape-2.md` | Spikes : partie éditeur du canal (T05), frontière de compatibilité (T06) |
 | `etape-3.md` | Contrats C-01 à C-07, schémas et tests de contrat (T07, T08) |
@@ -80,7 +85,7 @@ L'étape de fusion est aussi l'étape d'intégration : `run_all_checks.sh` y est
 | `mvp.md` | Phases P4a à P8, avec leur prompt de découpage |
 | `v1.md` | Phases P9 à P16, avec leur prompt de découpage |
 
-Le POC est détaillé tâche par tâche. Le MVP et la V1 sont décrits phase par phase : leur découpage en tâches dépend des résultats du POC, et un prompt dédié le produit au moment voulu.
+Le POC est détaillé tâche par tâche. Le MVP et la V1 sont décrits phase par phase. En mode autonome, ils sont aussi découpés en tâches dès le départ (`suivi/plan_phases.py`, fiches `suivi/S36.1-…` et suivantes) ; au début de chaque phase, le prompt de découpage sert à revoir ce découpage provisoire à la lumière des résultats du POC.
 
 ## Statuts d'une tâche
 
@@ -92,10 +97,9 @@ Une tâche s'arrête en **QUESTION** seulement s'il faudrait changer un contrat,
 
 | Auteur | Vérificateur |
 | --- | --- |
-| Qwen | Opus pour le protocole, les façades et les formats ; Gemini sinon |
-| Sonnet | Gemini |
-| Gemini | Sonnet |
-| Opus | Gemini |
+| IA 2 | IA 1 pour le protocole, les façades et les formats ; IA 3 sinon |
+| IA 3 | IA 1 |
+| IA 1 | IA 3 |
 
 Dans tous les cas, la porte d'étape revient à toi.
 
@@ -200,7 +204,7 @@ Après chaque étape, une rétro de dix minutes compare ce qui s'est passé aux 
 | Une tâche demande plus de deux échanges de clarification | Le guide ou le contrat est ambigu | Ajouter un exemple ou une règle à la section concernée |
 | Le vérificateur refuse pour un contournement | Le prompt laisse une porte ouverte | Ajouter l'interdit au prompt universel et à `REGLES_AGENTS.md` |
 | Une contre-épreuve n'est pas détectée | Le contrôle est trop faible | Renforcer le contrôle avant de continuer |
-| Deux escalades sur un même module | Le modèle ou le pack de contexte ne suffit pas | Changer de modèle, ou enrichir le pack |
+| Deux escalades sur un même module | L'IA ou le pack de contexte ne suffit pas | Confier le module à une autre des trois IA, ou enrichir le pack |
 | Budget d'étape dépassé de 50 % | Les tâches sont trop grosses | Scinder les tâches suivantes ; revue de continuation |
 | Une API Godot diffère de l'attendu | Connaissance des modèles périmée | Ajouter le fait vérifié au guide et au pack COMPAT |
 | Même erreur répétée deux fois par un agent | Règle manquante | Une ligne de plus dans `REGLES_AGENTS.md` |
@@ -208,7 +212,7 @@ Après chaque étape, une rétro de dix minutes compare ce qui s'est passé aux 
 ```text
 Rétro de l'étape {N} du projet GODOT_DEV_MAPPER. Entrées : verdicts, rapports, PROJECT_STATE.md, temps consommés.
 Produis au plus trois améliorations. Pour chacune : signal observé, cause probable, modification exacte (fichier, section, texte avant, texte après).
-Dis aussi s'il faut garder ou changer le routage des modèles, avec la mesure qui le justifie.
+Dis aussi s'il faut garder ou changer la répartition entre les IA, avec la mesure qui le justifie.
 Ne modifie rien : la décision est humaine.
 ```
 
@@ -218,9 +222,9 @@ Chaque amélioration acceptée est appliquée au guide, dont la révision augmen
 
 | Étape | Tâches | Heures humaines | Possible sans ta machine |
 | --- | --- | --- | --- |
-| 0 Décisions et environnement | Décisions, squelettes, T00 | 2–4 | Squelettes : oui. Décisions : non, elles sont à toi. T00 : non, Qwen est local |
+| 0 Décisions et environnement | Décisions, squelettes, T00 | 2–4 | Squelettes : oui. Décisions : non, elles sont à toi. T00 : non, l'IA locale est sur ta machine |
 | 1 Fondations | T01 à T04 | 4–6 | T01 à T03 : oui, sauf l'envoi sur GitHub. T04 : en partie |
-| 2 Spikes | T05, T06 | 4–6 | T06 : oui. T05 : non, il faut l'éditeur avec rendu |
+| 2 Spikes | T05, T06 | 4–6 | T06 : oui. T05 : oui sous écran virtuel avec rendu logiciel (vérifié le 8 octobre 2026) ; la mesure sur GPU reste à faire sur ta machine |
 | 3 Contrats | T07, T08 | 4–6 | T07 : oui. T08 : non, il attend SPIKE-01b (T05). La validation reste à toi |
 | 4 Implémentation | T09 à T13c | 4–7, objectif favorable | Godot sans interface suffit, mais tout dépend de T08, donc de T05 |
 | 5 Intégration | T14, T15 | 2–4 | Après T08 : T15 et la logique de T14. Essai dans l'éditeur : non |
@@ -230,13 +234,13 @@ Chaque amélioration acceptée est appliquée au guide, dont la révision augmen
 | MVP | P4a à P8 | 43–74 | Voir `mvp.md` |
 | V1 | P9 à P16 | 75–120 | Voir `v1.md` |
 
-Sans ta machine, le projet avance jusqu'à T07 : décisions, squelettes, T01 à T04, T06 et T07. T08 attend SPIKE-01b (T05), qui exige l'éditeur avec rendu ; tout le reste du POC dépend de T08. La carte interactive applique ces dépendances d'elle-même.
+Sans ta machine, le projet avance jusqu'à T07 : décisions, squelettes, T01 à T04, T06 et T07. T08 attend SPIKE-01b (T05), qui demande l'éditeur avec rendu : un écran virtuel avec rendu logiciel suffit, ce qui a été vérifié le 8 octobre 2026 dans un conteneur, sur Godot 4.7.2. La carte interactive applique ces dépendances d'elle-même.
 
 ## Outillage créé au fil des étapes
 
 | Fichier | Créé en | Rôle |
 | --- | --- | --- |
-| `REGLES_AGENTS.md`, `tools/sync_rules.sh` | Étape 0 | Source unique des règles, copiée vers `CLAUDE.md` et `GEMINI.md` |
+| `REGLES_AGENTS.md`, `tools/sync_rules.sh` | Étape 0 | Source unique des règles, copiée vers `AGENTS.md` et les fichiers de contexte listés dans le script |
 | `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/pending/` | T02 | Runner, assertions, un marqueur par test pas encore activé |
 | `tools/check_deps.py`, `tools/deps_rules.json` | T02 | Règles de dépendance entre modules et API sensibles |
 | `tools/ci/run_all_checks.sh`, `tools/ci/checks.d/`, `tools/ci/fetch_godot.sh` | T03 | Tous les contrôles en une commande, un script par contrôle ajouté ; binaires officiels |

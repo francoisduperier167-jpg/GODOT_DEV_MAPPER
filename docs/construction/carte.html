@@ -12,7 +12,7 @@
   --bg: #e9eef5; --surface: #ffffff; --raised: #f3f6fa; --line: #c8d2e0;
   --text: #18202c; --muted: #536176; --wire: #9fb0c6;
   --godot: #478cbf; --focus: #2b6797;
-  --toi: #e9a93f; --opus: #9d7ff0; --sonnet: #4fb57a; --gemini: #4aa3dd; --qwen: #ea6f5a;
+  --toi: #e9a93f; --ia1: #9d7ff0; --ia2: #4fb57a; --ia3: #4aa3dd; --locale: #ea6f5a;
   --ok: #2f8f57; --warn: #a66d0c; --bad: #bf4631;
   --sans: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
@@ -89,10 +89,10 @@ main { max-width: 1120px; margin: 0 auto; padding: 1.4rem clamp(1rem, 4vw, 2.5re
 /* Le nœud : carte d'action courante */
 .node { --a: var(--wire); position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; max-width: 50rem; }
 .node[data-actor="toi"] { --a: var(--toi); }
-.node[data-actor="opus"] { --a: var(--opus); }
-.node[data-actor="sonnet"] { --a: var(--sonnet); }
-.node[data-actor="gemini"] { --a: var(--gemini); }
-.node[data-actor="qwen"] { --a: var(--qwen); }
+.node[data-actor="ia1"] { --a: var(--ia1); }
+.node[data-actor="ia2"] { --a: var(--ia2); }
+.node[data-actor="ia3"] { --a: var(--ia3); }
+.node[data-actor="locale"] { --a: var(--locale); }
 .node::before { content: ""; position: absolute; left: -8px; top: 1.15rem; width: 14px; height: 14px; border-radius: 50%; background: var(--a); border: 3px solid var(--bg); }
 .node-title { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .9rem; padding: .8rem 1.1rem .75rem 1.3rem; background: color-mix(in srgb, var(--a) 26%, var(--surface)); border-bottom: 1px solid var(--line); border-radius: 12px 12px 0 0; font-size: 1.28rem; line-height: 1.25; }
 .node-title:focus { outline: none; }
@@ -123,10 +123,10 @@ main { max-width: 1120px; margin: 0 auto; padding: 1.4rem clamp(1rem, 4vw, 2.5re
 /* Glyphes des acteurs : couleur + forme */
 .glyph { display: inline-block; width: 12px; height: 12px; flex: none; background: var(--g); }
 .g-toi { --g: var(--toi); border-radius: 50%; }
-.g-opus { --g: var(--opus); border-radius: 2px; }
-.g-sonnet { --g: var(--sonnet); transform: rotate(45deg) scale(.8); }
-.g-gemini { --g: var(--gemini); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
-.g-qwen { --g: var(--qwen); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
+.g-ia1 { --g: var(--ia1); border-radius: 2px; }
+.g-ia2 { --g: var(--ia2); transform: rotate(45deg) scale(.8); }
+.g-ia3 { --g: var(--ia3); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.g-locale { --g: var(--locale); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); }
 .legend { display: flex; flex-wrap: wrap; gap: .4rem .9rem; margin: 1.6rem 0 0; padding: 0; list-style: none; color: var(--muted); font-size: .9rem; }
 .legend li { display: inline-flex; align-items: center; gap: .4rem; }
 
@@ -175,7 +175,7 @@ svg.flow rect.box { fill: var(--raised); stroke: var(--line); }
 svg.flow rect.pill { fill: var(--bg); stroke: var(--wire); }
 svg.flow rect.bar { stroke: none; fill: var(--wire); }
 svg.flow .toi rect.bar { fill: var(--toi); }
-svg.flow .opus rect.bar { fill: var(--opus); }
+svg.flow .ia1 rect.bar { fill: var(--ia1); }
 svg.flow polygon.dia { fill: var(--surface); stroke: var(--wire); stroke-width: 1.6; }
 svg.flow .w { stroke: var(--wire); stroke-width: 2; fill: none; }
 svg.flow .ah { fill: var(--wire); }
@@ -241,10 +241,10 @@ footer p { margin: 0; }
     </div>
     <ul class="legend" aria-label="Légende des acteurs">
       <li><span class="glyph g-toi"></span>Toi</li>
-      <li><span class="glyph g-opus"></span>Opus</li>
-      <li><span class="glyph g-sonnet"></span>Sonnet</li>
-      <li><span class="glyph g-gemini"></span>Gemini</li>
-      <li><span class="glyph g-qwen"></span>Qwen</li>
+      <li><span class="glyph g-ia1"></span>IA 1</li>
+      <li><span class="glyph g-ia2"></span>IA 2</li>
+      <li><span class="glyph g-ia3"></span>IA 3</li>
+      <li><span class="glyph g-locale"></span>IA locale (facultative)</li>
     </ul>
   </section>
 
@@ -259,22 +259,22 @@ footer p { margin: 0; }
     <h3>Quand est-ce que je lance une étape ?</h3>
     <p>Quand la précédente est close. Une étape est close quand sa porte est passée, que tu as décidé « Passer », que la rétro est faite et que l'étape est marquée « Acceptée » dans <code>PROJECT_STATE.md</code>. L'onglet Maintenant t'amène alors tout seul à la première tâche de l'étape suivante. L'étape 0 commence tout de suite.</p>
 
-    <h3>Quand est-ce que je lance Gemini, Qwen, Opus ou Sonnet ?</h3>
+    <h3>Quand est-ce que je lance IA 1, IA 2, IA 3 ou l'IA locale ?</h3>
     <p>Jamais de ta propre initiative : la carte te le dit à chaque action. Chaque tâche a un auteur et un vérificateur.</p>
     <ul>
       <li>L'auteur se lance au début de la tâche.</li>
       <li>Le vérificateur se lance quand le rapport de l'auteur dit TERMINÉ, dans une autre conversation.</li>
-      <li>Un modèle plus fort se lance quand le rapport dit ESCALADE, ou après deux refus du vérificateur.</li>
-      <li>Opus se lance aussi à chaque fin d'étape : d'abord la porte, puis la rétro.</li>
+      <li>L'IA de l'échelon supérieur se lance quand le rapport dit ESCALADE, ou après deux refus du vérificateur.</li>
+      <li>IA 1 se lance aussi à chaque fin d'étape : d'abord la porte, puis la rétro.</li>
     </ul>
     <div class="tablewrap">
       <table>
         <thead><tr><th>Qui</th><th>Il réalise</th><th>Il vérifie</th><th>Il intervient aussi</th></tr></thead>
         <tbody>
-          <tr><td><span class="who"><span class="glyph g-qwen"></span>Qwen</span></td><td>T01 à T03, la préparation de T04, T09 à T13c, T15, T17, T18</td><td>Rien</td><td>Seulement une fois T00 réussi</td></tr>
-          <tr><td><span class="who"><span class="glyph g-sonnet"></span>Sonnet</span></td><td>T14 et T16 ; les tâches de Qwen tant que Qwen n'est pas prêt</td><td>Rien</td><td>Quand Qwen escalade</td></tr>
-          <tr><td><span class="who"><span class="glyph g-gemini"></span>Gemini</span></td><td>Le choix du jeu de test, l'injection des bugs de T19</td><td>Presque tout le code, les squelettes, les contrats, les spikes</td><td>Recalcule les chiffres de la revue T20</td></tr>
-          <tr><td><span class="who"><span class="glyph g-opus"></span>Opus</span></td><td>Décisions, squelettes, spikes, contrats, revue T20</td><td>T03, T12, T13a, T13b, T18</td><td>Portes, rétros, découpages, escalades de Sonnet et de Gemini</td></tr>
+          <tr><td><span class="who"><span class="glyph g-locale"></span>IA locale, facultative</span></td><td>T01 à T03, la préparation de T04, T09 à T13c, T15, T17, T18, si tu l'as installée et que T00 a réussi</td><td>Rien</td><td>Seulement une fois T00 réussi</td></tr>
+          <tr><td><span class="who"><span class="glyph g-ia2"></span>IA 2</span></td><td>T14 et T16 ; les tâches de l'IA locale tant qu'elle n'est pas prête, ou toutes si tu n'en installes pas</td><td>Rien</td><td>Quand l'IA locale escalade</td></tr>
+          <tr><td><span class="who"><span class="glyph g-ia3"></span>IA 3</span></td><td>Le choix du jeu de test, l'injection des bugs de T19</td><td>Presque tout le code, les squelettes, les contrats, les spikes</td><td>Recalcule les chiffres de la revue T20</td></tr>
+          <tr><td><span class="who"><span class="glyph g-ia1"></span>IA 1</span></td><td>Décisions, squelettes, spikes, contrats, revue T20</td><td>T03, T12, T13a, T13b, T18</td><td>Portes, rétros, découpages, escalades d'IA 2 et d'IA 3</td></tr>
           <tr><td><span class="who"><span class="glyph g-toi"></span>Toi</span></td><td>Les décisions, les essais sur ta machine, la mesure de valeur</td><td>T00 et T04</td><td>Lire chaque verdict, fusionner, décider à chaque porte</td></tr>
         </tbody>
       </table>
@@ -284,7 +284,7 @@ footer p { margin: 0; }
     <p>Quand ces quatre choses sont faites, dans l'ordre :</p>
     <ol>
       <li>toutes ses tâches sont acceptées et fusionnées dans <code>main</code>, avec des contrôles verts après chaque fusion ;</li>
-      <li>Opus a exécuté la porte d'étape, et chaque point de contrôle est OK ;</li>
+      <li>IA 1 a exécuté la porte d'étape, et chaque point de contrôle est OK ;</li>
       <li>tu as décidé « Passer » ;</li>
       <li>la rétro est faite, et l'étape est marquée « Acceptée » dans <code>PROJECT_STATE.md</code>.</li>
     </ol>
@@ -322,17 +322,17 @@ footer p { margin: 0; }
     <div class="flowwrap">
       <svg class="flow" viewBox="0 0 720 540" role="img" aria-labelledby="f2t f2d">
         <title id="f2t">La fin d'une étape</title>
-        <desc id="f2d">Quand toutes les tâches sont acceptées, Opus exécute la porte d'étape ; tu décides de passer, de corriger d'abord ou de revoir le plan ; si tu passes, Opus fait la rétro, tu appliques les améliorations retenues, tu marques l'étape Acceptée, puis l'étape suivante commence.</desc>
+        <desc id="f2d">Quand toutes les tâches sont acceptées, IA 1 exécute la porte d'étape ; tu décides de passer, de corriger d'abord ou de revoir le plan ; si tu passes, IA 1 fait la rétro, tu appliques les améliorations retenues, tu marques l'étape Acceptée, puis l'étape suivante commence.</desc>
         <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
         <rect class="pill" x="40" y="16" width="320" height="32" rx="16"/><text x="200" y="37" text-anchor="middle">Toutes les tâches sont acceptées</text>
-        <g class="opus"><rect class="box" x="40" y="80" width="320" height="52" rx="8"/><rect class="bar" x="40" y="80" width="6" height="52" rx="3"/><text x="60" y="102"><tspan class="b">Opus</tspan> : porte d'étape</text><text class="m" x="60" y="122">chaque point de contrôle OK ou KO</text></g>
+        <g class="ia1"><rect class="box" x="40" y="80" width="320" height="52" rx="8"/><rect class="bar" x="40" y="80" width="6" height="52" rx="3"/><text x="60" y="102"><tspan class="b">IA 1</tspan> : porte d'étape</text><text class="m" x="60" y="122">chaque point de contrôle OK ou KO</text></g>
         <polygon class="dia" points="200,156 300,190 200,224 100,190"/><text x="200" y="195" text-anchor="middle">Ta décision ?</text>
-        <g class="opus"><rect class="box" x="40" y="274" width="320" height="52" rx="8"/><rect class="bar" x="40" y="274" width="6" height="52" rx="3"/><text x="60" y="296"><tspan class="b">Opus</tspan> : rétro</text><text class="m" x="60" y="316">trois améliorations au plus</text></g>
+        <g class="ia1"><rect class="box" x="40" y="274" width="320" height="52" rx="8"/><rect class="bar" x="40" y="274" width="6" height="52" rx="3"/><text x="60" y="296"><tspan class="b">IA 1</tspan> : rétro</text><text class="m" x="60" y="316">trois améliorations au plus</text></g>
         <g class="toi"><rect class="box" x="40" y="354" width="320" height="52" rx="8"/><rect class="bar" x="40" y="354" width="6" height="52" rx="3"/><text x="60" y="376"><tspan class="b">Toi</tspan> : applique ce que tu retiens</text><text class="m" x="60" y="396">puis fusionne</text></g>
         <g class="toi"><rect class="box" x="40" y="434" width="320" height="52" rx="8"/><rect class="bar" x="40" y="434" width="6" height="52" rx="3"/><text x="60" y="456"><tspan class="b">Toi</tspan> : étape « Acceptée »</text><text class="m" x="60" y="476">dans PROJECT_STATE.md, commit</text></g>
         <rect class="pill" x="70" y="500" width="260" height="32" rx="16"/><text x="200" y="521" text-anchor="middle">L'étape suivante commence</text>
         <g><rect class="box" x="430" y="130" width="270" height="52" rx="8"/><text x="446" y="152"><tspan class="b">Corriger d'abord</tspan></text><text class="m" x="446" y="172">boucle sur la tâche en cause, ↺</text></g>
-        <g><rect class="box" x="430" y="194" width="270" height="52" rx="8"/><text x="446" y="216"><tspan class="b">Revoir le plan</tspan></text><text class="m" x="446" y="236">Opus propose, tu valides, ↺</text></g>
+        <g><rect class="box" x="430" y="194" width="270" height="52" rx="8"/><text x="446" y="216"><tspan class="b">Revoir le plan</tspan></text><text class="m" x="446" y="236">IA 1 propose, tu valides, ↺</text></g>
         <line class="w" x1="200" y1="48" x2="200" y2="78" marker-end="url(#ah2)"/>
         <line class="w" x1="200" y1="132" x2="200" y2="154" marker-end="url(#ah2)"/>
         <line class="w" x1="200" y1="224" x2="200" y2="272" marker-end="url(#ah2)"/><text class="lab" x="210" y="254">PASSER</text>
@@ -343,7 +343,7 @@ footer p { margin: 0; }
         <path class="w" d="M362,190 V220 H428" marker-end="url(#ah2)"/>
       </svg>
     </div>
-    <p class="caption">↺ : après la correction ou l'amendement, Opus relance la porte.</p>
+    <p class="caption">↺ : après la correction ou l'amendement, IA 1 relance la porte.</p>
 
     <h2>Six règles pour ne pas te perdre</h2>
     <ol>
@@ -358,7 +358,7 @@ footer p { margin: 0; }
     <h2>Avant la toute première action</h2>
     <ol>
       <li>Décompresse <code>GODOT_DEV_MAPPER.zip</code> avec <code>unzip</code>, puis place-toi dans le dossier.</li>
-      <li>Ouvre ce dossier dans Claude Code, dans ton outil Gemini et, plus tard, dans le harnais de Qwen.</li>
+      <li>Ouvre ce dossier dans l'outil de chacune de tes trois IA et, si tu en installes une, dans le harnais de l'IA locale.</li>
       <li>Les copies de travail des tâches se créent à côté de ce dossier : <code>../gdm-T01</code>, <code>../gdm-verif-T01</code>… La carte te donne chaque commande, et te dit dans quel dossier ouvrir chaque agent.</li>
       <li>Chaque prompt de cette carte renvoie à un fichier de <code>docs/construction/</code> : les agents le lisent eux-mêmes dans le dépôt.</li>
     </ol>
@@ -370,8 +370,8 @@ footer p { margin: 0; }
     <div class="freeform">
       <label>Identifiant de la tâche<input id="f-id" autocomplete="off" placeholder="P4a-01"></label>
       <label>Fichier du guide<input id="f-file" autocomplete="off" placeholder="docs/construction/mvp-P4a.md"></label>
-      <label>Auteur<select id="f-author"><option value="qwen">Qwen</option><option value="sonnet">Sonnet</option><option value="opus">Opus</option><option value="gemini">Gemini</option></select></label>
-      <label>Vérificateur<select id="f-verifier"><option value="gemini">Gemini</option><option value="opus">Opus</option><option value="sonnet">Sonnet</option><option value="toi">Toi</option></select></label>
+      <label>Auteur<select id="f-author"><option value="ia2">IA 2</option><option value="ia1">IA 1</option><option value="ia3">IA 3</option><option value="locale">IA locale</option></select></label>
+      <label>Vérificateur<select id="f-verifier"><option value="ia3">IA 3</option><option value="ia1">IA 1</option><option value="ia2">IA 2</option><option value="toi">Toi</option></select></label>
     </div>
     <p class="formerr" id="f-err" hidden></p>
     <p><button type="button" class="primary" id="f-start">Commencer cette tâche</button></p>
@@ -391,12 +391,12 @@ footer p { margin: 0; }
   /* ---------------- Acteurs ---------------- */
   var ACTORS = {
     toi:    { name: "Toi",    where: "toi-même : terminal à la racine du dépôt, éditeur Godot, fichiers." },
-    opus:   { name: "Opus",   where: "Claude Code avec le modèle Opus 5.5, ouvert dans le dossier du dépôt. Nouvelle conversation (/clear) pour cette action." },
-    sonnet: { name: "Sonnet", where: "Claude Code avec le modèle Sonnet, ouvert dans le dossier du dépôt. Nouvelle conversation (/clear) pour cette action." },
-    gemini: { name: "Gemini", where: "ton outil Gemini, ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." },
-    qwen:   { name: "Qwen",   where: "ton harnais local (celui de T00), ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." }
+    ia1:    { name: "IA 1",   where: "l'outil de l'IA que tu as choisie comme IA 1, ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." },
+    ia2:    { name: "IA 2",   where: "l'outil de l'IA que tu as choisie comme IA 2, ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." },
+    ia3:    { name: "IA 3",   where: "l'outil de l'IA que tu as choisie comme IA 3, ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." },
+    locale: { name: "IA locale", where: "ton harnais local (celui de T00), ouvert dans le dossier du dépôt. Nouvelle conversation pour cette action." }
   };
-  var ESCALATE_TO = { qwen: "sonnet", sonnet: "opus", gemini: "opus", opus: "toi", toi: "toi" };
+  var ESCALATE_TO = { locale: "ia2", ia2: "ia1", ia3: "ia1", ia1: "toi", toi: "toi" };
 
   /* ---------------- Étapes et phases ---------------- */
   var STATIONS = [
@@ -431,39 +431,39 @@ footer p { margin: 0; }
 
   /* ---------------- Tâches ---------------- */
   var TASKS = {
-    "0.A": { title: "Dossier de décisions", flow: "decisions", author: "opus", verifier: null, deps: [] },
-    "0.B": { title: "Squelettes et règles des agents", author: "opus", verifier: "gemini", deps: ["0.A"], vp: "relecture0B" },
-    "T00": { title: "Environnement de Qwen", flow: "t00", author: "qwen", verifier: "toi", deps: ["0.B"], machine: true },
-    "T01": { title: "Squelette du dépôt et plugin activable", author: "qwen", verifier: "gemini", deps: ["0.B"] },
-    "T02": { title: "Runner de tests et contrôle de dépendances", author: "qwen", verifier: "gemini", deps: ["T01"] },
-    "T03": { title: "Contrôle unique, lint et CI", author: "qwen", verifier: "opus", deps: ["T02"] },
-    "T04": { title: "Banc d'essai", flow: "t04", author: "qwen", verifier: "toi", deps: ["0.A"] },
-    "T05": { title: "SPIKE-01b : partie éditeur du canal", author: "opus", verifier: "gemini", deps: ["T01"], machine: true, vp: "spike01b" },
-    "T06": { title: "SPIKE-02 : frontière de compatibilité", author: "opus", verifier: "gemini", deps: ["T03"] },
-    "T07": { title: "Contrats C-01, C-02, C-05", author: "opus", verifier: "gemini", deps: ["T06"], vp: "contrat" },
-    "T08": { title: "Contrats C-03, C-04, C-06, C-07", author: "opus", verifier: "gemini", deps: ["T05", "T06", "T07"], vp: "contrat", freeze: true },
-    "T09": { title: "Codec de l'enveloppe", author: "qwen", verifier: "gemini", deps: ["T08"] },
-    "T10": { title: "Modèle, graphe déclaré, clés de sonde", author: "qwen", verifier: "gemini", deps: ["T07", "T09"] },
-    "T11": { title: "Event Store minimal", author: "qwen", verifier: "gemini", deps: ["T08", "T10"] },
-    "T12": { title: "Façades et profil moteur", author: "qwen", verifier: "opus", deps: ["T06", "T08"] },
-    "T13a": { title: "FlowTrace : runtime et protocole de session", author: "qwen", verifier: "opus", deps: ["T08", "T09", "T12"] },
-    "T13b": { title: "Banc sans éditeur et scénarios de coupure", author: "qwen", verifier: "opus", deps: ["T13a"] },
-    "T13c": { title: "Mesures de performance (SPIKE-05)", author: "qwen", verifier: "gemini", deps: ["T13b"] },
-    "T14": { title: "Réception côté éditeur", author: "sonnet", verifier: "gemini", deps: ["T09", "T11", "T12", "T13a"] },
-    "T15": { title: "Instrumentation du banc d'essai", author: "qwen", verifier: "gemini", deps: ["T04", "T13b"] },
-    "V5":  { title: "Essai dans l'éditeur réel", flow: "manual", author: "toi", deps: ["T14", "T15"], machine: true, fixId: "T14", fixAuthor: "sonnet",
+    "0.A": { title: "Dossier de décisions", flow: "decisions", author: "ia1", verifier: null, deps: [] },
+    "0.B": { title: "Squelettes et règles des agents", author: "ia1", verifier: "ia3", deps: ["0.A"], vp: "relecture0B" },
+    "T00": { title: "Environnement d'une IA locale (facultatif)", flow: "t00", author: "locale", verifier: "toi", deps: ["0.B"], machine: true },
+    "T01": { title: "Squelette du dépôt et plugin activable", author: "locale", verifier: "ia3", deps: ["0.B"] },
+    "T02": { title: "Runner de tests et contrôle de dépendances", author: "locale", verifier: "ia3", deps: ["T01"] },
+    "T03": { title: "Contrôle unique, lint et CI", author: "locale", verifier: "ia1", deps: ["T02"] },
+    "T04": { title: "Banc d'essai", flow: "t04", author: "locale", verifier: "toi", deps: ["0.A"] },
+    "T05": { title: "SPIKE-01b : partie éditeur du canal", author: "ia1", verifier: "ia3", deps: ["0.B"], machine: true, vp: "spike01b" },
+    "T06": { title: "SPIKE-02 : frontière de compatibilité", author: "ia1", verifier: "ia3", deps: ["T03"] },
+    "T07": { title: "Contrats C-01, C-02, C-05", author: "ia1", verifier: "ia3", deps: ["T06"], vp: "contrat" },
+    "T08": { title: "Contrats C-03, C-04, C-06, C-07", author: "ia1", verifier: "ia3", deps: ["T05", "T06", "T07"], vp: "contrat", freeze: true },
+    "T09": { title: "Codec de l'enveloppe", author: "locale", verifier: "ia3", deps: ["T08"] },
+    "T10": { title: "Modèle, graphe déclaré, clés de sonde", author: "locale", verifier: "ia3", deps: ["T07", "T09"] },
+    "T11": { title: "Event Store minimal", author: "locale", verifier: "ia3", deps: ["T08", "T10"] },
+    "T12": { title: "Façades et profil moteur", author: "locale", verifier: "ia1", deps: ["T06", "T08"] },
+    "T13a": { title: "FlowTrace : runtime et protocole de session", author: "locale", verifier: "ia1", deps: ["T08", "T09", "T12"] },
+    "T13b": { title: "Banc sans éditeur et scénarios de coupure", author: "locale", verifier: "ia1", deps: ["T13a"] },
+    "T13c": { title: "Mesures de performance (SPIKE-05)", author: "locale", verifier: "ia3", deps: ["T13b"] },
+    "T14": { title: "Réception côté éditeur", author: "ia2", verifier: "ia3", deps: ["T09", "T11", "T12", "T13a"] },
+    "T15": { title: "Instrumentation du banc d'essai", author: "locale", verifier: "ia3", deps: ["T04", "T13b"] },
+    "V5":  { title: "Essai dans l'éditeur réel", flow: "manual", author: "toi", deps: ["T14", "T15"], machine: true, fixId: "T14", fixAuthor: "ia2",
              manual: "Sur ta machine : ouvre l'éditeur avec le plugin, lance le banc d'essai instrumenté et démarre une collecte. Suis la procédure écrite dans le rapport de T14, puis compare les compteurs du store à ceux du banc de test (point de contrôle PC5.6)." },
-    "T16": { title: "Panneau du POC", author: "sonnet", verifier: "gemini", deps: ["T10", "T14"] },
-    "T17": { title: "Chemin observé et ouverture du code", author: "qwen", verifier: "gemini", deps: ["T15", "T16"] },
-    "T18": { title: "Robustesse et cycle de vie", author: "qwen", verifier: "opus", deps: ["T13b", "T14"] },
-    "V6":  { title: "Démonstration visuelle", flow: "manual", author: "toi", deps: ["T16", "T17", "T18"], machine: true, fixId: "T16", fixAuthor: "sonnet",
+    "T16": { title: "Panneau du POC", author: "ia2", verifier: "ia3", deps: ["T10", "T14"] },
+    "T17": { title: "Chemin observé et ouverture du code", author: "locale", verifier: "ia3", deps: ["T15", "T16"] },
+    "T18": { title: "Robustesse et cycle de vie", author: "locale", verifier: "ia1", deps: ["T13b", "T14"] },
+    "V6":  { title: "Démonstration visuelle", flow: "manual", author: "toi", deps: ["T16", "T17", "T18"], machine: true, fixId: "T16", fixAuthor: "ia2",
              manual: "Sur ta machine, en suivant les procédures des rapports de T16 à T18 : captures d'écran du panneau avec deux instances distinguées, chemin observé dans ses trois états, ouverture du code au bon endroit, latence mesurée sous 200 ms, plugin désactivé pendant une collecte sans erreur dans le jeu (point de contrôle PC6.7)." },
-    "T19": { title: "Mesure de valeur", flow: "t19", author: "gemini", deps: ["V6"], machine: true },
-    "T20": { title: "Revue de continuation", flow: "t20", author: "opus", deps: ["T19"] }
+    "T19": { title: "Mesure de valeur", flow: "t19", author: "ia3", deps: ["V6"], machine: true },
+    "T20": { title: "Revue de continuation", flow: "t20", author: "ia1", deps: ["T19"] }
   };
   var prevPhase = "T20";
   PHASES.forEach(function (p) {
-    TASKS[p[0]] = { title: p[2], flow: "phase", author: "opus", deps: [prevPhase] };
+    TASKS[p[0]] = { title: p[2], flow: "phase", author: "ia1", deps: [prevPhase] };
     prevPhase = p[0];
   });
   var TASK_STATION = {};
@@ -483,9 +483,9 @@ footer p { margin: 0; }
 
   /* ---------------- État ---------------- */
   function defaultState() {
-    return { v: 1, machine: false, qwenOk: null, done: {}, parked: {}, refusals: {}, esc: {}, gates: {}, provisional: {}, alerts: {},
+    return { v: 1, machine: false, localeOk: null, done: {}, parked: {}, refusals: {}, esc: {}, gates: {}, provisional: {}, alerts: {},
              mvp: false, reduced: false, stopped: false, cursor: null,
-             free: { id: "", file: "", author: "qwen", verifier: "gemini", node: "run", refusals: 0, esc: 0, active: false, last: "" },
+             free: { id: "", file: "", author: "locale", verifier: "ia3", node: "run", refusals: 0, esc: 0, active: false, last: "" },
              updatedAt: 0 };
   }
   var state = defaultState();
@@ -496,17 +496,17 @@ footer p { margin: 0; }
 
   function depsDone(t) { return (t.deps || []).every(function (d) { return state.done[d]; }); }
   function orderCmp(a, b) { return ORDER[a] - ORDER[b]; }
-  function chain(a, n) { for (var i = 0; i < n; i++) a = ESCALATE_TO[a] || "opus"; return a; }
+  function chain(a, n) { for (var i = 0; i < n; i++) a = ESCALATE_TO[a] || "ia1"; return a; }
   function authorOf(t) {
     if (t.free) return t.author;
-    if (t.id === "T00") return "qwen";
-    if (t.author === "qwen" && state.qwenOk !== true) return "sonnet";
+    if (t.id === "T00") return "locale";
+    if (t.author === "locale" && state.localeOk !== true) return "ia2";
     return t.author;
   }
   function verifierOf(t, current) {
     var v = t.verifier;
     if (!v) return null;
-    if (v === current) v = current === "gemini" ? "sonnet" : "gemini";
+    if (v === current) v = current === "ia3" ? "ia2" : "ia3";
     return v;
   }
   function list(ids) {
@@ -654,13 +654,13 @@ footer p { margin: 0; }
     var id = t.id;
     if (id === "0.A") return "Lis docs/construction/etape-0.md, section « 0.A — Dossier de décisions », et exécute exactement le prompt qui s'y trouve.\nTu travailles dans la copie de travail ../gdm-0.A, sur la branche tache/0.A.\nTermine par le rapport demandé.";
     if (id === "0.B") return "Lis docs/construction/etape-0.md, section « 0.B — Squelettes et source unique de règles », et exécute exactement le prompt qui s'y trouve.\nTu travailles dans la copie de travail ../gdm-0.B, sur la branche tache/0.B.\nTermine par le rapport final au format du prompt universel de réalisation (docs/construction/README.md).";
-    if (id === "T00") return "Lis docs/construction/etape-0.md, section « T00 — Environnement de Qwen », et exécute la tâche jouet qui s'y trouve.\nN'invente aucune sortie : si une commande échoue, recopie l'erreur telle quelle et arrête-toi.";
+    if (id === "T00") return "Lis docs/construction/etape-0.md, section « T00 — Environnement d'une IA locale (facultatif) », et exécute la tâche jouet qui s'y trouve.\nN'invente aucune sortie : si une commande échoue, recopie l'erreur telle quelle et arrête-toi.";
     if (id === "T04") return "Lis docs/construction/etape-1.md, section T04, et exécute le prompt de préparation pour le jeu que j'ai choisi :\nNom : [à compléter]\nDépôt : [à compléter]\nRévision : [à compléter]\nTu travailles dans la copie de travail ../gdm-T04, sur la branche tache/T04.\nTermine par le rapport final au format demandé.";
     return "Tu réalises la tâche " + id + " du projet GODOT_DEV_MAPPER.\nTu travailles dans la copie de travail ../gdm-" + id + ", sur la branche tache/" + id + ".\nLis " + fileRef(t) + ", section " + id + ", et exécute exactement le prompt de réalisation qui s'y trouve, avec les règles de REGLES_AGENTS.md.\nTermine par le rapport final au format demandé.";
   }
   function pVerify(t) {
     var id = t.id;
-    if (t.vp === "relecture0B") return "Dans ta copie de travail ../gdm-verif-0.B, lis docs/construction/etape-0.md, section 0.B, et exécute le « Prompt de relecture pour Gemini ». Ne modifie rien.\nCommence ta réponse par « Verdict : ACCEPTÉE » si tu ne trouves aucun écart, ou par « Verdict : REFUSÉE » suivi des écarts numérotés.";
+    if (t.vp === "relecture0B") return "Dans ta copie de travail ../gdm-verif-0.B, lis docs/construction/etape-0.md, section 0.B, et exécute le « Prompt de relecture, pour IA 3 ». Ne modifie rien.\nCommence ta réponse par « Verdict : ACCEPTÉE » si tu ne trouves aucun écart, ou par « Verdict : REFUSÉE » suivi des écarts numérotés.";
     if (t.vp === "spike01b") return "Tu es vérificateur indépendant pour la tâche T05 (SPIKE-01b) du projet GODOT_DEV_MAPPER. Tu ne modifies rien.\nLis, dans ta copie de travail ../gdm-verif-T05, la section SPIKE-01b de docs/spikes/SPIKE-01.md, puis la section T05 de docs/construction/etape-2.md.\nVérifie que chacun des six critères a une manipulation, une observation et un chiffre, et que la décision découle des chiffres. Cherche toute affirmation sans preuve.\nRéponds en commençant par « Verdict : ACCEPTÉE » ou « Verdict : REFUSÉE », puis donne les problèmes numérotés.";
     var extra = t.vp === "contrat" ? "\nRelis aussi chaque contrat contre docs/plan-directeur.md : contradictions, cas non spécifiés, exemples incohérents." : "";
     return "Tu es vérificateur indépendant pour la tâche " + id + " du projet GODOT_DEV_MAPPER. Tu n'as pas écrit ce code. Tu travailles dans ta propre copie de travail, ../gdm-verif-" + id + ", et tu n'y fais aucun commit.\nApplique le « Prompt universel de vérification » de docs/construction/README.md à la section " + id + " de " + fileRef(t) + ".\nRévision de départ : main. Révision à vérifier : tache/" + id + "." + extra + "\nLe rapport de l'auteur suit.\n\n[colle ici le rapport de l'auteur]";
@@ -694,7 +694,7 @@ footer p { margin: 0; }
   /* ---------------- Vues des nœuds ---------------- */
   var NODE_NAMES = { run: "réalisation", status: "statut du rapport", question: "question", escalate: "escalade", decideChange: "proposition à trancher",
     verify: "vérification", verdict: "verdict", fix: "correction", merge: "fusion", unmerge: "annulation de la fusion", decide01: "décisions", install: "installation",
-    t00ok: "mesures", noqwen: "Qwen pas prêt", select: "candidats", choose: "choix du jeu", manual: "essai", manualFix: "correction",
+    t00ok: "mesures", nolocale: "IA locale pas prête", select: "candidats", choose: "choix du jeu", manual: "essai", manualFix: "correction",
     inject: "injection des bugs", measure: "mesure", crosscheck: "relecture", verdict19: "verdict", prepare: "revue", recompute: "recalcul",
     fix20: "correction de la revue", decide20: "décision", amend: "amendement", split: "découpage", reviewSplit: "relecture du découpage",
     loop: "tâches de la phase", gate: "porte", decideGate: "décision", correct: "correction", replan: "plan", retro: "rétro", close: "clôture" };
@@ -714,7 +714,7 @@ footer p { margin: 0; }
     switch (node) {
       case "run":
         return { actor: A, warn: warn, title: "Lance la réalisation de " + id,
-          do: t.flow === "t00" ? "Dans le harnais de Qwen, colle le prompt et laisse Qwen travailler jusqu'à son rapport." :
+          do: t.flow === "t00" ? "Dans le harnais de l'IA locale, colle le prompt et laisse-la travailler jusqu'à son rapport." :
             "Crée d'abord la copie de travail de la tâche dans le terminal. Ouvre ensuite " + ACTORS[A].name + " dans le dossier ../gdm-" + id + ", colle le prompt et laisse l'agent travailler jusqu'à son rapport final.",
           before: t.flow === "t00" ? null : branchCmd(id), prompt: pAuthor(t),
           expect: "un rapport qui se termine par une ligne « Statut : TERMINÉ », « QUESTION » ou « ESCALADE ».",
@@ -733,7 +733,7 @@ footer p { margin: 0; }
           outcomes: [{ label: "J'ai répondu, le nouveau rapport est là", fn: function () { api.go("status"); } }] };
       case "escalate":
         if (E === "toi") return { actor: "toi", title: "Débloque " + id + " toi-même",
-          do: "Opus est bloqué deux fois. Lis son diagnostic et décide : préciser la consigne, modifier un contrat, ou abandonner une option. Puis relance la réalisation dans une nouvelle conversation, avec ta décision.",
+          do: "IA 1 est bloquée deux fois. Lis son diagnostic et décide : préciser la consigne, modifier un contrat, ou abandonner une option. Puis relance la réalisation dans une nouvelle conversation, avec ta décision.",
           outcomes: [{ label: "J'ai décidé, je relance la réalisation", fn: function () { api.escalated("run"); } }] };
         return { actor: E, title: "Escalade " + id + " vers " + ACTORS[E].name,
           do: "Ouvre " + ACTORS[E].name + " dans une nouvelle conversation. Colle le prompt, puis à la suite : le contrôle en échec, les sorties des deux dernières tentatives et le rapport de l'auteur.",
@@ -744,7 +744,7 @@ footer p { margin: 0; }
             { label: "Il propose un changement", kind: "warn", fn: function () { api.escalated("decideChange"); } }] };
       case "decideChange":
         return { actor: "toi", title: "Tranche la proposition",
-          do: "Lis la proposition de changement. Si tu l'acceptes, fais-la appliquer par Opus (contrat, guide ou plan), puis fusionne-la. Si tu la refuses, note pourquoi dans PROJECT_STATE.md. Ensuite, relance la réalisation dans une nouvelle conversation.",
+          do: "Lis la proposition de changement. Si tu l'acceptes, fais-la appliquer par IA 1 (contrat, guide ou plan), puis fusionne-la. Si tu la refuses, note pourquoi dans PROJECT_STATE.md. Ensuite, relance la réalisation dans une nouvelle conversation.",
           outcomes: [{ label: "J'ai tranché, je relance la réalisation", fn: function () { api.go("run"); } }] };
       case "verify":
         if (V === "toi") return toiVerify(t, api);
@@ -793,23 +793,23 @@ footer p { margin: 0; }
           expect: "aucune sortie.",
           outcomes: [{ label: "Les trois sont validées", kind: "ok", fn: function () { api.go("merge"); } }] };
       case "install":
-        return { actor: "toi", warn: warn, title: "Installe l'environnement de Qwen",
-          do: "Installe un serveur local pour Qwen3.8-27B et un harnais d'agent qui sait lire, écrire et exécuter des commandes. Ouvre le harnais dans le dossier du dépôt et fais-lui lire REGLES_AGENTS.md. Vérifie que la commande `godot` lance bien Godot 4.7.2.",
+        return { actor: "toi", warn: warn, title: "Installe l'environnement de l'IA locale (facultatif)",
+          do: "Installe un serveur local pour le modèle de ton choix et un harnais d'agent qui sait lire, écrire et exécuter des commandes. Ouvre le harnais dans le dossier du dépôt et fais-lui lire REGLES_AGENTS.md. Vérifie que la commande `godot` lance bien Godot 4.7.2.",
           before: "godot --version",
           expect: "une ligne qui commence par 4.7.2.stable.",
           outcomes: [{ label: "C'est installé", fn: function () { api.go("run"); } }] };
       case "t00ok":
-        return { actor: "toi", title: "Note les mesures de Qwen",
-          do: "Dans PROJECT_STATE.md : débit en tokens par seconde, durée de la tâche jouet, appels d'outil ratés. À partir de maintenant, Qwen prend ses tâches.",
+        return { actor: "toi", title: "Note les mesures de l'IA locale",
+          do: "Dans PROJECT_STATE.md : débit en tokens par seconde, durée de la tâche jouet, appels d'outil ratés. À partir de maintenant, l'IA locale prend ses tâches.",
           outcomes: [{ label: "C'est noté", kind: "ok", fn: function () { api.complete(); } }] };
-      case "noqwen":
-        return { actor: "toi", title: "Qwen n'est pas prêt",
-          do: "Note l'échec dans PROJECT_STATE.md. La carte confie désormais les tâches de Qwen à Sonnet. Tu pourras retenter T00 plus tard depuis l'onglet La carte.",
+      case "nolocale":
+        return { actor: "toi", title: "L'IA locale n'est pas prête",
+          do: "Note l'échec dans PROJECT_STATE.md. La carte confie désormais ses tâches à IA 2. Tu pourras retenter T00 plus tard depuis l'onglet La carte.",
           outcomes: [{ label: "Compris", fn: function () { api.complete(); } }] };
       case "select":
-        return { actor: "gemini", title: "Fais chercher les jeux candidats",
-          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt.",
-          prompt: "Lis docs/construction/etape-1.md, section T04, et exécute le « Prompt de sélection, pour Gemini ». Tu ne copies aucun fichier de jeu dans le dépôt.",
+        return { actor: "ia3", title: "Fais chercher les jeux candidats",
+          do: "Ouvre IA 3 dans une nouvelle conversation et colle le prompt.",
+          prompt: "Lis docs/construction/etape-1.md, section T04, et exécute le « Prompt de sélection, pour IA 3 ». Tu ne copies aucun fichier de jeu dans le dépôt.",
           expect: "un tableau de trois candidats au plus, puis une recommandation et ses deux faiblesses.",
           outcomes: [{ label: "J'ai les candidats", fn: function () { api.go("choose"); } }] };
       case "choose":
@@ -823,12 +823,12 @@ footer p { margin: 0; }
             { label: "Il y a un problème", kind: "bad", fn: function () { api.go("manualFix"); } }] };
       case "manualFix":
         return { actor: "toi", title: "Corrige avant de continuer",
-          do: "Ouvre l'onglet Boucle libre. Identifiant : " + t.fixId + "-correctif ; fichier : docs/construction/" + t.file + " ; auteur : " + ACTORS[t.fixAuthor].name + " ; vérificateur : Gemini. Décris le problème constaté dans la conversation de l'auteur, suis la boucle jusqu'à la fusion, puis reviens ici refaire l'essai.",
+          do: "Ouvre l'onglet Boucle libre. Identifiant : " + t.fixId + "-correctif ; fichier : docs/construction/" + t.file + " ; auteur : " + ACTORS[t.fixAuthor].name + " ; vérificateur : IA 3. Décris le problème constaté dans la conversation de l'auteur, suis la boucle jusqu'à la fusion, puis reviens ici refaire l'essai.",
           outcomes: [{ label: "Corrigé, je refais l'essai", fn: function () { api.go("manual"); } }] };
       case "inject":
-        return { actor: "gemini", warn: warn, title: "Fais injecter trois bugs à l'aveugle",
-          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt, en complétant le nom du jeu.",
-          prompt: "Lis docs/construction/etape-7.md, section T19, et exécute le « Prompt d'injection, pour Gemini ».\nLe banc d'essai est : [nom du jeu].",
+        return { actor: "ia3", warn: warn, title: "Fais injecter trois bugs à l'aveugle",
+          do: "Ouvre IA 3 dans une nouvelle conversation et colle le prompt, en complétant le nom du jeu.",
+          prompt: "Lis docs/construction/etape-7.md, section T19, et exécute le « Prompt d'injection, pour IA 3 ».\nLe banc d'essai est : [nom du jeu].",
           expect: "trois symptômes et la manière de les déclencher, rien d'autre. Ne lis pas l'enveloppe scellée.",
           outcomes: [{ label: "J'ai les trois symptômes", fn: function () { api.go("measure"); } }] };
       case "measure":
@@ -836,8 +836,8 @@ footer p { margin: 0; }
           do: "Chaque bug a sa propre branche du banc d'essai : gdm-bug-1, gdm-bug-2, gdm-bug-3. Diagnostique le bug 1 avec l'outil, le 2 sans, le 3 avec. Chronomètre tout, installation et instrumentation comprises, et note ce qui aide et ce qui gêne. Remplis le tableau de docs/mesures/valeur-poc.md (modèle dans etape-7.md), avec une conclusion qualitative : les durées ne sont qu'indicatives. N'ouvre l'enveloppe scellée qu'après le troisième diagnostic, et note l'heure.",
           outcomes: [{ label: "Le tableau est rempli", fn: function () { api.go("crosscheck"); } }] };
       case "crosscheck":
-        return { actor: "gemini", title: "Fais relire la mesure",
-          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt, en complétant le nom du jeu.",
+        return { actor: "ia3", title: "Fais relire la mesure",
+          do: "Ouvre IA 3 dans une nouvelle conversation et colle le prompt, en complétant le nom du jeu.",
           prompt: "Relis docs/mesures/valeur-poc.md contre ../benches/[nom du jeu]/ENVELOPPE_SCELLEE.md. Pour chaque bug, la cause trouvée correspond-elle à la cause réelle ? Le tableau est-il complet, coûts d'installation compris ? Ne modifie rien.\nCommence par « Verdict : ACCEPTÉE » si le tableau est complet et cohérent, sinon par « Verdict : REFUSÉE » suivi des écarts.",
           expect: "un verdict.",
           outcomes: [{ label: "J'ai le verdict", fn: function () { api.go("verdict19"); } }] };
@@ -849,22 +849,22 @@ footer p { margin: 0; }
             { label: "ACCEPTÉE, c'est commité", kind: "ok", fn: function () { api.complete(); } },
             { label: "REFUSÉE", kind: "bad", fn: function () { api.go("measure"); } }] };
       case "prepare":
-        return { actor: "opus", title: "Fais préparer la revue de continuation",
-          do: "Crée la copie de travail, puis ouvre Opus dans le dossier ../gdm-T20, dans une nouvelle conversation, et colle le prompt.",
+        return { actor: "ia1", title: "Fais préparer la revue de continuation",
+          do: "Crée la copie de travail, puis ouvre IA 1 dans le dossier ../gdm-T20, dans une nouvelle conversation, et colle le prompt.",
           before: branchCmd("T20"),
           prompt: "Lis docs/construction/etape-7.md, section T20, et exécute le prompt qui s'y trouve.\nTu travailles dans la copie de travail ../gdm-T20, sur la branche tache/T20.",
           expect: "docs/revues/revue-poc.md, avec budgets, fiabilité des modèles, valeur, risques, options et un projet d'amendement PD-0.4.",
           outcomes: [{ label: "J'ai la revue", fn: function () { api.go("recompute"); } }] };
       case "recompute":
-        return { actor: "gemini", title: "Fais recalculer les chiffres de la revue",
-          do: "Ouvre Gemini dans une nouvelle conversation et colle le prompt.",
+        return { actor: "ia3", title: "Fais recalculer les chiffres de la revue",
+          do: "Ouvre IA 3 dans une nouvelle conversation et colle le prompt.",
           prompt: "Dans la copie de travail ../gdm-T20, recalcule à partir de PROJECT_STATE.md les totaux de docs/revues/revue-poc.md : heures humaines, temps agent, taux de réussite par modèle. Ne modifie rien. Liste chaque écart, ou écris « aucun écart ».",
           outcomes: [
             { label: "Aucun écart", kind: "ok", fn: function () { api.go("decide20"); } },
             { label: "Il y a des écarts", kind: "bad", fn: function () { api.go("fix20"); } }] };
       case "fix20":
-        return { actor: "opus", title: "Fais corriger la revue",
-          do: "Retourne dans la conversation d'Opus, colle les écarts trouvés par Gemini et demande la correction de docs/revues/revue-poc.md.",
+        return { actor: "ia1", title: "Fais corriger la revue",
+          do: "Retourne dans la conversation d'IA 1, colle les écarts trouvés par IA 3 et demande la correction de docs/revues/revue-poc.md.",
           outcomes: [{ label: "La revue est corrigée", fn: function () { api.go("recompute"); } }] };
       case "decide20":
         return { actor: "toi", title: "Décide la suite du projet",
@@ -875,14 +875,14 @@ footer p { margin: 0; }
             { label: "Arrêter le projet", kind: "bad", fn: function () { api.set(function () { state.stopped = true; completeTask("T20"); }); } }] };
       case "amend":
         return { actor: "toi", title: "Fais appliquer l'amendement du plan",
-          do: "Valide l'amendement PD-0.4 proposé par la revue. Fais-le appliquer par Opus dans une nouvelle conversation avec le prompt, puis fusionne la branche.",
+          do: "Valide l'amendement PD-0.4 proposé par la revue. Fais-le appliquer par IA 1 dans une nouvelle conversation avec le prompt, puis fusionne la branche.",
           prompt: "Applique à docs/plan-directeur.md l'amendement PD-0.4 proposé dans docs/revues/revue-poc.md, sur la branche tache/T20, en tenant compte de ma décision : [colle ta décision].\nTermine par un rapport.",
           before: mergeCmd("T20"),
           outcomes: [{ label: "Amendement appliqué et fusionné", kind: "ok", fn: function () { api.complete(); } }] };
       case "split": {
         var st = STATIONS[TASK_STATION[id]];
-        return { actor: "opus", title: "Fais découper " + st.the + " en tâches",
-          do: "Crée la copie de travail, puis ouvre Opus dans le dossier ../gdm-" + id + "-decoupage, dans une nouvelle conversation, et colle le prompt.",
+        return { actor: "ia1", title: "Fais découper " + st.the + " en tâches",
+          do: "Crée la copie de travail, puis ouvre IA 1 dans le dossier ../gdm-" + id + "-decoupage, dans une nouvelle conversation, et colle le prompt.",
           before: branchCmd(id + "-decoupage"), prompt: pSplit(st),
           expect: "un fichier docs/construction/" + (st.group === "MVP" ? "mvp-" : "v1-") + id + ".md, avec 4 à 12 tâches, leurs contrôles et leurs prompts.",
           outcomes: [{ label: "Le découpage est prêt", fn: function () { api.go("reviewSplit"); } }] };
@@ -890,7 +890,7 @@ footer p { margin: 0; }
       case "reviewSplit": {
         var st2 = STATIONS[TASK_STATION[id]];
         return { actor: "toi", title: "Relis le découpage",
-          do: "Vérifie que chaque tâche a des contrôles exécutables et au moins une contre-épreuve, et que le total tient dans le budget (" + st2.budget + "). Si oui, fusionne. Sinon, renvoie tes remarques à Opus dans la même conversation.",
+          do: "Vérifie que chaque tâche a des contrôles exécutables et au moins une contre-épreuve, et que le total tient dans le budget (" + st2.budget + "). Si oui, fusionne. Sinon, renvoie tes remarques à IA 1 dans la même conversation.",
           before: mergeCmd(id + "-decoupage"),
           outcomes: [
             { label: "Découpage validé et fusionné", kind: "ok", fn: function () { api.go("loop"); } },
@@ -911,12 +911,12 @@ footer p { margin: 0; }
 
   function toiVerify(t, api) {
     if (t.id === "T00") return { actor: "toi", title: "Vérifie T00 toi-même",
-      do: "Relance toi-même les deux commandes du rapport (contrôle T00-a). Puis demande à Qwen d'ajouter une faute de syntaxe dans hello.gd et de relancer la première commande (contre-épreuve T00-b) : il doit rapporter le code 1 et l'erreur réelle, sans la masquer.",
+      do: "Relance toi-même les deux commandes du rapport (contrôle T00-a). Puis demande à l'IA locale d'ajouter une faute de syntaxe dans hello.gd et de relancer la première commande (contre-épreuve T00-b) : il doit rapporter le code 1 et l'erreur réelle, sans la masquer.",
       before: "godot --headless --path sandbox/t00 --check-only -s res://hello.gd ; echo $?\ngodot --headless --path sandbox/t00 -s res://hello.gd ; echo $?",
       expect: "0, puis T00_OK et 0 ; à la contre-épreuve, le code 1 rapporté honnêtement.",
       outcomes: [
-        { label: "Qwen réussit", kind: "ok", fn: function () { api.set(function () { state.qwenOk = true; state.cursor.node = "t00ok"; }); } },
-        { label: "Qwen échoue", kind: "bad", fn: function () { api.set(function () { state.qwenOk = false; state.cursor.node = "noqwen"; }); } }] };
+        { label: "L'IA locale réussit", kind: "ok", fn: function () { api.set(function () { state.localeOk = true; state.cursor.node = "t00ok"; }); } },
+        { label: "L'IA locale échoue", kind: "bad", fn: function () { api.set(function () { state.localeOk = false; state.cursor.node = "nolocale"; }); } }] };
     if (t.id === "T04") return { actor: "toi", title: "Vérifie T04 toi-même",
       do: "Exécute les contrôles T04-a et T04-b, puis la contre-épreuve T04-c, de docs/construction/etape-1.md, section T04.",
       before: "python3 tools/check_benches.py ; echo $?",
@@ -938,9 +938,9 @@ footer p { margin: 0; }
     function go(n) { commit(function () { state.cursor.node = n; }); }
     switch (node) {
       case "gate":
-        return { actor: "opus", title: "Lance la porte " + st.de,
+        return { actor: "ia1", title: "Lance la porte " + st.de,
           do: (parked.length ? "Les tâches faites sont acceptées ; " + list(parked) + (parked.length > 1 ? " sont mises" : " est mise") + " de côté. " : "Toutes les tâches " + st.de + " sont acceptées. ") +
-              "Place-toi sur main, puis ouvre Opus dans une nouvelle conversation et colle le prompt.",
+              "Place-toi sur main, puis ouvre IA 1 dans une nouvelle conversation et colle le prompt.",
           before: "git switch main", prompt: pGate(st, parked),
           expect: "une page avec chaque point de contrôle OK ou KO, le budget consommé, les problèmes ouverts et une recommandation.",
           outcomes: [{ label: "J'ai la page de porte", fn: function () { go("decideGate"); } }] };
@@ -960,22 +960,22 @@ footer p { margin: 0; }
           do: "Repère dans la page de porte la tâche en cause. Ouvre l'onglet Boucle libre avec l'identifiant de cette tâche suivi de « -correctif », son fichier du guide, son auteur et son vérificateur. Décris le problème de la porte dans la conversation de l'auteur, suis la boucle jusqu'à la fusion, puis reviens relancer la porte.",
           outcomes: [{ label: "Corrigé, je relance la porte", fn: function () { go("gate"); } }] };
       case "replan":
-        return { actor: "opus", title: "Fais proposer un amendement du plan",
-          do: "Ouvre Opus dans une nouvelle conversation et colle le prompt, puis la page de porte. Valide ou refuse l'amendement, fais-le appliquer, fusionne.",
+        return { actor: "ia1", title: "Fais proposer un amendement du plan",
+          do: "Ouvre IA 1 dans une nouvelle conversation et colle le prompt, puis la page de porte. Valide ou refuse l'amendement, fais-le appliquer, fusionne.",
           prompt: pReplan(st),
           outcomes: [{ label: "Amendement appliqué, je relance la porte", fn: function () { go("gate"); } }] };
       case "retro":
         if (st.group === "POC" && !state.alerts[st.id]) return { actor: "toi", title: "Rétro express " + st.de,
           do: "Cette étape n'a connu ni refus, ni escalade, ni question : pas besoin de prompt. Note seulement les temps passés dans PROJECT_STATE.md.",
           outcomes: [{ label: "Les temps sont notés", fn: function () { go("close"); } }] };
-        return { actor: "opus", title: "Fais la rétro " + st.de,
-          do: "Ouvre Opus dans une nouvelle conversation. Colle le prompt, puis la page de porte.",
+        return { actor: "ia1", title: "Fais la rétro " + st.de,
+          do: "Ouvre IA 1 dans une nouvelle conversation. Colle le prompt, puis la page de porte.",
           prompt: pRetro(st),
           expect: "trois améliorations au plus, chacune avec le fichier, le texte avant et le texte après.",
           outcomes: [{ label: "J'ai la rétro", fn: function () { go("close"); } }] };
       case "close":
         return { actor: "toi", title: "Clos " + st.the,
-          do: "Applique les améliorations de la rétro que tu retiens, ou fais-les appliquer par Opus, puis fusionne. Dans PROJECT_STATE.md, marque " + st.the + " « " + (parked.length ? "Acceptée en provisoire" : "Acceptée") + " » avec la date. Termine par un commit.",
+          do: "Applique les améliorations de la rétro que tu retiens, ou fais-les appliquer par IA 1, puis fusionne. Dans PROJECT_STATE.md, marque " + st.the + " « " + (parked.length ? "Acceptée en provisoire" : "Acceptée") + " » avec la date. Termine par un commit.",
           before: "git switch main\ngit commit -am \"" + st.label + " close\"",
           outcomes: [{ label: cap(st.the) + " est close", kind: "ok", fn: function () { commit(function () { closeStation(si); }); } }] };
     }
@@ -1191,10 +1191,10 @@ footer p { margin: 0; }
       }
       box.appendChild(p);
     }
-    if (!state.done.T20 && state.qwenOk !== true) {
-      box.appendChild(h("p", { class: "note info" }, state.qwenOk === false ?
-        "Qwen a échoué à T00 : Sonnet prend ses tâches. Tu peux retenter T00 depuis l'onglet La carte." :
-        "Qwen n'est pas encore vérifié (T00) : Sonnet prend ses tâches en attendant."));
+    if (!state.done.T20 && state.localeOk !== true) {
+      box.appendChild(h("p", { class: "note info" }, state.localeOk === false ?
+        "L'IA locale a échoué à T00 : IA 2 prend ses tâches. Tu peux retenter T00 depuis l'onglet La carte." :
+        "L'IA locale n'est pas installée ou pas vérifiée (T00) : IA 2 prend ses tâches."));
     }
   }
 
@@ -1216,10 +1216,10 @@ footer p { margin: 0; }
   function renderMap() {
     var actions = document.getElementById("map-actions");
     actions.textContent = "";
-    if (state.qwenOk === false || state.done.T00) {
-      var rb = h("button", { type: "button", class: "ghost" }, "Retenter T00 (environnement de Qwen)");
+    if (state.localeOk === false || state.done.T00) {
+      var rb = h("button", { type: "button", class: "ghost" }, "Retenter T00 (environnement de l'IA locale)");
       rb.addEventListener("click", function () {
-        commit(function () { delete state.done.T00; state.qwenOk = null; delete state.parked.T00; state.cursor = { kind: "task", s: 0, task: "T00", node: "install" }; });
+        commit(function () { delete state.done.T00; state.localeOk = null; delete state.parked.T00; state.cursor = { kind: "task", s: 0, task: "T00", node: "install" }; });
         selectTab("now");
       });
       actions.appendChild(rb);
@@ -1262,8 +1262,8 @@ footer p { margin: 0; }
     var f = state.free;
     document.getElementById("f-id").value = f.id || "";
     document.getElementById("f-file").value = f.file || "";
-    document.getElementById("f-author").value = f.author || "qwen";
-    document.getElementById("f-verifier").value = f.verifier || "gemini";
+    document.getElementById("f-author").value = f.author || "locale";
+    document.getElementById("f-verifier").value = f.verifier || "ia3";
     var box = document.getElementById("freecard");
     if (f.active) renderCard(box, taskView(freeTask(), f.node, freeApi()), false);
     else if (f.last) { box.textContent = ""; box.appendChild(h("p", { class: "note info" }, "La tâche " + f.last + " est acceptée et fusionnée. Saisis la suivante, puis commence-la.")); }
