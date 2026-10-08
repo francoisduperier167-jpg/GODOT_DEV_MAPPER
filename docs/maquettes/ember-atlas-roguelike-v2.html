@@ -1,0 +1,2299 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Simulation interactive fictive de l’architecture et des flux de deux niveaux de roguelike. Carte, ressources, contextes d’exécution, fichiers et contrat exportable pour une IA.">
+<title>EMBER — Atlas d’un roguelike</title>
+<style>
+:root{color-scheme:dark;--bg:#101316;--panel:#171c20;--raised:#1d2429;--line:#2d363d;--text:#e3e8e9;--muted:#a2b0b8;--faint:#71818b;--amber:#edbd78;--teal:#78cec5;--violet:#b4a1db;--red:#ef8b85;--blue:#91bfea;--green:#a6c69d;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;--sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.5 var(--sans)}button,input,select,textarea{font:inherit}button,select{cursor:pointer}button{color:inherit;border:1px solid var(--line);background:var(--raised);border-radius:6px;padding:7px 11px;transition:background .18s,border-color .18s}button:hover{background:#303b42;border-color:#53636e}button:disabled{opacity:.4;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:3px}button.primary{background:var(--amber);border-color:var(--amber);color:#251c10;font-weight:650}button.primary:hover{background:#ffcf8b}button.quiet{background:transparent}button.active,button[aria-pressed=true]{border-color:var(--teal);background:#203b3b;color:#c3eeea}button.danger{border-color:#653d3a;color:var(--red)}a{color:var(--teal)}select,input{color:var(--text);background:#14191d;border:1px solid var(--line);border-radius:6px;padding:7px 9px;max-width:100%}h1,h2,h3,p{margin:0}h1{font-size:22px;letter-spacing:-.65px;font-weight:560}h2{font-size:14px;font-weight:550}h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:550;color:var(--muted)}small{font-size:11px}.muted{color:var(--muted)}.mono{font-family:var(--mono)}.tag{display:inline-flex;align-items:center;gap:6px;padding:3px 7px;border:1px solid var(--line);border-radius:4px;color:var(--muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor}.amber{color:var(--amber)}.teal{color:var(--teal)}.red{color:var(--red)}.violet{color:var(--violet)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.topbar{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--line);gap:16px;background:#13181c}.brand{display:flex;align-items:center;gap:11px;font-size:16px;letter-spacing:.18em;font-weight:620}.brand-mark{width:25px;height:25px;border:1px solid var(--amber);transform:rotate(45deg);display:grid;place-items:center}.brand-mark:after{content:"";width:9px;height:9px;background:var(--amber)}.brand-sub{color:var(--faint);font-size:11px;letter-spacing:.02em;font-weight:400;margin-left:6px}.toplinks{display:flex;align-items:center;gap:12px}.toplinks button{font-size:12px}.projectbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:19px 24px 18px}.eyebrow{color:var(--amber);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px}.projecttitle{display:flex;align-items:center;gap:14px}.projectbar p{color:var(--muted);margin-top:3px;font-size:12px}.stats{display:flex;gap:26px;align-items:center}.stat b{display:block;font:20px var(--mono);color:#d5dddf;line-height:1.2}.stat span{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint)}
+.transport{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 24px;background:#171d21;border-block:1px solid var(--line);flex-wrap:wrap}.transport-group{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.transport button{font-size:12px}.transport label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}.transport select{font-size:12px;padding:7px}.transport-divider{height:23px;width:1px;background:var(--line);margin:0 6px}.clock{font:13px var(--mono);min-width:64px;color:var(--teal)}
+.workspace{display:grid;grid-template-columns:214px minmax(0,1fr) 290px;min-height:740px}.sidebar{border-right:1px solid var(--line);background:#141a1e;min-width:0;display:flex;flex-direction:column}.sidebar-head{padding:15px 14px 11px;display:flex;justify-content:space-between}.search-wrap{padding:0 12px 10px}.search-wrap input{width:100%;font-size:11px;padding:8px 9px}.filetree{height:455px;overflow:auto;padding:0 7px 10px;font-family:var(--mono);font-size:11px;scrollbar-width:thin;scrollbar-color:#34444d transparent}.filetree details>summary{cursor:pointer;padding:4px 5px;color:#9eafb9;white-space:nowrap;list-style:none;display:flex;align-items:center;gap:5px}.filetree details>summary:before{content:'›';color:#687d89;display:inline-block;width:10px}.filetree details[open]>summary:before{transform:rotate(90deg)}.tree-folder{padding-left:10px}.filebtn{border:0;background:none;display:block;width:100%;padding:5px 7px;border-radius:4px;text-align:left;font:10px var(--mono);color:#91a3ae;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.filebtn:hover{background:#253039}.filebtn.selected{color:var(--amber);background:#352e23}.filebtn.linked{color:var(--teal)}.file-icon{color:#6f889a;margin-right:6px}.file-icon.scene{color:#8ac8ba}.file-icon.asset{color:#b5a0d2}.preview{padding:12px;margin-top:auto;border-top:1px solid var(--line)}.preview-heading{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--faint);letter-spacing:.08em;margin-bottom:8px}.preview canvas{width:100%;height:132px;background:#101619;border:1px solid var(--line);border-radius:6px;display:block}.preview-title{font-size:12px;color:#c4d2d7;margin-top:7px}.preview-note{font-size:10px;color:var(--faint);line-height:1.4}.player-stats{display:flex;gap:12px;font:11px var(--mono);margin-top:7px}.health-track{height:3px;background:#29332f;border-radius:4px;overflow:hidden;margin-top:6px}.health-track span{display:block;height:100%;background:var(--green);transition:width .25s}
+.center{min-width:0;display:flex;flex-direction:column}.view-tabs{display:flex;gap:1px;padding:0 13px;border-bottom:1px solid var(--line);background:#151b1f;overflow:auto;flex-shrink:0}.view-tab{font-size:11px;padding:13px 11px;border:0;border-radius:0;background:none;white-space:nowrap;color:#8e9da7}.view-tab.active{color:var(--amber);background:none;border-bottom:2px solid var(--amber)}.view-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 17px;height:50px;flex-shrink:0}.view-top .breadcrumb{font-size:11px;color:var(--muted)}.view-top strong{font-weight:500;color:#c1cdd4}.view-top button{padding:4px 8px;font:11px var(--mono)}.zoomtools{display:flex;align-items:center;gap:4px}.zoomtools span{font:10px var(--mono);width:35px;text-align:center;color:var(--faint)}
+.graph-wrap{position:relative;flex:1;min-height:430px;overflow:hidden;background-color:#11171b;background-image:radial-gradient(#35424b 0.75px,transparent .75px);background-size:20px 20px}.graph-wrap.dragging{cursor:grabbing}.graph{position:absolute;inset:0;width:100%;height:100%;user-select:none;touch-action:none}.graph .group-frame{fill:#172027;fill-opacity:.76;stroke:#2a3943;stroke-width:1}.graph .group-title{font:10px var(--mono);fill:#8297a3;letter-spacing:1.4px}.graph .edge{fill:none;stroke:#475965;stroke-width:1.35;opacity:.66}.graph .edge.data{stroke:#68aaa7;stroke-dasharray:4 4}.graph .edge.resource{stroke:#a89ac9;stroke-dasharray:2 5}.graph .edge.pause{stroke:#af9b79;stroke-dasharray:6 5}.graph .edge.chosen{stroke:var(--amber);opacity:1;stroke-width:2}.graph .edge.live{stroke:var(--teal);stroke-width:2;stroke-dasharray:6 6;opacity:1;animation:flow 1s linear infinite}.graph .edge.dim{opacity:.1}.graph .edge-label{font:9px var(--mono);fill:#8ca3b0;paint-order:stroke;stroke:#11171b;stroke-width:5px;stroke-linejoin:round}.graph .edge-label.dim{opacity:.12}.graph .node-card{cursor:pointer;outline:none}.graph .node-bg{fill:#1c252c;stroke:#3b4a55;stroke-width:1;rx:7}.graph .node-card:hover .node-bg{fill:#273740;stroke:#90b7b6}.graph .node-card:focus-visible .node-bg{stroke:var(--amber);stroke-width:3}.graph .node-card.selected .node-bg{stroke:var(--amber);stroke-width:1.8;fill:#2b2b27}.graph .node-card.visited .node-bg{stroke:#597c72}.graph .node-card.current .node-bg{stroke:var(--teal);stroke-width:2;fill:#203637;filter:drop-shadow(0 0 10px #65c6bc22)}.graph .node-card.dim{opacity:.2}.graph .node-name{fill:#e0e7ea;font:12px var(--sans);font-weight:550;pointer-events:none}.graph .node-meta{fill:#8da1ad;font:9px var(--mono);pointer-events:none}.graph .node-glyph{font:14px var(--mono);fill:var(--teal);pointer-events:none}.graph .node-status{font:8px var(--mono);fill:#99b6b8;pointer-events:none}.graph .node-port{fill:#58717b;stroke:#182228;stroke-width:2}.graph .node-progress{fill:var(--teal);opacity:.7}.graph .badge-count{fill:#6f8e9b;font:9px var(--mono)}.graph-help{position:absolute;left:15px;bottom:13px;font-size:10px;color:#738b98;pointer-events:none}.graph-legend{position:absolute;right:15px;bottom:13px;display:flex;gap:12px;font-size:10px;color:#92a5af;pointer-events:none}.legend-line{display:inline-block;width:15px;height:2px;background:#6a8290;vertical-align:middle;margin-right:4px}.legend-line.data{background:var(--teal)}.legend-line.resource{background:var(--violet)}.graph-banner{position:absolute;left:16px;right:16px;top:10px;border:1px solid #6a5134;background:#29251d;padding:9px 12px;border-radius:5px;display:none;font-size:11px;z-index:2}.graph-banner.show{display:flex;align-items:center;justify-content:space-between;gap:10px}.graph-banner button{font-size:10px;padding:3px 7px}.plan-view{display:none;position:absolute;inset:0;background:#151c21;padding:22px;overflow:auto}.plan-view.show{display:block}.plan-view h2{font-size:18px;margin-bottom:5px}.plan-view>p{color:var(--muted);font-size:12px;margin-bottom:18px;max-width:580px}.plan-task{display:grid;grid-template-columns:38px 1fr;gap:12px;padding:13px 0;border-top:1px solid var(--line)}.plan-task .num{font:11px var(--mono);color:var(--amber);padding-top:2px}.plan-task h4{margin:0;font-size:12px;font-weight:550}.plan-task p{font-size:11px;color:var(--muted);margin:4px 0}.plan-task .deps{font:10px var(--mono);color:var(--violet)}.plan-task button{font:10px var(--mono);padding:2px 5px;margin:5px 4px 0 0}.view-footer{padding:8px 16px;min-height:34px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;font-size:10px;color:#899da9;background:#151c21}.view-footer strong{color:var(--teal);font-weight:450}.inspector{border-left:1px solid var(--line);background:#171e23;min-width:0;display:flex;flex-direction:column}.inspector-title{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#9dafba}.inspector-scroll{overflow:auto;height:694px;scrollbar-width:thin;scrollbar-color:#34444d transparent;padding:0 16px 16px}.inspect-symbol{font-size:23px;color:var(--amber);margin:8px 0}.inspector h2{font-size:19px;line-height:1.25;margin-bottom:7px;letter-spacing:-.3px}.idline{font:10px var(--mono);color:#708994;display:flex;gap:5px;align-items:center}.inspector .description{font-size:12px;color:#aebdc5;line-height:1.65;margin:13px 0 17px}.inspect-section{padding:12px 0;border-top:1px solid var(--line)}.inspect-section h3{font-size:9px;letter-spacing:.1em;margin-bottom:8px}.file-link{display:block;width:100%;text-align:left;padding:8px;font:10px/1.6 var(--mono);color:var(--teal);overflow-wrap:anywhere;background:#11191e;border:1px solid #2b3a43;border-radius:4px}.keyvalue{display:flex;justify-content:space-between;gap:10px;font-size:11px;margin:6px 0}.keyvalue span:first-child{color:var(--faint)}.keyvalue span:last-child{text-align:right;color:#bacad3}.port-row{display:flex;align-items:baseline;gap:6px;margin:6px 0;font:10px var(--mono);color:#adbec8;overflow-wrap:anywhere}.port-row b{font-size:9px;font-weight:450;color:var(--teal);min-width:26px}.port-row.out b{color:var(--amber)}.mini-chip{display:inline-block;font:9px var(--mono);padding:3px 5px;border:1px solid #34414a;border-radius:3px;margin:3px 3px 0 0;color:#a4bdc9}.inspect-rel{display:block;border:0;background:none;text-align:left;width:100%;font-size:10px;color:#98b1bd;padding:4px 0}.inspect-rel:hover{background:none;color:var(--amber)}.inspect-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.inspect-actions button{font-size:10px;padding:5px 7px}
+.bottom{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.9fr) minmax(240px,.8fr);border-top:1px solid var(--line);background:#161d22;min-height:215px}.bottom-panel{padding:13px 17px;min-width:0;border-right:1px solid var(--line)}.bottom-panel:last-child{border:0}.panel-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}.panel-title h3{font-size:10px;letter-spacing:.09em}.panel-title span{font:10px var(--mono);color:var(--faint)}.lanes{position:relative}.lane{display:grid;grid-template-columns:77px 1fr;align-items:center;gap:8px;height:27px}.lane-label{font:9px var(--mono);color:#99abb7}.lane-track{height:18px;background:#10171b;border-radius:3px;position:relative;overflow:hidden;background-image:linear-gradient(90deg,transparent 99%,#283740 1%);background-size:20% 100%}.lane-bar{position:absolute;height:12px;top:3px;min-width:2px;border-radius:2px;font:8px/12px var(--mono);color:#10171b;overflow:hidden;padding-left:3px;background:#7dafa8;white-space:nowrap}.lane-bar.waiting{background:#b5a280}.lane-bar.failed{background:var(--red)}.lane-bar.io{background:#ad9ccc}.lane-bar.worker{background:#8bb6da}.lane-bar.audio{background:#adbf95}.lane-cursor{position:absolute;top:0;bottom:0;width:1px;background:#c7dedc66;z-index:2}.timeline-axis{display:flex;justify-content:space-between;margin-left:85px;color:#607985;font:8px var(--mono);padding-top:4px}.lane-note{font-size:10px;color:#849ba7;margin-top:9px}.resource-row{margin:9px 0}.resource-name{display:flex;justify-content:space-between;font-size:10px;gap:8px;color:#b4c3cd;margin-bottom:5px}.resource-name span:last-child{font:9px var(--mono);color:#9d8bbb}.track{height:4px;background:#283038;border-radius:2px;overflow:hidden}.fill{height:100%;background:var(--violet);width:0;transition:width .2s}.resource-note{font:9px var(--mono);color:#839aa7;margin-top:13px}.journal{height:142px;overflow:auto;scrollbar-width:thin;scrollbar-color:#34444d transparent}.event-row{display:grid;grid-template-columns:34px 1fr;gap:8px;font:9px/1.6 var(--mono);padding:3px 0;border-bottom:1px solid #253038;color:#9eb3bf}.event-row .evtime{color:#677f8b}.event-row .evtype{color:#a5c9c4}.event-row.warning .evtype{color:var(--amber)}.event-row.error .evtype{color:var(--red)}.event-row button{text-align:left;padding:0;border:0;background:none;font:inherit;color:inherit;overflow-wrap:anywhere}.statusbar{padding:8px 17px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10px;color:#748d99;border-top:1px solid var(--line)}.statusbar .status-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.statusbar strong{font-weight:450;color:var(--teal)}.notice{max-width:640px;text-align:right;color:#9aa8af;font-size:10px}
+dialog{padding:0;border:1px solid #40505a;border-radius:12px;background:#171f25;color:var(--text);width:min(880px,94vw);max-height:90vh;box-shadow:0 28px 100px #0008}dialog::backdrop{background:#071014b8;backdrop-filter:blur(4px)}.dialog-head{display:flex;align-items:center;justify-content:space-between;padding:20px 23px;border-bottom:1px solid var(--line);gap:15px}.dialog-head h2{font-size:19px}.dialog-head p{font-size:12px;color:var(--muted);margin-top:5px}.dialog-body{padding:20px 23px;overflow:auto;max-height:64vh}.dialog-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}.dialog-tabs button{font-size:11px}.dialog-body textarea{display:block;width:100%;height:330px;resize:vertical;font:11px/1.65 var(--mono);padding:14px;border:1px solid var(--line);background:#0f171c;color:#b8cbd5;border-radius:6px}.dialog-foot{padding:14px 23px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.dialog-foot .actions{display:flex;gap:7px}.dialog-note{font-size:11px;color:var(--muted);max-width:420px}.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.help-grid h3{color:var(--amber);margin-bottom:7px}.help-grid p,.help-grid li{font-size:12px;color:#b4c4cd}.help-grid ul{padding-left:16px}.help-grid code{color:var(--teal)}.help-grid a{font-size:11px}.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);padding:10px 18px;border:1px solid #4a6b6b;background:#253e3e;color:#d9f2ef;border-radius:7px;font-size:12px;z-index:10;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}.toast.show{opacity:1}@keyframes flow{to{stroke-dashoffset:-24}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(min-width:1800px){.workspace{grid-template-columns:240px minmax(0,1fr) 310px;min-height:685px}.inspector-scroll{height:639px}.graph-wrap{min-height:490px}.filetree{height:400px}}
+@media(max-width:1150px){.workspace{grid-template-columns:180px minmax(0,1fr) 248px}.topbar,.projectbar,.transport{padding-left:16px;padding-right:16px}.inspector-scroll{padding-inline:12px}.view-tab{font-size:10px;padding:13px 8px}.brand-sub{display:none}.stats{gap:15px}.bottom{grid-template-columns:1.2fr 1fr}.bottom-panel:last-child{grid-column:1/-1;border-top:1px solid var(--line)}.journal{height:95px}.graph-legend{display:none}}
+@media(max-width:1320px){.workspace{grid-template-columns:155px minmax(0,1fr)}.inspector{grid-column:1/-1;border-top:1px solid var(--line);border-left:0}.inspector-scroll{height:auto;max-height:420px;display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.inspect-intro{grid-column:1/-1}.inspector-title{padding:12px}.graph-wrap{min-height:620px}.stats{display:none}.toplinks .tag{display:none}.notice{max-width:350px}.view-footer{font-size:9px}.transport label{font-size:10px}}
+@media(max-width:570px){.topbar{padding:0 12px}.brand{font-size:14px}.toplinks{gap:5px}.toplinks button{padding:6px;font-size:10px}.projectbar{padding:15px 12px}.projectbar h1{font-size:20px}.projecttitle .tag{display:none}.transport{padding:9px 12px}.transport-group{gap:5px}.transport button{font-size:11px;padding:7px}.transport-divider{display:none}.workspace{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 145px}.sidebar-head{grid-column:1;padding:10px 12px}.search-wrap{grid-column:1}.filetree{grid-column:1;height:150px}.preview{grid-column:2;grid-row:1/4;margin:0;padding:10px;border:0;border-left:1px solid var(--line)}.preview canvas{height:116px}.preview-note{font-size:9px}.preview-heading{font-size:9px}.preview-title{font-size:11px}.player-stats{font-size:9px;gap:7px}.graph-wrap{min-height:480px}.view-top{padding:10px 12px}.graph-help{font-size:9px}.bottom{grid-template-columns:1fr}.bottom-panel{border-right:0;border-bottom:1px solid var(--line)}.bottom-panel:last-child{grid-column:auto}.inspector-scroll{display:block;max-height:410px}.statusbar{align-items:flex-start;flex-direction:column;gap:5px}.notice{text-align:left;max-width:none}.help-grid{grid-template-columns:1fr}.dialog-head,.dialog-body,.dialog-foot{padding:15px}.projectbar p{font-size:11px}.clock{min-width:55px}.view-footer span:last-child{display:none}}
+</style>
+<style id="v2-ameliorations">
+/* v2 · lisibilité : aucun texte utile sous 10,5 px, contrastes relevés */
+:root{--faint:#8597a1}
+body{font-size:14px}
+.tag,.eyebrow,.stat span{font-size:11px}
+h3{font-size:12px}
+.filetree{font-size:12px}.filebtn{font-size:11.5px}
+.view-tab{font-size:12.5px}.view-top .breadcrumb{font-size:12px}.view-top button{font-size:12px}.zoomtools span{font-size:11px;width:40px}
+.graph .group-title{font-size:11.5px;fill:#93a8b3}
+.graph .edge{stroke:#62788a;opacity:.95;stroke-width:1.5}
+.graph .edge.data{stroke:#6db7b2}.graph .edge.resource{stroke:#ae9fd6}.graph .edge.pause{stroke:#bba57f}
+.graph .edge.observed:not(.chosen):not(.live){stroke:#b4ebe2;stroke-width:2.4;opacity:1}
+.graph .edge.chosen{stroke-width:2.4}
+.graph .node-name{font-size:12.5px}
+.graph .node-meta,.graph .node-status{font-size:10.5px}.graph .node-status{fill:#a3bec0}
+.graph .edge-label{display:none}
+.graph .elabel{display:none}.graph .elabel.shown{display:inline}
+.graph .elabel rect{fill:#121a1f;stroke:#3c4c58;stroke-width:1}
+.graph .elabel text{font:10.5px var(--mono);fill:#b6c7d0}
+.graph .elabel.observed rect{stroke:#4f8a83}
+.graph .elabel.chosen rect{stroke:var(--amber);fill:#221d15}.graph .elabel.chosen text{fill:#f3d6a6}
+.graph .elabel.dim,.graph .edge.dim{opacity:.12}
+.graph .edge.undeclared{stroke:#ef8b85;stroke-dasharray:6 4;stroke-width:2.2;opacity:1}
+.graph .elabel.undeclared rect{stroke:#ef8b85;fill:#2a1d1c}.graph .elabel.undeclared text{fill:#f6b5b0}
+.graph.far .elabel.undeclared{display:inline}
+.graph.far .node-meta,.graph.far .node-status{display:none}
+.graph.far .node-name{font-size:15px}
+.graph.far .elabel:not(.chosen){display:none}
+.graph-help,.graph-legend{font-size:11px}
+.legend-line.observed{background:#b4ebe2;height:3px}
+.view-footer{font-size:11.5px}
+.inspector-title{font-size:11px}.idline{font-size:11.5px}.inspector .description{font-size:13px}
+.inspect-section h3{font-size:11px}.keyvalue{font-size:12.5px}.file-link,.port-row{font-size:11.5px}.port-row b{font-size:10.5px}.mini-chip{font-size:10.5px}
+.inspect-rel{font-size:12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px}
+.preview-heading,.preview-note{font-size:11px}.player-stats{font-size:12px}
+.panel-title h3{font-size:11.5px}.panel-title span,.lane-label,.timeline-axis{font-size:11px}.lane-bar{font-size:10px}
+.lane-note,.resource-note{font-size:11px}.resource-name{font-size:12px}.resource-name span:last-child{font-size:11px}
+.event-row{font-size:11px}.statusbar,.notice{font-size:11.5px}
+/* v2 · calendrier du plan */
+.when{display:inline-block;margin-left:7px;padding:0 6px;border-radius:999px;border:1px solid currentColor;font:600 10.5px/1.55 var(--sans);letter-spacing:0;text-transform:none;vertical-align:1px;white-space:nowrap}
+.when.poc{color:#9fdcd2}.when.mvp{color:#9cc8f0}.when.v1{color:#c8b8f0}.when.later{color:#e8bb76}.when.out{color:#f0a19b}.when.illus{color:#aab7be}
+body:not(.show-plan) .when{display:none}
+#plan-btn[aria-pressed=true]{border-color:var(--teal);color:#c3eeea}
+/* v2 · provenance et chemin observé */
+.prov{display:inline-block;font:10.5px/1.5 var(--mono);padding:0 5px;border-radius:3px;border:1px solid;white-space:nowrap}
+.prov.obs{color:#a5e3d9;border-color:#3f6f69}.prov.no{color:#e8bb76;border-color:#6a5134}.prov.out{color:#9cadb7;border-color:#3a4852}
+.diag{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:12.5px;line-height:1.55;color:#c2d0d7}
+.diag b{color:var(--text)}.diag.ok{border-color:#3f6f69}.diag.warn{border-color:#6a5134;background:#29251d}.diag.bad{border-color:#653d3a;background:#2a1d1c}
+/* v2 · mise en page */
+@media(min-width:1321px){.projectbar{padding:12px 24px}.projectbar p{display:none}}
+body.dock-collapsed .bottom{display:none}
+#dock-btn{font-size:11.5px;padding:3px 8px}
+@media(max-width:700px){.graph-wrap{min-height:280px}}
+</style>
+</head>
+<body>
+<div id="ember-app">
+ <header class="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true"></span>EMBER <span class="brand-sub">/ GAME FLOW ATLAS</span></div><div class="toplinks"><span class="tag"><span class="dot amber"></span>Simulation fictive</span><button id="plan-btn" class="quiet" aria-pressed="true" title="Montrer à quelle étape du plan chaque partie arrive">Calendrier du plan</button><button id="help-btn" class="quiet">Mode d’emploi</button><button id="export-btn">Exporter pour une IA ↗<span class="when v1" title="Instantané local pour une IA : V1 (phase P15).">V1</span></button></div></header>
+ <section class="projectbar"><div><div class="eyebrow">Projet de jeu · Architecture vivante</div><div class="projecttitle"><h1>Les Deux Portes</h1><span class="tag">Design v1.0</span></div><p>Un roguelike d’action. Deux niveaux. Toutes les connexions.</p></div><div class="stats"><div class="stat"><b id="node-count">—</b><span>Définitions</span></div><div class="stat"><b id="edge-count">—</b><span>Relations</span></div><div class="stat"><b id="file-count">—</b><span>Fichiers prévus</span></div></div></section>
+ <section class="transport" aria-label="Commandes de simulation"><div class="transport-group"><button id="play-btn" class="primary">▶ Lancer la simulation</button><button id="step-btn" aria-label="Avancer d’une seconde simulée">+1 s</button><button id="reset-btn" class="quiet" aria-label="Recommencer la simulation">↺</button><span class="clock" id="clock">00:00.0</span><span class="when illus" title="Dans l’outil, le jeu tourne dans Godot : l’outil observe la session, puis la relit (relecture : MVP, phase P6).">lecture simulée</span><span class="transport-divider"></span><button id="pause-game" aria-pressed="false">Ⅱ Pause du jeu</button><button id="skip-btn" class="quiet" disabled>Passer l’intro</button></div><div class="transport-group"><label>Vitesse <select id="speed"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select></label><label>Scénario <select id="scenario"><option value="normal">Parcours nominal</option><option value="slow_io">Chargement II lent</option><option value="failed_asset">Ressource II en erreur</option><option value="trace_gap">Événement perdu</option><option value="unsafe_worker">Écriture worker interdite</option><option value="undeclared_jump">Transition non déclarée</option></select></label></div></section>
+ <main class="workspace">
+  <aside class="sidebar"><div class="sidebar-head"><h3>Explorateur<span class="when mvp" title="Arborescence res:// reliée au graphe : MVP (phase P5).">MVP</span></h3><span class="mono muted" style="font-size:10px">res://</span></div><div class="search-wrap"><label class="sr" for="search">Rechercher un fichier ou un nœud</label><input id="search" type="search" placeholder="Rechercher un fichier…" autocomplete="off"></div><div class="filetree" id="filetree" aria-label="Arborescence des fichiers prévus"></div><div class="preview"><div class="preview-heading"><span>Aperçu de la run<span class="when illus" title="Illustration : le jeu tourne dans Godot, l’outil n’en affiche pas d’aperçu.">illustration</span></span><span class="teal">SIM</span></div><canvas id="arena" width="400" height="270" aria-label="Aperçu animé fictif du menu, de l’introduction et des salles">Aperçu graphique de l’état courant.</canvas><div id="preview-title" class="preview-title">Menu principal</div><div class="preview-note" id="preview-note">Seed 7319 · animation de substitution</div><div class="player-stats"><span id="hp">PV 100/100</span><span id="coins" class="amber">◇ 0</span></div><div class="health-track"><span id="health-fill" style="width:100%"></span></div></div></aside>
+  <section class="center"><nav class="view-tabs" aria-label="Vues de la carte"><button class="view-tab active" data-view="overview" aria-pressed="true">Vue d’ensemble<span class="when mvp" title="Carte statique et navigation : MVP (phases P4b et P5). Au POC, le graphe déclaré s’affiche en liste.">MVP</span></button><button class="view-tab" data-view="level1" aria-pressed="false">Niveau I<span class="when mvp" title="Vues par regroupement : MVP.">MVP</span></button><button class="view-tab" data-view="level2" aria-pressed="false">Niveau II<span class="when mvp" title="Vues par regroupement : MVP.">MVP</span></button><button class="view-tab" data-view="data" aria-pressed="false">Scripts & données<span class="when v1" title="Origine et usages des données : V1 (phase P11).">V1</span></button><button class="view-tab" data-view="threads" aria-pressed="false">Threads<span class="when later" title="Collecte multi-thread et ordre entre producteurs : après la V1. Ici, des pistes conceptuelles.">après V1</span></button><button class="view-tab" data-view="plan" aria-pressed="false">Plan IA<span class="when out" title="Le plan de codage n’est pas prévu. L’export d’un instantané pour une IA arrive en V1 (phase P15).">hors plan</span></button></nav><div class="view-top"><div class="breadcrumb" id="breadcrumb">Run / <strong>Parcours global</strong></div><div class="zoomtools"><button id="zoom-out" aria-label="Réduire la carte">−</button><span id="zoom-label">100%</span><button id="zoom-in" aria-label="Agrandir la carte">+</button><button id="fit-btn">Cadrer</button></div></div><div class="graph-wrap" id="graph-wrap"><svg class="graph" id="graph" role="group" aria-label="Carte interactive des états et des flux du jeu"><title>Carte des Deux Portes</title></svg><div class="graph-banner" id="graph-banner" aria-live="polite"></div><div class="plan-view" id="plan-view"></div><div class="graph-help">Glisser pour explorer · molette pour zoomer · cliquer pour inspecter · étiquette absente : survoler la relation ou lire l’inspecteur</div><div class="graph-legend"><span><i class="legend-line"></i>Contrôle</span><span><i class="legend-line data"></i>Données</span><span><i class="legend-line resource"></i>Ressource</span><span><i class="legend-line observed"></i>Observée</span></div></div><div class="view-footer"><span id="selection-summary">Sélectionner un élément pour suivre ses connexions.</span><span>Déclaré → simulé → vérifiable</span></div></section>
+  <aside class="inspector" aria-label="Inspecteur de l’élément sélectionné"><div class="inspector-title">Inspecteur<span class="when poc" title="Instance, invocation, décision, chemin observé et lien vers le code : POC. Le reste suit au MVP et en V1.">POC</span> <span class="tag" id="evidence-tag">Déclaré</span></div><div class="inspector-scroll" id="inspector"></div></aside>
+ </main>
+ <section class="bottom"><div class="bottom-panel"><div class="panel-title"><h3>Contextes en parallèle<span class="when later" title="Pistes multi-thread : après la V1.">après V1</span></h3><span id="timeline-range">0 → 30 s</span></div><div class="lanes" id="lanes"></div><div class="timeline-axis" id="timeline-axis"></div><div class="lane-note" id="lane-note">Pistes conceptuelles · aucune mesure de threads réels</div></div><div class="bottom-panel"><div class="panel-title"><h3>Ressources & mémoire<span class="when out" title="La mémoire n’est pas mesurée dans le plan ; seuls les coûts de capture le sont (V1, CAP-17).">hors plan</span></h3><span id="memory">0 Mio simulés</span></div><div id="resources"></div><div class="resource-note" id="resource-note">Chargement asynchrone · commit sur le principal</div></div><div class="bottom-panel"><div class="panel-title"><h3>Journal d’exécution<span class="when poc" title="Journal des événements instrumentés, avec numéros de séquence et trous visibles : POC.">POC</span></h3><span id="event-count">0 événements</span></div><div class="journal" id="journal"></div></div></section>
+ <footer class="statusbar"><div class="status-left"><span><span class="dot teal"></span> <strong id="session-label">run-001</strong></span><span id="runtime-status">Prêt · menu principal</span><span id="trace-status">Trace complète simulée</span><button id="dock-btn" class="quiet" aria-pressed="false">Masquer les panneaux du bas</button></div><span class="notice">Architecture fictive · fichiers à créer · temps et mémoire simulés</span></footer>
+</div>
+<dialog id="export-dialog"><div class="dialog-head"><div><h2 id="dialog-title">Transmettre le projet à une IA</h2><p id="dialog-subtitle">Le même modèle alimente la carte, les fichiers et le plan de codage.</p></div><button class="quiet" data-close="export-dialog" aria-label="Fermer">✕</button></div><div class="dialog-body"><div class="dialog-tabs" id="export-tabs"><button class="active" data-export="brief">Brief de codage</button><button data-export="json">Contrat JSON</button><button data-export="trace">Trace de la run</button></div><label class="sr" for="export-content">Contenu exportable</label><textarea id="export-content" readonly spellcheck="false"></textarea></div><div class="dialog-foot"><span class="dialog-note" id="export-note">Aucun envoi automatique. Les fichiers Godot décrits sont à implémenter.</span><div class="actions"><button id="copy-btn">Copier</button><button id="download-btn" class="primary">Télécharger</button></div></div></dialog>
+<dialog id="help-dialog"><div class="dialog-head"><div><h2>Explorer les Deux Portes</h2><p>Une maquette fonctionnelle de l’organigramme d’un jeu.</p></div><button class="quiet" data-close="help-dialog" aria-label="Fermer">✕</button></div><div class="dialog-body"><div class="help-grid"><section><h3>Suivre une tentative</h3><p>Lance la lecture, observe le préchargement pendant l’introduction, puis choisis une route au niveau I. La carte, les ressources et le journal suivent le même état.</p><ul><li><b>Pause du jeu</b> gèle le gameplay ; les I/O continuent.</li><li><b>Arrêter la lecture</b> fige toute la démonstration.</li><li><b>+1 s</b> avance précisément d’une seconde simulée.</li><li><b>Recommencer</b> crée une nouvelle run.</li></ul></section><section><h3>Lire les relations</h3><p>Les traits pleins représentent le contrôle, les tirets verts les données, les pointillés violets les ressources. Les relations surlignées sont voisines de la sélection. Le contour vert indique l’état courant.</p><p style="margin-top:8px">Clique un fichier pour révéler ses nœuds. Clique un nœud pour inspecter entrées, sorties, contexte, politique de pause et fichiers associés.</p></section><section><h3>Tester les problèmes</h3><p>Changer de scénario recommence la run. Tu peux observer un chargement lent, réessayer une ressource en erreur, détecter une trace incomplète ou bloquer une écriture worker interdite. L’inspecteur d’un combat permet de simuler une mort.</p></section><section><h3>Préparer le développement</h3><p>Le plan IA décrit les tâches et leurs dépendances. L’export JSON inclut identifiants, nœuds, relations typées, fichiers, contrats, invariants et état de simulation. Le brief donne une consigne exploitable à une IA de code.</p></section><section><h3>Ce que l’outil fera, et quand</h3><p>Les pastilles du « Calendrier du plan » situent chaque partie dans le plan directeur.</p><ul><li><b>POC</b> : journal d’événements instrumentés, instances distinctes, décisions, chemin observé (cohérent, incohérent ou indéterminé), ouverture du code.</li><li><b>MVP</b> : carte statique et navigation, arborescence res://, sessions enregistrées puis relues.</li><li><b>V1</b> : flux de données, timeline, comparaison, export pour une IA.</li><li><b>Après la V1 ou hors plan</b> : pistes multi-thread, mémoire, plan de codage.</li></ul><p>Les trois états du chemin observé se voient ici : parcours nominal (cohérent), « Transition non déclarée » (incohérent), « Événement perdu » (indéterminé). Dans l’outil, le jeu tourne dans Godot : la lecture, les scénarios et l’aperçu sont simulés.</p></section><section><h3>Limites explicites</h3><p>Ce n’est pas un jeu Godot exécuté. Les timings, la mémoire, la vidéo et les pistes de threads sont simulés dans le navigateur. Aucun asset de Hades n’est utilisé ; l’univers est original. Aucun appel réseau n’est nécessaire.</p></section><section><h3>Principes Godot consultés</h3><p>Accès à l’arbre actif sur le contexte principal ; chargement suivi par statut avant récupération.</p><p style="margin-top:9px"><a href="https://docs.godotengine.org/en/4.7/tutorials/performance/thread_safe_apis.html" target="_blank" rel="noreferrer">Thread-safe APIs ↗</a><br><a href="https://docs.godotengine.org/en/4.7/tutorials/io/background_loading.html" target="_blank" rel="noreferrer">Background loading ↗</a></p></section></div></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script id="project-model" type="application/json">{
+  "schema_version": "1.0.0",
+  "project": {
+    "id": "ember-two-gates",
+    "title": "EMBER · Les Deux Portes",
+    "genre": "roguelike action, fiction originale inspirée du rythme de Hades",
+    "engine_target": "Godot 4.x / GDScript, version à épingler avant développement",
+    "scope": "Menu, intro, pause, deux niveaux, embranchements, mort, ressources et architecture de scripts",
+    "status": "interactive_fictional_design_not_game_code",
+    "seed": 7319
+  },
+  "semantics": {
+    "definition_id": "id stable du nœud",
+    "instance_id": "identité unique dans une run",
+    "invocation_id": "occurrence d’exécution",
+    "evidence": "Les relations sont déclarées ; les événements sont produits par une simulation JavaScript. Aucune mesure réelle de Godot.",
+    "thread_lanes": "Modèle conceptuel de contextes. Cette page ne lance pas de workers Godot ou de vrais threads de jeu.",
+    "memory": "Paramètres fictifs en Mio ; ce ne sont pas les allocations du navigateur.",
+    "video": "Animation de substitution, aucun fichier vidéo inclus."
+  },
+  "invariants": [
+    {
+      "id": "I01",
+      "rule": "L’arbre actif est modifié uniquement par le contexte principal."
+    },
+    {
+      "id": "I02",
+      "rule": "Un worker reçoit et retourne des données isolées, jamais de Node vivant."
+    },
+    {
+      "id": "I03",
+      "rule": "Une ressource est récupérée seulement après confirmation LOADED."
+    },
+    {
+      "id": "I04",
+      "rule": "La pause gèle gameplay et vidéo ; I/O continue ; commit retenu jusqu’à reprise."
+    },
+    {
+      "id": "I05",
+      "rule": "Une récompense est appliquée une fois par room_id et run_id."
+    },
+    {
+      "id": "I06",
+      "rule": "Toute trace partielle produit un diagnostic indéterminé."
+    },
+    {
+      "id": "I07",
+      "rule": "Un résultat de job appartient à une génération ; un résultat périmé est ignoré."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "menu",
+      "label": "Menu principal",
+      "kind": "state",
+      "domain": "system",
+      "file": "res://scenes/ui/main_menu.tscn",
+      "description": "Nouvelle tentative, options et reprise. Le clic Nouvelle tentative crée une run avec une graine fixe.",
+      "inputs": [
+        "input.start"
+      ],
+      "outputs": [
+        "run.requested"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional",
+      "duration": 2
+    },
+    {
+      "id": "intro",
+      "label": "Introduction",
+      "kind": "state",
+      "domain": "system",
+      "file": "res://scenes/ui/intro.tscn",
+      "description": "Séquence animée de substitution à une vidéo : une messagère traverse les portes des profondeurs. La scène et la musique du niveau I sont préchargées en parallèle.",
+      "inputs": [
+        "run.requested"
+      ],
+      "outputs": [
+        "intro.finished",
+        "intro.skipped"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 6
+    },
+    {
+      "id": "load1",
+      "label": "Préparer le niveau I",
+      "kind": "state",
+      "domain": "level1",
+      "file": "res://scripts/core/scene_coordinator.gd",
+      "description": "Attend les ressources et le plan de salle. Leur disponibilité est vérifiée avant toute récupération et instanciation.",
+      "inputs": [
+        "level1.assets_ready",
+        "layout.ready"
+      ],
+      "outputs": [
+        "level1.committed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 1
+    },
+    {
+      "id": "entry1",
+      "label": "Le Vestibule",
+      "kind": "state",
+      "domain": "level1",
+      "file": "res://scenes/levels/01_ashes/vestibule.tscn",
+      "description": "Entrée du premier niveau : déplacement, esquive et verrouillage de la porte de combat.",
+      "inputs": [
+        "level1.committed"
+      ],
+      "outputs": [
+        "room.entered"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 3
+    },
+    {
+      "id": "fight1",
+      "label": "Salle des sentinelles",
+      "kind": "state",
+      "domain": "level1",
+      "file": "res://scenes/levels/01_ashes/sentinels.tscn",
+      "description": "Deux sentinelles : l’une poursuit, l’autre attaque à portée. La porte s’ouvre lorsque les deux instances sont vaincues.",
+      "inputs": [
+        "room.entered",
+        "input.attack"
+      ],
+      "outputs": [
+        "enemy.defeated",
+        "room.cleared"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 9,
+      "instances": [
+        "sentinel-01",
+        "sentinel-02"
+      ]
+    },
+    {
+      "id": "reward1",
+      "label": "Premier butin",
+      "kind": "state",
+      "domain": "level1",
+      "file": "res://scripts/gameplay/loot_service.gd",
+      "description": "La récompense est créditée une fois par identifiant de salle. Un choix de route devient disponible.",
+      "inputs": [
+        "room.cleared"
+      ],
+      "outputs": [
+        "wallet.changed",
+        "route.requested"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 2
+    },
+    {
+      "id": "choice1",
+      "label": "Choix de route",
+      "kind": "decision",
+      "domain": "level1",
+      "file": "res://scripts/core/run_director.gd",
+      "description": "Choisir entre le sanctuaire réparateur et une salle élite plus risquée. Le choix est enregistré dans RunState.",
+      "inputs": [
+        "route.requested"
+      ],
+      "outputs": [
+        "route.shrine",
+        "route.elite"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 0
+    },
+    {
+      "id": "shrine1",
+      "label": "Sanctuaire",
+      "kind": "state",
+      "domain": "level1",
+      "file": "res://scenes/levels/01_ashes/shrine.tscn",
+      "description": "Soigne 25 points de vie, dans la limite de 100. Un embranchement plus sûr avant le gardien.",
+      "inputs": [
+        "route.shrine"
+      ],
+      "outputs": [
+        "health.changed",
+        "branch.completed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 4
+    },
+    {
+      "id": "elite1",
+      "label": "L’Épreuve",
+      "kind": "state",
+      "domain": "level1",
+      "file": "res://scenes/levels/01_ashes/elite.tscn",
+      "description": "Combat élite : davantage de dégâts, 30 fragments supplémentaires et une amélioration offensive.",
+      "inputs": [
+        "route.elite"
+      ],
+      "outputs": [
+        "wallet.changed",
+        "boon.granted",
+        "branch.completed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 8
+    },
+    {
+      "id": "boss1",
+      "label": "Gardien des Cendres",
+      "kind": "state",
+      "domain": "level1",
+      "file": "res://scenes/levels/01_ashes/warden.tscn",
+      "description": "Boss à deux phases. Sa défaite autorise la transition ; le niveau II a été préchargé pendant le combat.",
+      "inputs": [
+        "branch.completed"
+      ],
+      "outputs": [
+        "boss1.defeated",
+        "level2.requested"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 10
+    },
+    {
+      "id": "gate2",
+      "label": "Porte de la Forge",
+      "kind": "state",
+      "domain": "level2",
+      "file": "res://scripts/core/scene_coordinator.gd",
+      "description": "Jointure entre fin du boss I et disponibilité des ressources II. Garde le jeu réactif si les chargements tardent.",
+      "inputs": [
+        "boss1.defeated",
+        "level2.assets_ready",
+        "layout2.ready"
+      ],
+      "outputs": [
+        "level2.committed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 2
+    },
+    {
+      "id": "entry2",
+      "label": "La Forge des Échos",
+      "kind": "state",
+      "domain": "level2",
+      "file": "res://scenes/levels/02_echoes/entry.tscn",
+      "description": "Instancie le deuxième niveau sur le contexte principal. Libère les références du premier après validation du passage.",
+      "inputs": [
+        "level2.committed"
+      ],
+      "outputs": [
+        "level2.entered",
+        "level1.release"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 3
+    },
+    {
+      "id": "fight2",
+      "label": "Galerie des braises",
+      "kind": "state",
+      "domain": "level2",
+      "file": "res://scenes/levels/02_echoes/gallery.tscn",
+      "description": "Deux vagues : archers et poursuivants. Les impacts transitent par CombatResolver puis mettent à jour HUD et audio.",
+      "inputs": [
+        "level2.entered",
+        "input.attack"
+      ],
+      "outputs": [
+        "wave.cleared",
+        "room.cleared"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 10,
+      "instances": [
+        "archer-01",
+        "sentinel-03"
+      ]
+    },
+    {
+      "id": "forge2",
+      "label": "Autel de la Forge",
+      "kind": "state",
+      "domain": "level2",
+      "file": "res://scenes/levels/02_echoes/altar.tscn",
+      "description": "Dépense 20 fragments pour une amélioration si le solde est suffisant. La transaction est atomique dans la simulation.",
+      "inputs": [
+        "room.cleared",
+        "wallet.balance"
+      ],
+      "outputs": [
+        "boon.granted",
+        "wallet.changed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 4
+    },
+    {
+      "id": "boss2",
+      "label": "Le Forgeron aveugle",
+      "kind": "state",
+      "domain": "level2",
+      "file": "res://scenes/levels/02_echoes/smith.tscn",
+      "description": "Boss final de cette tranche, attaque télégraphiée et seconde phase sous 50 % de vie.",
+      "inputs": [
+        "boon.granted"
+      ],
+      "outputs": [
+        "boss2.defeated"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "duration": 12
+    },
+    {
+      "id": "victory",
+      "label": "Passage accompli",
+      "kind": "state",
+      "domain": "system",
+      "file": "res://scenes/ui/run_summary.tscn",
+      "description": "Fin des deux niveaux. Écrit un instantané du bilan ; les niveaux suivants restent hors périmètre.",
+      "inputs": [
+        "boss2.defeated"
+      ],
+      "outputs": [
+        "run.completed",
+        "save.requested"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional",
+      "duration": 0
+    },
+    {
+      "id": "death",
+      "label": "Fin de tentative",
+      "kind": "state",
+      "domain": "system",
+      "file": "res://scenes/ui/death.tscn",
+      "description": "Annule la génération de run en cours. Les résultats de chargements devenus obsolètes sont ignorés et les ressources libérables sont relâchées.",
+      "inputs": [
+        "health.depleted"
+      ],
+      "outputs": [
+        "run.failed",
+        "save.requested"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional",
+      "duration": 0
+    },
+    {
+      "id": "pause",
+      "label": "Menu de pause",
+      "kind": "state",
+      "domain": "system",
+      "file": "res://scenes/ui/pause_menu.tscn",
+      "description": "Overlay qui conserve l’état interrompu. Le gameplay et la vidéo s’arrêtent ; les traitements I/O autorisés continuent.",
+      "inputs": [
+        "input.pause"
+      ],
+      "outputs": [
+        "game.paused",
+        "game.resumed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "input",
+      "label": "InputRouter",
+      "kind": "script",
+      "domain": "data",
+      "file": "res://scripts/player/input_router.gd",
+      "description": "Transforme les entrées en intentions. Aucun mouvement n’est appliqué pendant la pause.",
+      "inputs": [
+        "keyboard",
+        "controller"
+      ],
+      "outputs": [
+        "move.intent",
+        "attack.intent",
+        "dash.intent"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "player",
+      "label": "PlayerController",
+      "kind": "script",
+      "domain": "data",
+      "file": "res://scripts/player/player_controller.gd",
+      "description": "Applique déplacement et esquive dans le contexte principal, à partir d’intentions et du résultat de collision.",
+      "inputs": [
+        "move.intent",
+        "collision.result"
+      ],
+      "outputs": [
+        "player.position",
+        "attack.request"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "enemy",
+      "label": "EnemyBrain",
+      "kind": "script",
+      "domain": "data",
+      "file": "res://scripts/enemies/enemy_brain.gd",
+      "description": "Chaque instance décide poursuite ou attaque selon la distance. Les identifiants de définition et d’instance sont distincts.",
+      "inputs": [
+        "player.position",
+        "enemy.stats"
+      ],
+      "outputs": [
+        "enemy.intent",
+        "attack.request"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "instances": [
+        "sentinel-01",
+        "sentinel-02"
+      ]
+    },
+    {
+      "id": "combat",
+      "label": "CombatResolver",
+      "kind": "script",
+      "domain": "data",
+      "file": "res://scripts/gameplay/combat_resolver.gd",
+      "description": "Valide portée et invulnérabilité, calcule les dégâts, puis publie le résultat. Autorité unique pour un impact.",
+      "inputs": [
+        "attack.request",
+        "collision.result",
+        "stats"
+      ],
+      "outputs": [
+        "damage.applied",
+        "enemy.defeated"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "events",
+      "label": "EventBus",
+      "kind": "script",
+      "domain": "data",
+      "file": "res://scripts/core/event_bus.gd",
+      "description": "Transporte des événements typés, identifiants et révision. Ne possède pas l’état métier.",
+      "inputs": [
+        "damage.applied",
+        "room.cleared",
+        "wallet.changed"
+      ],
+      "outputs": [
+        "typed.events"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "runstate",
+      "label": "RunState",
+      "kind": "data",
+      "domain": "data",
+      "file": "res://scripts/core/run_state.gd",
+      "description": "Propriétaire de seed, niveau, salle, vie, fragments et améliorations. Seules des copies immuables sont envoyées aux workers.",
+      "inputs": [
+        "damage.applied",
+        "loot.granted",
+        "route.selected"
+      ],
+      "outputs": [
+        "run.snapshot",
+        "health.changed",
+        "wallet.changed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "loot",
+      "label": "LootService",
+      "kind": "script",
+      "domain": "data",
+      "file": "res://scripts/gameplay/loot_service.gd",
+      "description": "Calcule le butin à partir de la seed et empêche de créditer deux fois la même récompense.",
+      "inputs": [
+        "enemy.defeated",
+        "room.cleared",
+        "seed"
+      ],
+      "outputs": [
+        "loot.granted"
+      ],
+      "execution_context": "main",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "hud",
+      "label": "HUD",
+      "kind": "script",
+      "domain": "data",
+      "file": "res://scripts/ui/hud.gd",
+      "description": "Projette les données de RunState ; affiche vie, monnaie, niveau et pause sans décider des dégâts.",
+      "inputs": [
+        "health.changed",
+        "wallet.changed",
+        "game.paused"
+      ],
+      "outputs": [
+        "ui.updated"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "audio",
+      "label": "AudioDirector",
+      "kind": "script",
+      "domain": "threads",
+      "file": "res://scripts/audio/audio_director.gd",
+      "description": "Commande musique et effets depuis le principal. Le mixage moteur est représenté conceptuellement dans une piste séparée.",
+      "inputs": [
+        "typed.events",
+        "game.paused"
+      ],
+      "outputs": [
+        "audio.cue",
+        "audio.ducked"
+      ],
+      "execution_context": "audio_engine",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "physics",
+      "label": "Physique / collisions",
+      "kind": "engine",
+      "domain": "threads",
+      "file": "res://project.godot",
+      "description": "Étape physique conceptuelle du moteur. Ce modèle ne suppose pas un thread physique séparé dans Godot.",
+      "inputs": [
+        "player.position",
+        "enemy.intent"
+      ],
+      "outputs": [
+        "collision.result"
+      ],
+      "execution_context": "main_physics",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "loader",
+      "label": "ResourceLoader",
+      "kind": "service",
+      "domain": "threads",
+      "file": "res://scripts/loading/resource_stream.gd",
+      "description": "Requête asynchrone, lecture de statut, puis récupération seulement quand LOADED. La simulation représente ce protocole sans charger de vrais assets.",
+      "inputs": [
+        "asset.request"
+      ],
+      "outputs": [
+        "asset.progress",
+        "asset.ready",
+        "asset.failed"
+      ],
+      "execution_context": "io_loader",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "layout",
+      "label": "RoomPlanner",
+      "kind": "worker",
+      "domain": "threads",
+      "file": "res://scripts/workers/room_planner.gd",
+      "description": "Calcule un plan de salle sur des données isolées. Aucun accès à l’arbre actif ; retourne un dictionnaire et le run_id propriétaire.",
+      "inputs": [
+        "seed",
+        "room.definition"
+      ],
+      "outputs": [
+        "layout.result"
+      ],
+      "execution_context": "worker_layout",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "queue",
+      "label": "File de résultats",
+      "kind": "data",
+      "domain": "threads",
+      "file": "res://scripts/core/result_queue.gd",
+      "description": "Transfert explicite des résultats de jobs. Le principal vérifie génération et run_id avant d’appliquer un résultat.",
+      "inputs": [
+        "layout.result",
+        "asset.ready"
+      ],
+      "outputs": [
+        "commit.ready"
+      ],
+      "execution_context": "main",
+      "pause_policy": "hold_commit",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "main",
+      "label": "SceneCoordinator",
+      "kind": "script",
+      "domain": "threads",
+      "file": "res://scripts/core/scene_coordinator.gd",
+      "description": "Seul propriétaire de l’ajout et du retrait dans l’arbre actif. Attend les barrières de données et refuse les résultats périmés.",
+      "inputs": [
+        "commit.ready",
+        "level.request"
+      ],
+      "outputs": [
+        "scene.committed"
+      ],
+      "execution_context": "main",
+      "pause_policy": "hold_commit",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "save",
+      "label": "SaveService",
+      "kind": "worker",
+      "domain": "threads",
+      "file": "res://scripts/persistence/save_service.gd",
+      "description": "Reçoit une copie versionnée du bilan. Simulation d’écriture dans un fichier temporaire puis remplacement atomique. Aucun vrai fichier de sauvegarde de jeu n’est écrit.",
+      "inputs": [
+        "run.snapshot"
+      ],
+      "outputs": [
+        "save.completed"
+      ],
+      "execution_context": "io_save",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "trace",
+      "label": "FlowTrace",
+      "kind": "service",
+      "domain": "threads",
+      "file": "res://addons/godot_dev_mapper_runtime/flow_trace.gd",
+      "description": "Trace fictive : session, séquence, invocation, provenance et lacunes explicites. Une trace partielle ne prouve pas une causalité.",
+      "inputs": [
+        "typed.events",
+        "job.events"
+      ],
+      "outputs": [
+        "trace.batch"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "assets1",
+      "label": "Pack Cendres",
+      "kind": "resource",
+      "domain": "resources",
+      "file": "res://resources/levels/ashes_pack.tres",
+      "description": "Manifest fictif du niveau I : scènes, textures et audio ; les tailles affichées sont des paramètres pédagogiques.",
+      "inputs": [
+        "asset.request"
+      ],
+      "outputs": [
+        "level1.assets_ready"
+      ],
+      "execution_context": "io_loader",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional",
+      "memory_mb": 46
+    },
+    {
+      "id": "assets2",
+      "label": "Pack Échos",
+      "kind": "resource",
+      "domain": "resources",
+      "file": "res://resources/levels/echoes_pack.tres",
+      "description": "Manifest fictif du niveau II. Préchargé pendant le niveau I puis utilisé après la barrière de transition.",
+      "inputs": [
+        "asset.request"
+      ],
+      "outputs": [
+        "level2.assets_ready"
+      ],
+      "execution_context": "io_loader",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional",
+      "memory_mb": 62
+    },
+    {
+      "id": "video",
+      "label": "Flux vidéo d’intro",
+      "kind": "resource",
+      "domain": "resources",
+      "file": "res://assets/video/intro.ogv",
+      "description": "Emplacement prévu pour une vidéo originale. La démonstration affiche une animation vectorielle de substitution et un temps de lecture fictif.",
+      "inputs": [
+        "intro.play"
+      ],
+      "outputs": [
+        "intro.finished"
+      ],
+      "execution_context": "video_engine",
+      "pause_policy": "freeze",
+      "evidence": "declared_fictional",
+      "memory_mb": 12
+    },
+    {
+      "id": "definitions",
+      "label": "RoomDefinition",
+      "kind": "resource",
+      "domain": "resources",
+      "file": "res://resources/rooms/room_catalog.tres",
+      "description": "Données déclaratives : vagues, portes, poids de butin, seed et variante visuelle.",
+      "inputs": [
+        "design.parameters"
+      ],
+      "outputs": [
+        "room.definition"
+      ],
+      "execution_context": "main",
+      "pause_policy": "continue",
+      "evidence": "declared_fictional"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-001",
+      "source": "menu",
+      "target": "intro",
+      "label": "Nouvelle tentative",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-002",
+      "source": "intro",
+      "target": "load1",
+      "label": "Fin / passer",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-003",
+      "source": "load1",
+      "target": "entry1",
+      "label": "Ressources + plan prêts",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-004",
+      "source": "entry1",
+      "target": "fight1",
+      "label": "Entrer",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-005",
+      "source": "fight1",
+      "target": "reward1",
+      "label": "2 ennemis vaincus",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-006",
+      "source": "reward1",
+      "target": "choice1",
+      "label": "Choisir",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-007",
+      "source": "choice1",
+      "target": "shrine1",
+      "label": "Route sûre",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-008",
+      "source": "choice1",
+      "target": "elite1",
+      "label": "Route risquée",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-009",
+      "source": "shrine1",
+      "target": "boss1",
+      "label": "Soigné",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-010",
+      "source": "elite1",
+      "target": "boss1",
+      "label": "Élite vaincu",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-011",
+      "source": "boss1",
+      "target": "gate2",
+      "label": "Gardien vaincu",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-012",
+      "source": "gate2",
+      "target": "entry2",
+      "label": "Jointure satisfaite",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-013",
+      "source": "entry2",
+      "target": "fight2",
+      "label": "Entrer",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-014",
+      "source": "fight2",
+      "target": "forge2",
+      "label": "2 vagues terminées",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-015",
+      "source": "forge2",
+      "target": "boss2",
+      "label": "Amélioration",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-016",
+      "source": "boss2",
+      "target": "victory",
+      "label": "Boss vaincu",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-017",
+      "source": "fight1",
+      "target": "death",
+      "label": "PV = 0",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-018",
+      "source": "boss1",
+      "target": "death",
+      "label": "PV = 0",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-019",
+      "source": "fight2",
+      "target": "death",
+      "label": "PV = 0",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-020",
+      "source": "boss2",
+      "target": "death",
+      "label": "PV = 0",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-021",
+      "source": "death",
+      "target": "menu",
+      "label": "Nouvelle tentative",
+      "kind": "control",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-022",
+      "source": "input",
+      "target": "player",
+      "label": "Intentions",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-023",
+      "source": "player",
+      "target": "combat",
+      "label": "AttackRequest",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-024",
+      "source": "enemy",
+      "target": "combat",
+      "label": "AttackRequest",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-025",
+      "source": "player",
+      "target": "enemy",
+      "label": "Position",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-026",
+      "source": "player",
+      "target": "physics",
+      "label": "Mouvement",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-027",
+      "source": "physics",
+      "target": "combat",
+      "label": "CollisionResult",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-028",
+      "source": "combat",
+      "target": "events",
+      "label": "DamageEvent",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-029",
+      "source": "events",
+      "target": "runstate",
+      "label": "Réduire l’état",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-030",
+      "source": "events",
+      "target": "loot",
+      "label": "EnemyDefeated",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-031",
+      "source": "loot",
+      "target": "runstate",
+      "label": "LootGranted",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-032",
+      "source": "runstate",
+      "target": "hud",
+      "label": "État UI",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-033",
+      "source": "events",
+      "target": "audio",
+      "label": "Cue sonore",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-034",
+      "source": "runstate",
+      "target": "save",
+      "label": "Copie du bilan",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-035",
+      "source": "events",
+      "target": "trace",
+      "label": "Observation",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-036",
+      "source": "definitions",
+      "target": "layout",
+      "label": "Seed + définition",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-037",
+      "source": "layout",
+      "target": "queue",
+      "label": "Résultat isolé",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-038",
+      "source": "loader",
+      "target": "queue",
+      "label": "AssetReady",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-039",
+      "source": "queue",
+      "target": "main",
+      "label": "Commit validé",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-040",
+      "source": "main",
+      "target": "physics",
+      "label": "Scène active",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-041",
+      "source": "main",
+      "target": "trace",
+      "label": "SceneCommitted",
+      "kind": "data",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-042",
+      "source": "intro",
+      "target": "loader",
+      "label": "Précharger I",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-043",
+      "source": "boss1",
+      "target": "loader",
+      "label": "Précharger II",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-044",
+      "source": "loader",
+      "target": "assets1",
+      "label": "Requête / statut",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-045",
+      "source": "loader",
+      "target": "assets2",
+      "label": "Requête / statut",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-046",
+      "source": "assets1",
+      "target": "load1",
+      "label": "Pack prêt",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-047",
+      "source": "assets2",
+      "target": "gate2",
+      "label": "Pack prêt",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-048",
+      "source": "video",
+      "target": "intro",
+      "label": "Lecture",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-049",
+      "source": "definitions",
+      "target": "layout",
+      "label": "Catalogue",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-050",
+      "source": "layout",
+      "target": "load1",
+      "label": "Plan I prêt",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-051",
+      "source": "layout",
+      "target": "gate2",
+      "label": "Plan II prêt",
+      "kind": "resource",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-052",
+      "source": "pause",
+      "target": "intro",
+      "label": "Suspend / reprend",
+      "kind": "pause",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-053",
+      "source": "pause",
+      "target": "fight1",
+      "label": "Suspend / reprend",
+      "kind": "pause",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-054",
+      "source": "pause",
+      "target": "fight2",
+      "label": "Suspend / reprend",
+      "kind": "pause",
+      "condition": null,
+      "evidence": "declared_fictional"
+    },
+    {
+      "id": "e-055",
+      "source": "pause",
+      "target": "hud",
+      "label": "Overlay actif",
+      "kind": "pause",
+      "condition": null,
+      "evidence": "declared_fictional"
+    }
+  ],
+  "files": [
+    {
+      "path": "res://scenes/ui/main_menu.tscn",
+      "status": "planned",
+      "node_ids": [
+        "menu"
+      ],
+      "role": "Nouvelle tentative, options et reprise. Le clic Nouvelle tentative crée une run avec une graine fixe.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/ui/intro.tscn",
+      "status": "planned",
+      "node_ids": [
+        "intro"
+      ],
+      "role": "Séquence animée de substitution à une vidéo : une messagère traverse les portes des profondeurs. La scène et la musique du niveau I sont préchargées en parallèle.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scripts/core/scene_coordinator.gd",
+      "status": "planned",
+      "node_ids": [
+        "load1",
+        "gate2",
+        "main"
+      ],
+      "role": "Attend les ressources et le plan de salle. Leur disponibilité est vérifiée avant toute récupération et instanciation.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scenes/levels/01_ashes/vestibule.tscn",
+      "status": "planned",
+      "node_ids": [
+        "entry1"
+      ],
+      "role": "Entrée du premier niveau : déplacement, esquive et verrouillage de la porte de combat.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/levels/01_ashes/sentinels.tscn",
+      "status": "planned",
+      "node_ids": [
+        "fight1"
+      ],
+      "role": "Deux sentinelles : l’une poursuit, l’autre attaque à portée. La porte s’ouvre lorsque les deux instances sont vaincues.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scripts/gameplay/loot_service.gd",
+      "status": "planned",
+      "node_ids": [
+        "reward1",
+        "loot"
+      ],
+      "role": "La récompense est créditée une fois par identifiant de salle. Un choix de route devient disponible.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/core/run_director.gd",
+      "status": "planned",
+      "node_ids": [
+        "choice1"
+      ],
+      "role": "Choisir entre le sanctuaire réparateur et une salle élite plus risquée. Le choix est enregistré dans RunState.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scenes/levels/01_ashes/shrine.tscn",
+      "status": "planned",
+      "node_ids": [
+        "shrine1"
+      ],
+      "role": "Soigne 25 points de vie, dans la limite de 100. Un embranchement plus sûr avant le gardien.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/levels/01_ashes/elite.tscn",
+      "status": "planned",
+      "node_ids": [
+        "elite1"
+      ],
+      "role": "Combat élite : davantage de dégâts, 30 fragments supplémentaires et une amélioration offensive.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/levels/01_ashes/warden.tscn",
+      "status": "planned",
+      "node_ids": [
+        "boss1"
+      ],
+      "role": "Boss à deux phases. Sa défaite autorise la transition ; le niveau II a été préchargé pendant le combat.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/levels/02_echoes/entry.tscn",
+      "status": "planned",
+      "node_ids": [
+        "entry2"
+      ],
+      "role": "Instancie le deuxième niveau sur le contexte principal. Libère les références du premier après validation du passage.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/levels/02_echoes/gallery.tscn",
+      "status": "planned",
+      "node_ids": [
+        "fight2"
+      ],
+      "role": "Deux vagues : archers et poursuivants. Les impacts transitent par CombatResolver puis mettent à jour HUD et audio.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/levels/02_echoes/altar.tscn",
+      "status": "planned",
+      "node_ids": [
+        "forge2"
+      ],
+      "role": "Dépense 20 fragments pour une amélioration si le solde est suffisant. La transaction est atomique dans la simulation.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/levels/02_echoes/smith.tscn",
+      "status": "planned",
+      "node_ids": [
+        "boss2"
+      ],
+      "role": "Boss final de cette tranche, attaque télégraphiée et seconde phase sous 50 % de vie.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/ui/run_summary.tscn",
+      "status": "planned",
+      "node_ids": [
+        "victory"
+      ],
+      "role": "Fin des deux niveaux. Écrit un instantané du bilan ; les niveaux suivants restent hors périmètre.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/ui/death.tscn",
+      "status": "planned",
+      "node_ids": [
+        "death"
+      ],
+      "role": "Annule la génération de run en cours. Les résultats de chargements devenus obsolètes sont ignorés et les ressources libérables sont relâchées.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scenes/ui/pause_menu.tscn",
+      "status": "planned",
+      "node_ids": [
+        "pause"
+      ],
+      "role": "Overlay qui conserve l’état interrompu. Le gameplay et la vidéo s’arrêtent ; les traitements I/O autorisés continuent.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://scripts/player/input_router.gd",
+      "status": "planned",
+      "node_ids": [
+        "input"
+      ],
+      "role": "Transforme les entrées en intentions. Aucun mouvement n’est appliqué pendant la pause.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/player/player_controller.gd",
+      "status": "planned",
+      "node_ids": [
+        "player"
+      ],
+      "role": "Applique déplacement et esquive dans le contexte principal, à partir d’intentions et du résultat de collision.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/enemies/enemy_brain.gd",
+      "status": "planned",
+      "node_ids": [
+        "enemy"
+      ],
+      "role": "Chaque instance décide poursuite ou attaque selon la distance. Les identifiants de définition et d’instance sont distincts.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/gameplay/combat_resolver.gd",
+      "status": "planned",
+      "node_ids": [
+        "combat"
+      ],
+      "role": "Valide portée et invulnérabilité, calcule les dégâts, puis publie le résultat. Autorité unique pour un impact.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/core/event_bus.gd",
+      "status": "planned",
+      "node_ids": [
+        "events"
+      ],
+      "role": "Transporte des événements typés, identifiants et révision. Ne possède pas l’état métier.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/core/run_state.gd",
+      "status": "planned",
+      "node_ids": [
+        "runstate"
+      ],
+      "role": "Propriétaire de seed, niveau, salle, vie, fragments et améliorations. Seules des copies immuables sont envoyées aux workers.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/ui/hud.gd",
+      "status": "planned",
+      "node_ids": [
+        "hud"
+      ],
+      "role": "Projette les données de RunState ; affiche vie, monnaie, niveau et pause sans décider des dégâts.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/audio/audio_director.gd",
+      "status": "planned",
+      "node_ids": [
+        "audio"
+      ],
+      "role": "Commande musique et effets depuis le principal. Le mixage moteur est représenté conceptuellement dans une piste séparée.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://project.godot",
+      "status": "planned",
+      "node_ids": [
+        "physics"
+      ],
+      "role": "Étape physique conceptuelle du moteur. Ce modèle ne suppose pas un thread physique séparé dans Godot.",
+      "language": "asset / config"
+    },
+    {
+      "path": "res://scripts/loading/resource_stream.gd",
+      "status": "planned",
+      "node_ids": [
+        "loader"
+      ],
+      "role": "Requête asynchrone, lecture de statut, puis récupération seulement quand LOADED. La simulation représente ce protocole sans charger de vrais assets.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/workers/room_planner.gd",
+      "status": "planned",
+      "node_ids": [
+        "layout"
+      ],
+      "role": "Calcule un plan de salle sur des données isolées. Aucun accès à l’arbre actif ; retourne un dictionnaire et le run_id propriétaire.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/core/result_queue.gd",
+      "status": "planned",
+      "node_ids": [
+        "queue"
+      ],
+      "role": "Transfert explicite des résultats de jobs. Le principal vérifie génération et run_id avant d’appliquer un résultat.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://scripts/persistence/save_service.gd",
+      "status": "planned",
+      "node_ids": [
+        "save"
+      ],
+      "role": "Reçoit une copie versionnée du bilan. Simulation d’écriture dans un fichier temporaire puis remplacement atomique. Aucun vrai fichier de sauvegarde de jeu n’est écrit.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://addons/godot_dev_mapper_runtime/flow_trace.gd",
+      "status": "planned",
+      "node_ids": [
+        "trace"
+      ],
+      "role": "Trace fictive : session, séquence, invocation, provenance et lacunes explicites. Une trace partielle ne prouve pas une causalité.",
+      "language": "GDScript"
+    },
+    {
+      "path": "res://resources/levels/ashes_pack.tres",
+      "status": "planned",
+      "node_ids": [
+        "assets1"
+      ],
+      "role": "Manifest fictif du niveau I : scènes, textures et audio ; les tailles affichées sont des paramètres pédagogiques.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://resources/levels/echoes_pack.tres",
+      "status": "planned",
+      "node_ids": [
+        "assets2"
+      ],
+      "role": "Manifest fictif du niveau II. Préchargé pendant le niveau I puis utilisé après la barrière de transition.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://assets/video/intro.ogv",
+      "status": "planned",
+      "node_ids": [
+        "video"
+      ],
+      "role": "Emplacement prévu pour une vidéo originale. La démonstration affiche une animation vectorielle de substitution et un temps de lecture fictif.",
+      "language": "asset / config"
+    },
+    {
+      "path": "res://resources/rooms/room_catalog.tres",
+      "status": "planned",
+      "node_ids": [
+        "definitions"
+      ],
+      "role": "Données déclaratives : vagues, portes, poids de butin, seed et variante visuelle.",
+      "language": "Godot resource / scene"
+    },
+    {
+      "path": "res://assets/audio/ashes_theme.ogg",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Musique originale du niveau I, à produire.",
+      "language": "planned"
+    },
+    {
+      "path": "res://assets/audio/echoes_theme.ogg",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Musique originale du niveau II, à produire.",
+      "language": "planned"
+    },
+    {
+      "path": "res://assets/textures/ashes_atlas.png",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Atlas visuel original, à produire.",
+      "language": "planned"
+    },
+    {
+      "path": "res://assets/textures/echoes_atlas.png",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Atlas visuel original, à produire.",
+      "language": "planned"
+    },
+    {
+      "path": "res://tests/test_pause_loading.gd",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Vérifier pause, reprise et commit différé.",
+      "language": "planned"
+    },
+    {
+      "path": "res://tests/test_room_progression.gd",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Vérifier les deux routes et les récompenses uniques.",
+      "language": "planned"
+    },
+    {
+      "path": "res://tests/test_worker_contract.gd",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Vérifier isolation des données et génération de run.",
+      "language": "planned"
+    },
+    {
+      "path": "res://docs/game_contract.json",
+      "status": "planned",
+      "node_ids": [],
+      "role": "Contrat de jeu versionné à partir de cet export.",
+      "language": "planned"
+    }
+  ],
+  "implementation_plan": [
+    {
+      "id": "P01",
+      "title": "Modèle de run et contrats",
+      "depends_on": [],
+      "node_ids": [
+        "runstate",
+        "events",
+        "definitions"
+      ],
+      "files": [
+        "res://resources/rooms/room_catalog.tres",
+        "res://scripts/core/event_bus.gd",
+        "res://scripts/core/run_state.gd"
+      ],
+      "acceptance": "Même seed = mêmes données ; événements typés ; aucune référence de Node dans les messages workers.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P02",
+      "title": "Menu, intro et pause",
+      "depends_on": [
+        "P01"
+      ],
+      "node_ids": [
+        "menu",
+        "intro",
+        "video",
+        "pause",
+        "hud"
+      ],
+      "files": [
+        "res://assets/video/intro.ogv",
+        "res://scenes/ui/intro.tscn",
+        "res://scenes/ui/main_menu.tscn",
+        "res://scenes/ui/pause_menu.tscn",
+        "res://scripts/ui/hud.gd"
+      ],
+      "acceptance": "Intro passée ou terminée : un seul lancement ; pause conserve la position et le temps de lecture.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P03",
+      "title": "Chargement et jointure principale",
+      "depends_on": [
+        "P01"
+      ],
+      "node_ids": [
+        "loader",
+        "queue",
+        "main",
+        "assets1",
+        "assets2"
+      ],
+      "files": [
+        "res://resources/levels/ashes_pack.tres",
+        "res://resources/levels/echoes_pack.tres",
+        "res://scripts/core/result_queue.gd",
+        "res://scripts/core/scene_coordinator.gd",
+        "res://scripts/loading/resource_stream.gd"
+      ],
+      "acceptance": "I/O lent reste réactif ; erreur réessayable ; aucun commit pendant pause ; résultats périmés ignorés.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P04",
+      "title": "Planification des salles",
+      "depends_on": [
+        "P01",
+        "P03"
+      ],
+      "node_ids": [
+        "layout",
+        "definitions"
+      ],
+      "files": [
+        "res://resources/rooms/room_catalog.tres",
+        "res://scripts/workers/room_planner.gd"
+      ],
+      "acceptance": "Le worker ne touche pas l’arbre actif ; retour stable pour une seed ; annulation logique par génération.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P05",
+      "title": "Déplacement et combat minimal",
+      "depends_on": [
+        "P01"
+      ],
+      "node_ids": [
+        "input",
+        "player",
+        "enemy",
+        "combat",
+        "physics"
+      ],
+      "files": [
+        "res://project.godot",
+        "res://scripts/enemies/enemy_brain.gd",
+        "res://scripts/gameplay/combat_resolver.gd",
+        "res://scripts/player/input_router.gd",
+        "res://scripts/player/player_controller.gd"
+      ],
+      "acceptance": "Deux ennemis indépendants ; portée et invulnérabilité validées ; un impact ne donne qu’un dégât.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P06",
+      "title": "Niveau I et embranchement",
+      "depends_on": [
+        "P02",
+        "P03",
+        "P04",
+        "P05"
+      ],
+      "node_ids": [
+        "entry1",
+        "fight1",
+        "reward1",
+        "choice1",
+        "shrine1",
+        "elite1",
+        "boss1",
+        "loot"
+      ],
+      "files": [
+        "res://scenes/levels/01_ashes/elite.tscn",
+        "res://scenes/levels/01_ashes/sentinels.tscn",
+        "res://scenes/levels/01_ashes/shrine.tscn",
+        "res://scenes/levels/01_ashes/vestibule.tscn",
+        "res://scenes/levels/01_ashes/warden.tscn",
+        "res://scripts/core/run_director.gd",
+        "res://scripts/gameplay/loot_service.gd"
+      ],
+      "acceptance": "Les deux routes rejoignent le boss ; récompense unique ; portes verrouillées jusqu’à room.cleared.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P07",
+      "title": "Passage vers le niveau II",
+      "depends_on": [
+        "P06"
+      ],
+      "node_ids": [
+        "gate2",
+        "entry2",
+        "assets2"
+      ],
+      "files": [
+        "res://resources/levels/echoes_pack.tres",
+        "res://scenes/levels/02_echoes/entry.tscn",
+        "res://scripts/core/scene_coordinator.gd"
+      ],
+      "acceptance": "La jointure attend assets + plan + victoire ; ressources I libérées seulement après le commit II.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P08",
+      "title": "Niveau II et fin de tranche",
+      "depends_on": [
+        "P07"
+      ],
+      "node_ids": [
+        "fight2",
+        "forge2",
+        "boss2",
+        "victory"
+      ],
+      "files": [
+        "res://scenes/levels/02_echoes/altar.tscn",
+        "res://scenes/levels/02_echoes/gallery.tscn",
+        "res://scenes/levels/02_echoes/smith.tscn",
+        "res://scenes/ui/run_summary.tscn"
+      ],
+      "acceptance": "Deux vagues ; achat borné par le solde ; boss à deux phases ; bilan après victoire.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P09",
+      "title": "Audio et sauvegarde",
+      "depends_on": [
+        "P06"
+      ],
+      "node_ids": [
+        "audio",
+        "save",
+        "death"
+      ],
+      "files": [
+        "res://scenes/ui/death.tscn",
+        "res://scripts/audio/audio_director.gd",
+        "res://scripts/persistence/save_service.gd"
+      ],
+      "acceptance": "Pause réduit le mix ; mort conserve le bilan ; sauvegarde atomique sur copie de données.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P10",
+      "title": "Instrumentation et diagnostic",
+      "depends_on": [
+        "P01",
+        "P03"
+      ],
+      "node_ids": [
+        "trace"
+      ],
+      "files": [
+        "res://addons/godot_dev_mapper_runtime/flow_trace.gd"
+      ],
+      "acceptance": "Séquences monotones ; trou de trace visible ; invocation et instance distinguées ; rétention bornée.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    },
+    {
+      "id": "P11",
+      "title": "Scénarios de robustesse",
+      "depends_on": [
+        "P08",
+        "P09",
+        "P10"
+      ],
+      "node_ids": [
+        "pause",
+        "loader",
+        "layout",
+        "queue",
+        "death"
+      ],
+      "files": [
+        "res://scenes/ui/death.tscn",
+        "res://scenes/ui/pause_menu.tscn",
+        "res://scripts/core/result_queue.gd",
+        "res://scripts/loading/resource_stream.gd",
+        "res://scripts/workers/room_planner.gd"
+      ],
+      "acceptance": "Jouer succès, échec I/O, pause en chargement, mort, reprise et trace incomplète sans inventer de causalité.",
+      "scope": "POC",
+      "status": "planned_not_implemented"
+    }
+  ],
+  "contracts": [
+    {
+      "name": "AttackRequest",
+      "fields": {
+        "run_id": "string",
+        "invocation_id": "string",
+        "source_instance": "string",
+        "target_instance": "string",
+        "base_damage": "int",
+        "position": "Vector2 as {x,y}"
+      }
+    },
+    {
+      "name": "JobResult",
+      "fields": {
+        "run_id": "string",
+        "generation": "int",
+        "job_id": "string",
+        "payload": "isolated JSON-compatible data",
+        "status": "ready|failed|cancelled"
+      }
+    },
+    {
+      "name": "TraceEvent",
+      "fields": {
+        "session_id": "string",
+        "producer_id": "string",
+        "seq": "int",
+        "sim_time_s": "number",
+        "type": "string",
+        "definition_id": "string",
+        "instance_id": "string|null",
+        "invocation_id": "string|null",
+        "payload": "object",
+        "evidence": "simulated"
+      }
+    }
+  ],
+  "scenarios": [
+    "normal",
+    "slow_io",
+    "failed_asset",
+    "trace_gap",
+    "unsafe_worker",
+    "undeclared_jump"
+  ],
+  "sources": [
+    {
+      "title": "Godot : Thread-safe APIs",
+      "url": "https://docs.godotengine.org/en/4.7/tutorials/performance/thread_safe_apis.html"
+    },
+    {
+      "title": "Godot : Background loading",
+      "url": "https://docs.godotengine.org/en/4.7/tutorials/io/background_loading.html"
+    }
+  ]
+}</script>
+<script>(() => {
+'use strict';
+const M=JSON.parse(document.getElementById('project-model').textContent);
+const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const N=Object.fromEntries(M.nodes.map(n=>[n.id,n]));
+const kindNames={state:'ÉTAT',decision:'DÉCISION',script:'SCRIPT',data:'DONNÉE',resource:'RESSOURCE',worker:'WORKER',service:'SERVICE',engine:'MOTEUR'};
+const glyphs={state:'◇',decision:'⋈',script:'ƒ',data:'▤',resource:'▧',worker:'⫶',service:'⌁',engine:'⊙'};
+const threadNames={main:'Principal',main_physics:'Principal / physique',io_loader:'I/O de chargement',worker_layout:'Worker de planification',audio_engine:'Mixage moteur',io_save:'I/O de sauvegarde',video_engine:'Lecture vidéo'};
+const pauseNames={freeze:'Suspendu',continue:'Continue',hold_commit:'Résultats retenus'};
+const V={
+ overview:{title:'Parcours global',w:900,h:620,groups:[{x:10,y:4,w:880,h:127,title:'00  /  PRÉPARER LA TENTATIVE'},{x:10,y:151,w:880,h:230,title:'01  /  LE VESTIBULE DES CENDRES'},{x:10,y:401,w:880,h:194,title:'02  /  LA FORGE DES ÉCHOS'}],pos:{menu:[30,46],intro:[250,46],load1:[470,46],pause:[690,46],entry1:[30,192],fight1:[250,192],choice1:[470,192],boss1:[690,285],shrine1:[470,285],elite1:[250,285],gate2:[30,446],entry2:[250,446],fight2:[470,446],boss2:[690,446],victory:[690,535]},extra:[['fight1','choice1','Butin → choix'],['entry2','fight2','Deux vagues'],['fight2','boss2','Autel → boss']],alias:{reward1:'choice1',forge2:'boss2',death:'fight1'}},
+ level1:{title:'Niveau I / Le Vestibule des Cendres',w:900,h:580,groups:[{x:10,y:10,w:880,h:532,title:'01  /  DEUX INSTANCES · UN CHOIX · UN GARDIEN'}],pos:{load1:[30,56],entry1:[250,56],fight1:[470,56],reward1:[690,56],choice1:[690,212],shrine1:[470,158],elite1:[470,286],boss1:[250,212],gate2:[30,212],death:[250,420],pause:[690,420]},extra:[]},
+ level2:{title:'Niveau II / La Forge des Échos',w:900,h:560,groups:[{x:10,y:10,w:880,h:514,title:'02  /  UNE JOINTURE · DEUX VAGUES · LE FORGERON'}],pos:{gate2:[30,65],entry2:[250,65],fight2:[470,65],forge2:[690,65],boss2:[690,230],victory:[470,230],death:[250,230],pause:[30,230],assets2:[30,408],layout:[250,408],queue:[470,408],save:[690,408]},extra:[['queue','gate2','Résultats validés','data'],['assets2','queue','Pack prêt','resource'],['victory','save','Bilan','data'],['pause','boss2','Suspend / reprend','pause']]},
+ data:{title:'Scripts / Qui produit et qui consomme ?',w:900,h:605,groups:[{x:10,y:8,w:880,h:170,title:'INTENTIONS & RÉSOLUTION'},{x:10,y:195,w:880,h:177,title:'ÉVÉNEMENTS & ÉTAT PARTAGÉ'},{x:10,y:390,w:880,h:187,title:'PROJECTIONS & PERSISTANCE'}],pos:{input:[30,68],player:[250,68],enemy:[470,68],physics:[690,68],combat:[690,247],events:[470,247],loot:[250,247],runstate:[30,247],hud:[30,448],audio:[250,448],trace:[470,448],save:[690,448]},extra:[]},
+ threads:{title:'Contextes / Transférer des données, puis appliquer',w:900,h:600,groups:[{x:10,y:8,w:880,h:160,title:'HORS DU GAMEPLAY  /  I/O & CALCUL ISOLÉ'},{x:10,y:190,w:880,h:164,title:'BARRIÈRE  /  RÉSULTATS ET VALIDATION DE GÉNÉRATION'},{x:10,y:378,w:880,h:180,title:'PRINCIPAL  /  ARBRE ACTIF ET PUBLICATION'}],pos:{definitions:[30,60],layout:[250,60],loader:[470,60],assets2:[690,60],save:[30,246],queue:[360,246],video:[690,246],main:[250,434],physics:[470,434],audio:[30,434],trace:[690,434]},extra:[['main','audio','Commande de mix','data'],['loader','video','Flux intro','resource']]}
+};
+let selected='intro',view='overview',selectedFile=null,search='',S,runCounter=0,exportMode='brief',exportName='',camera={x:0,y:0,z:1},drag=null,lastFrame=0,renderElapsed=0,autoCenter=true;
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const combatStates=new Set(['fight1','elite1','boss1','fight2','boss2']);
+const next={menu:'intro',intro:'load1',load1:'entry1',entry1:'fight1',fight1:'reward1',reward1:'choice1',shrine1:'boss1',elite1:'boss1',boss1:'gate2',gate2:'entry2',entry2:'fight2',fight2:'forge2',forge2:'boss2',boss2:'victory'};
+function time(t,decimal=false){const m=Math.floor(t/60),s=Math.floor(t%60);return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}${decimal?'.'+Math.floor((t%1)*10):''}`;}
+function notify(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>$('toast').classList.remove('show'),2800);}
+function emit(type,node,payload={},level='info'){
+ const seq=++S.seq;
+ if(S.scenario==='trace_gap'&&!S.gapInjected&&type==='damage.applied'){
+  S.gapInjected=true;S.dropped++;S.traceComplete=false;S.gaps.push({from_seq:seq,to_seq:seq,reason:'injected_loss'});
+  emit('trace.gap','trace',{missing_seq:seq,diagnosis:'indeterminate'},'warning');return;
+ }
+ const ev={session_id:S.runId,producer_id:'sim-browser',seq,sim_time_s:+S.time.toFixed(3),type,definition_id:node,instance_id:payload.instance_id||null,invocation_id:S.invocation,payload,evidence:'simulated',level};
+ S.events.push(ev);if(S.events.length>220){const removed=S.events.shift();S.retainedAfter=removed.seq;S.traceComplete=false;}
+}
+function segment(node,label=N[node]?.label||node,lane='main'){for(const s of S.segments)if(s.lane===lane&&s.end===null)s.end=S.time;S.segments.push({node,label,lane,start:S.time,end:null});}
+function job(id,label,duration,kind,node,memory=0){if(S.jobs.some(j=>j.id===id))return;S.jobs.push({id,label,duration,kind,node,memory,status:'running',start:S.time,end:null,progress:0,elapsed:0,generation:S.generation,retried:false});emit('job.started',node,{job_id:id,context:kind});}
+function ready(id){return S.jobs.some(j=>j.id===id&&['ready','committed','released'].includes(j.status));}
+function commit(ids){for(const id of ids){const j=S.jobs.find(j=>j.id===id);if(j&&j.status==='ready'){j.status='committed';emit('result.committed','main',{job_id:id,generation:j.generation,thread:'main'});}}}
+function release(ids){for(const j of S.jobs)if(ids.includes(j.id)&&['ready','committed'].includes(j.status)){j.status='released';emit('resource.released',j.node,{job_id:j.id});}}
+function enter(id){
+ if(S.state){emit('state.exit',S.state);S.visited.add(S.state);const pk=S.state+'>'+id;(S.pairs||(S.pairs=new Map())).set(pk,(S.pairs.get(pk)||0)+1);}
+ S.state=id;S.elapsed=0;S.hits=0;S.invocation=`${S.runId}/inv-${++S.invCounter}`;S.visited.add(id);segment(id);emit('state.enter',id,{level:N[id].domain});
+ if(id==='intro'){job('pack1','Pack Cendres',5.8,'io','assets1',46);job('layout1','Plan salle I',3.2,'worker','layout');job('video','Intro',.5,'io','video',12);segment('audio','Musique / mix','audio');}
+ if(id==='entry1'){commit(['pack1','layout1','video']);release(['video']);}
+ if(id==='reward1'){grant('room-1',20);}
+ if(id==='shrine1'){S.hp=Math.min(100,S.hp+25);emit('health.changed','runstate',{hp:S.hp,reason:'shrine'});}
+ if(id==='boss1'){job('pack2','Pack Échos',S.scenario==='slow_io'?27:6.5,'io','assets2',62);job('layout2','Plan salle II',4.1,'worker','layout');if(S.route==='elite'){grant('elite',30);S.boon='Frappe ardente';}}
+ if(id==='gate2'){grant('boss-1',45);}
+ if(id==='entry2'){commit(['pack2','layout2']);release(['pack1']);S.level=2;}
+ if(id==='forge2'){grant('room-2',25);if(S.coins>=20){S.coins-=20;S.boon='Écho de braise';emit('boon.granted','runstate',{boon:S.boon,cost:20,balance:S.coins});}}
+ if(id==='victory'){grant('boss-2',80);job('save','Bilan de victoire',2,'save','save');emit('run.completed','victory',{hp:S.hp,coins:S.coins});}
+ if(id==='death'){S.hp=0;S.paused=false;for(const j of S.jobs){if(j.status==='running'){j.status='cancelled';j.end=S.time;emit('job.cancelled',j.node,{job_id:j.id});}}release(['pack1','pack2','video']);job('save','Bilan de défaite',1.6,'save','save');emit('run.failed','death',{cause:'player_health_depleted'});}
+ if(autoCenter)paintActivity();renderInspector();
+}
+function grant(key,amount){if(S.rewards.has(key))return;S.rewards.add(key);S.coins+=amount;emit('wallet.changed','runstate',{reward_id:key,amount,balance:S.coins});}
+function reset(playing=false){runCounter++;S={runId:`run-${String(runCounter).padStart(3,'0')}`,generation:runCounter,scenario:$('scenario').value,state:null,time:0,gameTime:0,elapsed:0,playing,paused:false,hp:100,coins:0,level:1,route:null,boon:null,jobs:[],events:[],segments:[],visited:new Set(),rewards:new Set(),seq:0,invCounter:0,invocation:null,hits:0,gapInjected:false,dropped:0,gaps:[],traceComplete:true,retainedAfter:0,workerBlocked:false};enter('menu');renderAll();}
+function advance(dt){
+ let left=Math.min(dt,120);while(left>1e-6){const d=Math.min(.1,left);left-=d;S.time+=d;
+  for(const j of S.jobs){
+   if(j.status!=='running')continue;j.elapsed+=d;j.progress=Math.min(1,j.elapsed/j.duration);
+   if(S.scenario==='failed_asset'&&j.id==='pack2'&&!j.retried&&j.progress>=.65){j.status='failed';j.end=S.time;emit('asset.failed','loader',{job_id:j.id,reason:'injected_missing_resource'},'error');continue;}
+   if(j.progress>=1){
+    j.end=S.time;
+    if(S.scenario==='unsafe_worker'&&j.id==='layout1'&&!j.retried){j.status='failed';S.workerBlocked=true;emit('thread.violation_blocked','layout',{attempt:'active_scene_tree_write',policy:'I01',action:'reject'},'error');}
+    else{j.status='ready';emit('job.ready',j.node,{job_id:j.id,generation:j.generation,paused:S.paused,commit:'deferred_until_main_gate'});}
+   }
+  }
+  if(S.paused)continue;
+  S.elapsed+=d;S.gameTime+=d;
+  if(combatStates.has(S.state)){
+   const hits=Math.floor((S.elapsed+1e-6)/2);
+   if(hits>S.hits){S.hits=hits;const damage=['boss1','boss2'].includes(S.state)?4:3;S.hp=Math.max(0,S.hp-damage);emit('damage.applied','combat',{instance_id:S.state==='fight1'?(hits%2?'sentinel-01':'sentinel-02'):`${S.state}-enemy`,target_instance:'player-01',damage,hp:S.hp,condition:'in_range',result:true});if(S.hp<=0){enter('death');continue;}}
+  }
+  let target=next[S.state];if(S.scenario==='undeclared_jump'&&S.state==='entry1')target='choice1';
+  if(S.state==='load1'&&!(ready('pack1')&&ready('layout1')))target=null;
+  if(S.state==='gate2'&&!(ready('pack2')&&ready('layout2')))target=null;
+  if(target&&S.elapsed>=N[S.state].duration)enter(target);
+  if(['victory','death'].includes(S.state)&&S.jobs.every(j=>j.status!=='running'))S.playing=false;
+ }
+}
+function retry(){let count=0;for(const j of S.jobs)if(j.status==='failed'){j.status='running';j.retried=true;j.start=S.time;j.end=null;j.elapsed=0;j.progress=0;count++;emit('job.retried',j.node,{job_id:j.id,corrected_contract:true});}if(count){S.workerBlocked=false;notify('Requête relancée avec un contrat valide.');renderAll();}}
+function choose(route){if(S.state!=='choice1'||S.paused)return;S.route=route;emit('route.selected','choice1',{route});enter(route==='elite'?'elite1':'shrine1');renderAll();}
+function pauseGame(){if(['menu','victory','death'].includes(S.state))return;S.paused=!S.paused;segment(S.paused?'pause':S.state);emit(S.paused?'game.paused':'game.resumed','pause',{resumed_state:S.state,io_policy:'continue',commit_policy:'hold'});renderAll();renderInspector();}
+function setView(v,fit=true){view=v;document.querySelectorAll('[data-view]').forEach(b=>{const a=b.dataset.view===v;b.classList.toggle('active',a);b.setAttribute('aria-pressed',a);});$('plan-view').classList.toggle('show',v==='plan');$('graph').style.visibility=v==='plan'?'hidden':'visible';$('breadcrumb').innerHTML=v==='plan'?'Architecture / <strong>Plan de développement pour une IA</strong>':`Run / <strong>${esc(V[v].title)}</strong>`;document.querySelector('.zoomtools').style.visibility=v==='plan'?'hidden':'visible';if(v==='plan')renderPlan();else{renderGraph();if(fit)fitGraph();}renderInspector();}
+function visibleEdges(){const cfg=V[view];if(!cfg)return[];const ids=new Set(Object.keys(cfg.pos));const edges=M.edges.filter(e=>ids.has(e.source)&&ids.has(e.target));for(const [source,target,label,kind='control']of cfg.extra||[])if(!edges.some(e=>e.source===source&&e.target===target))edges.push({id:`view-${source}-${target}`,source,target,label,kind,evidence:'view_projection'});return edges;}
+function edgePath(a,b){const [x,y]=a,[u,v]=b,w=168,h=68;let sx,sy,tx,ty,d;if(Math.abs(u-x)>=Math.abs(v-y)*1.1){const right=u>x;sx=x+(right?w:0);sy=y+h/2;tx=u+(right?0:w);ty=v+h/2;const k=Math.max(35,Math.abs(tx-sx)*.5);d=`M${sx},${sy} C${sx+(right?k:-k)},${sy} ${tx+(right?-k:k)},${ty} ${tx},${ty}`;}else{const down=v>y;sx=x+w/2;sy=y+(down?h:0);tx=u+w/2;ty=v+(down?0:h);const k=Math.max(30,Math.abs(ty-sy)*.5);d=`M${sx},${sy} C${sx},${sy+(down?k:-k)} ${tx},${ty+(down?-k:k)} ${tx},${ty}`;}return{d,mx:(sx+tx)/2,my:(sy+ty)/2};}
+let userCamera=false,lastUndeclared='';
+const CARD_W=168,CARD_H=68,GRID=10,ROUTES={},DIRS=[[1,0],[-1,0],[0,1],[0,-1]],OPP=[1,0,3,2];
+function ensureGroups(cfg){
+ if(cfg._v2)return;cfg._v2=true;
+ for(const g of cfg.groups){let bottom=0;
+  for(const [x,y] of Object.values(cfg.pos))if(x>=g.x&&x<g.x+g.w&&y>=g.y&&y<g.y+g.h)bottom=Math.max(bottom,y+CARD_H);
+  if(bottom+16>g.y+g.h)g.h=bottom+16-g.y;
+  cfg.h=Math.max(cfg.h,g.y+g.h+8);}
+}
+function edgesOf(v){const cfg=V[v],ids=new Set(Object.keys(cfg.pos));const edges=M.edges.filter(e=>ids.has(e.source)&&ids.has(e.target));
+ for(const [source,target,label,kind='control'] of cfg.extra||[])if(!edges.some(e=>e.source===source&&e.target===target))edges.push({id:`view-${source}-${target}`,source,target,label,kind,evidence:'view_projection'});return edges;}
+function pickPorts(cfg,a,b){const [x,y]=cfg.pos[a],[u,v]=cfg.pos[b],dx=u-x,dy=v-y;
+ if(Math.abs(dx)>=CARD_W*.75&&Math.abs(dx)>=Math.abs(dy)*.9){const r=dx>0;return{s:[x+(r?CARD_W:0),y+CARD_H/2],sd:r?0:1,t:[u+(r?0:CARD_W),v+CARD_H/2],td:r?1:0};}
+ const d=dy>0;return{s:[x+CARD_W/2,y+(d?CARD_H:0)],sd:d?2:3,t:[u+CARD_W/2,v+(d?0:CARD_H)],td:d?3:2};}
+function makeGrid(cfg){const pad=30,ox=-pad,oy=-pad,cols=Math.ceil((cfg.w+2*pad)/GRID)+1,rows=Math.ceil((cfg.h+2*pad)/GRID)+1;
+ const blocked=new Uint8Array(cols*rows),used=new Uint8Array(cols*rows);
+ for(const [x,y] of Object.values(cfg.pos)){const i0=Math.ceil((x-6-ox)/GRID),i1=Math.floor((x+CARD_W+6-ox)/GRID),j0=Math.ceil((y-6-oy)/GRID),j1=Math.floor((y+CARD_H+6-oy)/GRID);
+  for(let j=Math.max(0,j0);j<=Math.min(rows-1,j1);j++)for(let i=Math.max(0,i0);i<=Math.min(cols-1,i1);i++)blocked[j*cols+i]=1;}
+ for(const g of cfg.groups){const x1=g.x+10,x2=g.x+26+g.title.length*7.4,y1=g.y+8,y2=g.y+30;for(let j=Math.max(0,Math.ceil((y1-oy)/GRID));j<=Math.min(rows-1,Math.floor((y2-oy)/GRID));j++)for(let i=Math.max(0,Math.ceil((x1-ox)/GRID));i<=Math.min(cols-1,Math.floor((x2-ox)/GRID));i++)used[j*cols+i]=Math.max(used[j*cols+i],3);}
+ return{ox,oy,cols,rows,blocked,used};}
+function freeCell(G,p,dir){for(let k=14;k<=44;k+=10){const i=Math.round((p[0]+DIRS[dir][0]*k-G.ox)/GRID),j=Math.round((p[1]+DIRS[dir][1]*k-G.oy)/GRID);if(i>=0&&j>=0&&i<G.cols&&j<G.rows&&!G.blocked[j*G.cols+i])return[i,j];}return null;}
+function astar(G,s,sdir,t,adir){const{cols,rows,blocked,used}=G,NS=cols*rows*4;
+ const gs=new Float32Array(NS).fill(Infinity),prev=new Int32Array(NS).fill(-1),closed=new Uint8Array(NS),heap=[];
+ const push=(f,x)=>{heap.push([f,x]);let k=heap.length-1;while(k>0){const p=(k-1)>>1;if(heap[p][0]<=heap[k][0])break;[heap[p],heap[k]]=[heap[k],heap[p]];k=p;}};
+ const pop=()=>{const top=heap[0],last=heap.pop();if(heap.length){heap[0]=last;let k=0;for(;;){const l=2*k+1,r=l+1;let m=k;if(l<heap.length&&heap[l][0]<heap[m][0])m=l;if(r<heap.length&&heap[r][0]<heap[m][0])m=r;if(m===k)break;[heap[m],heap[k]]=[heap[k],heap[m]];k=m;}}return top;};
+ const h=(i,j)=>Math.abs(i-t[0])+Math.abs(j-t[1]),s0=((s[1]*cols+s[0])<<2)|sdir;gs[s0]=0;push(h(s[0],s[1]),s0);let n=0;
+ while(heap.length&&n++<90000){const[,x]=pop();if(closed[x])continue;closed[x]=1;const c=x>>2,d=x&3,i=c%cols,j=(c-i)/cols;
+  if(i===t[0]&&j===t[1]){const cells=[];let k=x;while(k>=0){cells.push(k>>2);k=prev[k];}return cells.reverse().map(q=>[q%cols,(q-q%cols)/cols]);}
+  for(let nd=0;nd<4;nd++){if(nd===OPP[d])continue;const ni=i+DIRS[nd][0],nj=j+DIRS[nd][1];if(ni<0||nj<0||ni>=cols||nj>=rows)continue;const nc=nj*cols+ni,goal=ni===t[0]&&nj===t[1];if(blocked[nc]&&!goal)continue;
+   let cost=gs[x]+1+(nd!==d?5:0)+used[nc]*2;if(goal&&nd!==adir)cost+=5;const ns=(nc<<2)|nd;if(cost<gs[ns]){gs[ns]=cost;prev[ns]=x;push(cost+h(ni,nj),ns);}}}
+ return null;}
+function simplify(p){const o=[p[0]];for(let k=1;k<p.length-1;k++){const a=o[o.length-1],b=p[k],c=p[k+1];if((a[0]===b[0]&&b[0]===c[0])||(a[1]===b[1]&&b[1]===c[1]))continue;o.push(b);}o.push(p[p.length-1]);return o;}
+function corners(G,P,cells){const pt=c=>[G.ox+c[0]*GRID,G.oy+c[1]*GRID],pts=cells.map(pt),hs=P.sd<2,ht=P.td<2,f=pts[0],l=pts[pts.length-1];
+ let c=simplify([hs?[P.s[0],f[1]]:[f[0],P.s[1]],...pts,ht?[P.t[0],l[1]]:[l[0],P.t[1]]]).map(q=>[...q]);
+ if(c.length===2){const[a,b]=[P.s,P.t];if(hs&&Math.abs(a[1]-b[1])<.5||!hs&&Math.abs(a[0]-b[0])<.5)return[a,b];const m=hs?(a[0]+b[0])/2:(a[1]+b[1])/2;return hs?[a,[m,a[1]],[m,b[1]],b]:[a,[a[0],m],[b[0],m],b];}
+ c[0]=[...P.s];if(hs)c[1][1]=P.s[1];else c[1][0]=P.s[0];
+ const L=c.length-1;c[L]=[...P.t];if(ht)c[L-1][1]=P.t[1];else c[L-1][0]=P.t[0];return c;}
+function roundedPath(c,r=9){const f=v=>Math.round(v*10)/10;let d=`M${f(c[0][0])},${f(c[0][1])}`;
+ for(let k=1;k<c.length-1;k++){const[ax,ay]=c[k-1],[bx,by]=c[k],[cx,cy]=c[k+1],l1=Math.hypot(bx-ax,by-ay)||1,l2=Math.hypot(cx-bx,cy-by)||1,rr=Math.min(r,l1/2,l2/2);
+  d+=` L${f(bx-(bx-ax)/l1*rr)},${f(by-(by-ay)/l1*rr)} Q${f(bx)},${f(by)} ${f(bx+(cx-bx)/l2*rr)},${f(by+(cy-by)/l2*rr)}`;}
+ const e=c[c.length-1];return d+` L${f(e[0])},${f(e[1])}`;}
+function placeLabels(cfg,edges,routes){const boxes=[],rank={control:0,data:1,resource:2,pause:3};
+ const cards=Object.values(cfg.pos).map(([x,y])=>[x-3,y-3,x+CARD_W+3,y+CARD_H+3]),titles=cfg.groups.map(g=>[g.x+10,g.y+8,g.x+26+g.title.length*7.4,g.y+30]);
+ const ov=(b,c,m=0)=>b[0]<c[2]+m&&b[2]>c[0]-m&&b[1]<c[3]+m&&b[3]>c[1]-m,hit=b=>cards.some(c=>ov(b,c))||titles.some(c=>ov(b,c))||boxes.some(c=>ov(b,c,3));
+ for(const e of [...edges].sort((a,b)=>(rank[a.kind]??4)-(rank[b.kind]??4))){const R=routes[e.id];if(!R||!e.label)continue;
+  const text=e.label.length>30?e.label.slice(0,29)+'…':e.label,w=Math.round(text.length*6.35+12),h=17,cands=[],c=R.corners;
+  for(let k=0;k<c.length-1;k++){const[ax,ay]=c[k],[bx,by]=c[k+1],L=Math.hypot(bx-ax,by-ay),hor=Math.abs(ay-by)<.5;for(const fr of L>140?[.5,.3,.7]:[.5])cands.push({x:ax+(bx-ax)*fr,y:ay+(by-ay)*fr,s:(hor?0:40)-L+(fr===.5?0:15)});}
+  cands.sort((p,q)=>p.s-q.s);let placed=null;for(const p of cands){const b=[p.x-w/2,p.y-h/2,p.x+w/2,p.y+h/2];if(!hit(b)){placed=p;boxes.push(b);break;}}
+  const at=placed||cands[0];R.label={text,full:e.label,w,h,x:at.x,y:at.y,auto:placed?'shown':'hidden'};}}
+function spreadPorts(cfg,edges,P){const groups={};const add=(node,dir,e,end)=>{(groups[node+'|'+dir]||(groups[node+'|'+dir]=[])).push({e,end});};
+ for(const e of edges){const p=P[e.id];add(e.source,p.sd,e,'s');add(e.target,p.td,e,'t');}
+ for(const[k,list]of Object.entries(groups)){if(list.length<2)continue;const hor=+k.split('|')[1]<2;
+  list.sort((a,b)=>{const oa=cfg.pos[a.end==='s'?a.e.target:a.e.source],ob=cfg.pos[b.end==='s'?b.e.target:b.e.source];return hor?oa[1]-ob[1]:oa[0]-ob[0];});
+  const n=list.length,span=hor?Math.min(40,(n-1)*12):Math.min(110,(n-1)*26);
+  list.forEach((it,i)=>{const off=-span/2+span*i/(n-1),p=P[it.e.id],pt=it.end==='s'?p.s:p.t;if(hor)pt[1]+=off;else pt[0]+=off;});}}
+function routeView(v){if(ROUTES[v])return ROUTES[v];const cfg=V[v];ensureGroups(cfg);const G=makeGrid(cfg),edges=edgesOf(v),routes={};
+ const len=e=>{const[a,b]=[cfg.pos[e.source],cfg.pos[e.target]];return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);};
+ const PP={};for(const e of edges)PP[e.id]=pickPorts(cfg,e.source,e.target);spreadPorts(cfg,edges,PP);
+ for(const e of [...edges].sort((a,b)=>len(a)-len(b))){const P=PP[e.id],s=freeCell(G,P.s,P.sd),g=freeCell(G,P.t,P.td),cells=s&&g?astar(G,s,P.sd,g,OPP[P.td]):null;
+  if(!cells){const p=edgePath(cfg.pos[e.source],cfg.pos[e.target]);routes[e.id]={d:p.d,corners:[P.s,P.t]};continue;}
+  for(const[i,j]of cells){const q=j*G.cols+i;G.used[q]=Math.min(255,G.used[q]+1);}
+  const c=corners(G,P,cells);routes[e.id]={d:roundedPath(c),corners:c};}
+ placeLabels(cfg,edges,routes);return ROUTES[v]={edges,routes,G};}
+function extraRoute(v,a,b){const RV=routeView(v),key=a+'>'+b;RV.extra=RV.extra||{};if(RV.extra[key])return RV.extra[key];const cfg=V[v],P=pickPorts(cfg,a,b),s=freeCell(RV.G,P.s,P.sd),g=freeCell(RV.G,P.t,P.td),cells=s&&g?astar(RV.G,s,P.sd,g,OPP[P.td]):null,c=cells?corners(RV.G,P,cells):[P.s,P.t];return RV.extra[key]={d:roundedPath(c),corners:c};}
+function undeclaredVisible(){const out=[];if(!S||!S.pairs||view==='plan'||!V[view])return out;const cfg=V[view],al=cfg.alias||{},known=new Set(routeView(view).edges.map(e=>e.source+'>'+e.target)),declared=new Set(M.edges.map(e=>e.source+'>'+e.target));
+ for(const k of S.pairs.keys()){if(declared.has(k))continue;const[a,b]=k.split('>'),x=al[a]||a,y=al[b]||b;if(x===y||!cfg.pos[x]||!cfg.pos[y]||known.has(x+'>'+y))continue;out.push([x,y]);}return out;}
+function renderGraph(){if(view==='plan')return;const cfg=V[view],RV=routeView(view);
+ let html=`<title>${esc(cfg.title)}</title><defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L8 4 L0 8" fill="#8fb0c0"/></marker><marker id="arrow-bad" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L8 4 L0 8" fill="#ef8b85"/></marker></defs><g id="graph-camera">`;
+ for(const g of cfg.groups)html+=`<rect class="group-frame" x="${g.x}" y="${g.y}" width="${g.w}" height="${g.h}" rx="10"/><text class="group-title" x="${g.x+16}" y="${g.y+22}">${esc(g.title)}</text>`;
+ for(const e of RV.edges)html+=`<path id="${e.id}" data-source="${e.source}" data-target="${e.target}" class="edge ${e.kind}" d="${RV.routes[e.id].d}" marker-end="url(#arrow)"><title>${esc(e.label||e.kind)}</title></path>`;
+ const UD=undeclaredVisible();lastUndeclared=UD.map(q=>q.join('>')).join('|');const udl=[];
+ for(const[a,b]of UD){const R=extraRoute(view,a,b);html+=`<path class="edge undeclared" data-source="${a}" data-target="${b}" d="${R.d}" marker-end="url(#arrow-bad)"><title>Transition observée sans relation déclarée</title></path>`;
+  let best=[R.corners[0],R.corners[1]];for(let k=0;k<R.corners.length-1;k++){const A=R.corners[k],B=R.corners[k+1];if(Math.hypot(B[0]-A[0],B[1]-A[1])>Math.hypot(best[1][0]-best[0][0],best[1][1]-best[0][1]))best=[A,B];}
+  udl.push({a,b,x:(best[0][0]+best[1][0])/2,y:(best[0][1]+best[1][1])/2});}
+ for(const[id,[x,y]]of Object.entries(cfg.pos)){const n=N[id];html+=`<g class="node-card" data-node="${id}" transform="translate(${x} ${y})" role="button" tabindex="0" aria-label="${esc(n.label+' : '+n.description)}"><rect class="node-bg" width="168" height="68"/><circle class="node-port" cx="0" cy="34" r="3"/><circle class="node-port" cx="168" cy="34" r="3"/><circle class="node-port" cx="84" cy="0" r="3"/><circle class="node-port" cx="84" cy="68" r="3"/><text class="node-glyph" x="12" y="23">${glyphs[n.kind]}</text><text class="node-meta" x="32" y="22">${kindNames[n.kind]}</text><text class="node-name" x="12" y="42">${esc(n.label)}</text><text class="node-status" x="12" y="58">${esc(n.file.split('/').pop())}</text><rect class="node-progress" width="0" height="2" x="2" y="65" rx="1"/></g>`;}
+ html+='<g class="labels" aria-hidden="true">';
+ for(const e of RV.edges){const L=RV.routes[e.id].label;if(!L)continue;html+=`<g class="elabel" data-auto="${L.auto}" data-kind="${e.kind}" data-source="${e.source}" data-target="${e.target}" transform="translate(${L.x.toFixed(1)} ${L.y.toFixed(1)})"><rect x="${-L.w/2}" y="${-L.h/2}" width="${L.w}" height="${L.h}" rx="4"/><text x="0" y="3.8" text-anchor="middle">${esc(L.text)}</text>${L.text!==L.full?`<title>${esc(L.full)}</title>`:''}</g>`;}
+ for(const u of udl)html+=`<g class="elabel undeclared" data-auto="shown" data-kind="undeclared" data-source="${u.a}" data-target="${u.b}" transform="translate(${u.x.toFixed(1)} ${u.y.toFixed(1)})"><rect x="-78" y="-8.5" width="156" height="17" rx="4"/><text x="0" y="3.8" text-anchor="middle">observée, non déclarée</text></g>`;
+ html+='</g></g>';$('graph').innerHTML=html;applyCamera();paintActivity();
+}
+
+function fitGraph(){if(view==='plan')return;userCamera=false;const wrap=$('graph-wrap'),cfg=V[view];ensureGroups(cfg);let r=wrap.getBoundingClientRect(),z;if(r.width<700){z=Math.min(1,(r.width-24)/cfg.w);const hh=Math.round(cfg.h*z+56);if(Math.abs(r.height-hh)>2){wrap.style.height=hh+'px';r=wrap.getBoundingClientRect();}camera={x:(r.width-cfg.w*z)/2,y:14,z};}else{if(wrap.style.height){wrap.style.height='';r=wrap.getBoundingClientRect();}z=Math.min((r.width-28)/cfg.w,(r.height-34)/cfg.h,1.5);camera={x:(r.width-cfg.w*z)/2,y:(r.height-cfg.h*z)/2,z};}applyCamera();}
+function applyCamera(){const g=$('graph-camera');if(g)g.setAttribute('transform',`translate(${camera.x} ${camera.y}) scale(${camera.z})`);$('zoom-label').textContent=Math.round(camera.z*100)+'%';$('graph').classList.toggle('far',camera.z<.78);}
+function zoom(factor,cx,cy){if(view==='plan')return;userCamera=true;const r=$('graph-wrap').getBoundingClientRect();cx??=r.width/2;cy??=r.height/2;const z=Math.min(2.8,Math.max(.22,camera.z*factor)),f=z/camera.z;camera.x=cx-(cx-camera.x)*f;camera.y=cy-(cy-camera.y)*f;camera.z=z;applyCamera();}
+function mappedCurrent(){return V[view]?.alias?.[S.state]||S.state;}
+function activeModules(){const a=new Set([mappedCurrent()]);if(combatStates.has(S.state)&&!S.paused)['input','player','enemy','combat','events','runstate','hud','physics','trace','audio'].forEach(x=>a.add(x));if(S.paused){a.clear();a.add('pause');a.add('hud');a.add('audio');}for(const j of S.jobs)if(j.status==='running'){a.add(j.node);a.add(j.kind==='worker'?'layout':'loader');}if(['load1','gate2'].includes(S.state)){a.add('queue');a.add('main');}return a;}
+function paintActivity(){if(!S||view==='plan')return;if(undeclaredVisible().map(q=>q.join('>')).join('|')!==lastUndeclared){renderGraph();return;}const current=mappedCurrent(),active=activeModules();const linked=new Set([selected]);for(const e of M.edges)if(e.source===selected)linked.add(e.target);else if(e.target===selected)linked.add(e.source);
+ for(const el of $('graph').querySelectorAll('[data-node]')){const id=el.dataset.node,n=N[id];el.classList.toggle('selected',id===selected);el.classList.toggle('visited',S.visited.has(id));el.classList.toggle('current',active.has(id));const matchSearch=!search||[n.label,n.file,n.id].join(' ').toLowerCase().includes(search);el.classList.toggle('dim',!matchSearch||(selectedFile&&n.file!==selectedFile&&!linked.has(id)));let p=0;if(id===current&&N[S.state]?.duration)p=Math.min(1,S.elapsed/N[S.state].duration);const j=S.jobs.find(j=>j.node===id);if(j)p=j.progress;el.querySelector('.node-progress').setAttribute('width',164*p);}
+ const obs=observedPairs();for(const el of $('graph').querySelectorAll('.edge,.elabel')){const a=el.dataset.source,b=el.dataset.target,ch=a===selected||b===selected,lab=el.classList.contains('elabel'),ctl=lab?el.dataset.kind==='control':el.classList.contains('control');el.classList.toggle('chosen',ch);el.classList.toggle('observed',ctl&&obs.has(a+'>'+b));if(!lab)el.classList.toggle('live',S.playing&&active.has(a)&&active.has(b)&&!reduced);el.classList.toggle('dim',Boolean(search)&&!linked.has(a)&&!linked.has(b));if(lab)el.classList.toggle('shown',el.dataset.auto==='shown');}
+}
+function selectNode(id,fromFile=false){if(!N[id])return;selected=id;if(!fromFile)selectedFile=null;renderInspector();paintActivity();highlightFiles();$('selection-summary').innerHTML=`<strong>${esc(N[id].label)}</strong> · ${M.edges.filter(e=>e.source===id||e.target===id).length} relations · ${esc(threadNames[N[id].execution_context])}`;}
+function inspectFile(path){selectedFile=path;const f=M.files.find(f=>f.path===path);if(f?.node_ids.length){const id=f.node_ids[0];if(!V[view]?.pos[id]){const v=['data','threads','level1','level2','overview'].find(v=>V[v].pos[id]);if(v)setView(v);}selectNode(id,true);notify(`${f.node_ids.length} élément${f.node_ids.length>1?'s':''} lié${f.node_ids.length>1?'s':''} au fichier.`);}else{showFile(path);}highlightFiles();}
+function treeHTML(tree,depth=0){let html='';for(const key of Object.keys(tree).sort((a,b)=>{const ad=tree[a].path?1:0,bd=tree[b].path?1:0;return ad-bd||a.localeCompare(b);})){const item=tree[key];if(item.path){const ext=key.split('.').pop(),kind=ext==='tscn'?'scene':['png','ogg','ogv','tres'].includes(ext)?'asset':'';html+=`<button class="filebtn" data-file="${esc(item.path)}" title="${esc(item.path)}"><span class="file-icon ${kind}" aria-hidden="true">${ext==='gd'?'ƒ':ext==='tscn'?'◇':'▤'}</span>${esc(key)}</button>`;}else html+=`<details ${depth<1||search?'open':''}><summary>${esc(key)}</summary><div class="tree-folder">${treeHTML(item,depth+1)}</div></details>`;}return html;}
+function renderTree(){const root={};for(const f of M.files){const matches=!search||f.path.toLowerCase().includes(search)||f.node_ids.some(id=>N[id].label.toLowerCase().includes(search));if(!matches)continue;const parts=f.path.replace('res://','').split('/');let t=root;parts.forEach((p,i)=>{if(i===parts.length-1)t[p]=f;else t=t[p]??={};});}$('filetree').innerHTML=treeHTML(root)||'<p class="muted" style="padding:10px">Aucun fichier correspondant.</p>';highlightFiles();}
+function highlightFiles(){for(const b of $('filetree').querySelectorAll('[data-file]')){b.classList.toggle('selected',b.dataset.file===(selectedFile||N[selected]?.file));const f=M.files.find(f=>f.path===b.dataset.file);b.classList.toggle('linked',f.node_ids.includes(S.state));if(b.classList.contains('selected')){let d=b.parentElement.closest('details');while(d){d.open=true;d=d.parentElement.closest('details');}}}}
+function observedPairs(){const out=new Set();if(!S.pairs)return out;const al=V[view]?.alias||{};for(const k of S.pairs.keys()){const[a,b]=k.split('>'),x=al[a]||a,y=al[b]||b;if(x!==y)out.add(x+'>'+y);}return out;}
+const COVERED=new Set(['state','decision']);
+function relChip(e){const covered=e.kind==='control'&&COVERED.has(N[e.source]?.kind)&&COVERED.has(N[e.target]?.kind);
+ if(!covered)return '<span class="prov out" title="Aucune sonde de la trace simulée ne relie ces deux éléments : la relation n’est ni confirmée ni exclue.">hors couverture</span>';
+ const n=S.pairs?.get(e.source+'>'+e.target)||0;
+ return n?`<span class="prov obs" title="Transition présente dans la trace simulée de ${esc(S.runId)}.">observée ×${n}</span>`:'<span class="prov no" title="Aucune occurrence dans cette tentative. Cela ne prouve pas qu’elle ne peut pas se produire.">non observée</span>';}
+function diagHTML(n){if(!COVERED.has(n.kind))return'';const declared=new Set(M.edges.map(e=>e.source+'>'+e.target));
+ const undeclared=[...(S.pairs?.keys()||[])].filter(k=>k.endsWith('>'+n.id)&&!declared.has(k));let cls='',body;
+ if(!S.traceComplete){cls='warn';const gaps=(S.gaps||[]).map(g=>g.from_seq);body=`<b>Indéterminé : trace incomplète.</b> ${gaps.length?`Événement n°${gaps.join(', n°')} perdu. `:''}${S.retainedAfter?`Journal tronqué avant l’événement n°${S.retainedAfter+1}. `:''}Aucune conclusion n’est tirée sur l’enchaînement.`;}
+ else if(undeclared.length){cls='bad';body=`<b>Incohérent.</b> Transition observée sans relation déclarée : ${undeclared.map(k=>k.split('>').map(x=>esc(N[x]?.label||x)).join(' → ')).join(', ')}.`;}
+ else if(S.visited.has(n.id)){cls='ok';body='<b>Cohérent avec les relations déclarées.</b> Chaque transition observée vers cet état existe sur la carte, et les numéros d’événements se suivent sans trou.';}
+ else body='<b>Non observé.</b> Rien dans la trace de cette tentative. Cela ne prouve pas que cet état ne peut pas être atteint.';
+ return `<section class="inspect-section"><h3>Chemin observé</h3><div class="diag ${cls}">${body}</div></section>`;}
+function renderInspector(){const n=N[selected];if(!n)return;const observed=S.events.filter(e=>e.definition_id===selected).length;const isCurrent=S.state===selected;const related=M.edges.filter(e=>e.source===selected||e.target===selected);$('evidence-tag').textContent=observed?'Simulé':'Déclaré';
+ $('inspector').innerHTML=`<div class="inspect-intro"><div class="inspect-symbol">${glyphs[n.kind]}</div><h2>${esc(n.label)}</h2><div class="idline"><span>${esc(n.id)}</span><span>· ${kindNames[n.kind].toLowerCase()}</span></div><p class="description">${esc(n.description)}</p></div><section class="inspect-section"><h3>Fichier propriétaire · prévu</h3><button class="file-link" data-open-file="${esc(n.file)}">${esc(n.file)} ↗</button></section><section class="inspect-section"><h3>Contexte d’exécution</h3><div class="keyvalue"><span>Contexte</span><span>${esc(threadNames[n.execution_context])}</span></div><div class="keyvalue"><span>En pause</span><span>${esc(pauseNames[n.pause_policy])}</span></div><div class="keyvalue"><span>Provenance</span><span>${observed?'Événements simulés':'Conception déclarée'}</span></div><div class="keyvalue"><span>État</span><span>${isCurrent?(S.paused?'Suspendu':'Courant'):S.visited.has(selected)?'Observé dans cette tentative':'Non observé dans cette tentative'}</span></div></section><section class="inspect-section"><h3>Contrat de données</h3>${n.inputs.map(x=>`<div class="port-row"><b>IN</b><span>${esc(x)}</span></div>`).join('')}${n.outputs.map(x=>`<div class="port-row out"><b>OUT</b><span>${esc(x)}</span></div>`).join('')}</section>${n.instances?`<section class="inspect-section"><h3>Instances distinctes</h3>${n.instances.map(x=>`<span class="mini-chip">${esc(x)}</span>`).join('')}</section>`:''}${diagHTML(n)}<section class="inspect-section"><h3>Connexions ${related.length}</h3>${related.slice(0,7).map(e=>`<button class="inspect-rel" data-select="${e.source===selected?e.target:e.source}">${e.source===selected?'→':'←'} ${esc(N[e.source===selected?e.target:e.source].label)} <span class="muted">· ${esc(e.kind)}${e.label?' · « '+esc(e.label)+' »':''}</span>${relChip(e)}</button>`).join('')}${related.length>7?`<small class="muted">+ ${related.length-7} dans le contrat JSON</small>`:''}</section><div class="inspect-actions"><button data-focus="${selected}">Centrer sur le nœud</button>${combatStates.has(selected)?'<button data-die="true" class="danger">Simuler la mort</button>':''}</div>`;
+}
+function focusNode(id){if(!V[view]?.pos[id]){const v=['overview','data','threads','level1','level2'].find(v=>V[v].pos[id]);if(v)setView(v);}if(view==='plan')return;const p=V[view].pos[id];if(!p)return;const r=$('graph-wrap').getBoundingClientRect();userCamera=true;camera.z=Math.min(1.4,r.width/270);camera.x=r.width/2-(p[0]+84)*camera.z;camera.y=r.height/2-(p[1]+34)*camera.z;applyCamera();}
+function renderPlan(){$('plan-view').innerHTML=`<div class="eyebrow">Contrat de réalisation / dépendances explicites</div><h2>Du graphe au code</h2><p>Onze lots de réalisation. Chaque lot possède ses fichiers, ses prérequis et une condition d’acceptation. Leur statut est « à implémenter ».</p>${M.implementation_plan.map(t=>`<article class="plan-task"><div class="num">${t.id}</div><div><h4>${esc(t.title)}</h4><p>${esc(t.acceptance)}</p><div class="deps">${t.depends_on.length?'Dépend de '+t.depends_on.join(' · '):'Point de départ'}</div>${t.node_ids.map(id=>`<button data-plan-node="${id}">${esc(N[id].label)}</button>`).join('')}</div></article>`).join('')}`;}
+function renderBanner(){let html='';const failed=S.jobs.find(j=>j.status==='failed');if(failed){html=`<span>⚠ ${S.workerBlocked?'Écriture dans l’arbre bloquée : le worker doit retourner des données.':'Pack Échos indisponible. Le passage attend une ressource valide.'}</span><button data-retry="true">${S.workerBlocked?'Corriger le transfert':'Réessayer'}</button>`;}else if(S.paused){html='<span>Jeu en pause · gameplay et vidéo figés · les I/O continuent.</span><button data-resume="true">Reprendre</button>';}else if(S.state==='choice1'){html='<span>Quelle porte traverser ?</span><span><button data-route="shrine">Sanctuaire · +25 PV</button> <button data-route="elite">Épreuve · +30 ◇</button></span>';}else if(S.state==='gate2'&&!(ready('pack2')&&ready('layout2'))){html='<span>Barrière de transition : le niveau II attend ses ressources et son plan.</span><button data-show-threads="true">Voir les contextes</button>';}else if(S.state==='victory'){html='<span>Les deux portes sont franchies. Le bilan est prêt à être exporté.</span><button data-export-run="true">Exporter la run</button>';}else if(S.state==='death'){html='<span>Tentative terminée · travaux en cours annulés · bilan sauvegardé.</span><button data-new-run="true">Nouvelle tentative</button>';}$('graph-banner').innerHTML=html;$('graph-banner').classList.toggle('show',!!html);}
+function renderResources(){let mem=0;const rows=[['pack1','Cendres / niveau I',46],['pack2','Échos / niveau II',62],['video','Flux vidéo / intro',12]];const text=rows.map(([id,label,max])=>{const j=S.jobs.find(j=>j.id===id),p=j?.progress||0,status=j?.status||'pending';if(j&&['running','ready','committed'].includes(status))mem+=max*p;const labelStatus={pending:'En attente',running:Math.round(p*100)+' %',ready:'Prêt · '+max+' Mio',committed:'En usage · '+max+' Mio',released:'Libéré',failed:'Erreur',cancelled:'Annulé'}[status];return`<div class="resource-row"><div class="resource-name"><span>${label}</span><span style="${status==='failed'?'color:var(--red)':''}">${labelStatus}</span></div><div class="track"><div class="fill" style="width:${['released','cancelled'].includes(status)?0:p*100}%;${status==='failed'?'background:var(--red)':''}"></div></div></div>`;}).join('');$('resources').innerHTML=text;$('memory').textContent=Math.round(mem)+' Mio simulés';const waiting=S.jobs.filter(j=>j.status==='ready'&&j.kind!=='save');$('resource-note').textContent=S.paused&&waiting.length?`${waiting.length} résultat(s) prêt(s) · commit retenu jusqu’à reprise`:'Volumes fictifs · aucune allocation Godot mesurée';}
+function renderTimeline(){const end=Math.max(30,Math.ceil((S.time+2)/10)*10),start=Math.max(0,end-40),span=end-start;$('timeline-range').textContent=`${start} → ${end} s`;
+ const tracks=[['main','Principal'],['io','I/O assets'],['worker','Worker'],['audio','Mix audio'],['save','I/O bilan']];
+ $('lanes').innerHTML=tracks.map(([lane,label])=>{const blocks=lane==='main'||lane==='audio'?S.segments.filter(s=>s.lane===lane).map(s=>({...s,end:s.end??S.time,kind:lane,status:s.node==='pause'?'waiting':''})):S.jobs.filter(j=>j.kind===lane).map(j=>({...j,end:j.end??S.time}));const bars=blocks.filter(b=>b.end>=start&&b.start<=end).map(b=>{const x=Math.max(start,b.start),z=Math.min(end,b.end),left=(x-start)/span*100,width=Math.max(.3,(z-x)/span*100);return`<div class="lane-bar ${lane} ${b.status}" style="left:${left}%;width:${width}%" title="${esc(b.label)} · ${b.start.toFixed(1)}–${b.end.toFixed(1)} s">${width>13?esc(b.label):''}</div>`;}).join('');return`<div class="lane"><span class="lane-label">${label}</span><div class="lane-track">${bars}<div class="lane-cursor" style="left:${(S.time-start)/span*100}%"></div></div></div>`;}).join('');$('timeline-axis').innerHTML=Array.from({length:5},(_,i)=>`<span>${Math.round(start+i*span/4)} s</span>`).join('');$('lane-note').textContent=S.paused?'Pause : principal suspendu, I/O et mix audio continuent.':'Pistes conceptuelles · la physique reste dans le principal.';}
+function renderJournal(){$('event-count').textContent=`${S.events.length} événements${S.dropped?' · '+S.dropped+' perdu':''}`;$('journal').innerHTML=S.events.slice(-24).reverse().map(e=>`<div class="event-row ${e.level}"><span class="evtime">${e.sim_time_s.toFixed(1)}</span><button data-event-node="${e.definition_id}"><span class="evtype">${esc(e.type)}</span><br>${esc(e.payload.job_id||e.payload.instance_id||e.definition_id)} <span class="muted">#${e.seq}</span></button></div>`).join('');}
+function renderAll(){
+ $('clock').textContent=time(S.time,true);$('play-btn').textContent=S.playing?'Ⅱ Arrêter la lecture':S.time?'▶ Reprendre la lecture':'▶ Lancer la simulation';$('pause-game').textContent=S.paused?'▶ Reprendre le jeu':'Ⅱ Pause du jeu';$('pause-game').setAttribute('aria-pressed',S.paused);$('pause-game').disabled=['menu','victory','death'].includes(S.state);$('skip-btn').disabled=S.state!=='intro'||S.paused;$('hp').textContent=`PV ${S.hp}/100`;$('coins').textContent=`◇ ${S.coins}`;$('health-fill').style.width=S.hp+'%';$('preview-title').textContent=S.paused?'Pause · '+N[S.state].label:N[S.state].label;$('preview-note').textContent=`Seed 7319 · ${S.boon||'niveau '+S.level} · fictif`;$('session-label').textContent=S.runId;$('runtime-status').textContent=(S.paused?'Jeu suspendu':S.playing?'Lecture active':'Lecture arrêtée')+' · '+N[S.state].label;$('trace-status').textContent=S.traceComplete?'Trace complète simulée':'Trace partielle · diagnostic indéterminé';$('trace-status').style.color=S.traceComplete?'':'var(--amber)';renderBanner();renderResources();renderTimeline();renderJournal();paintActivity();highlightFiles();
+}
+function drawArena(){const canvas=$('arena'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,t=S.gameTime;ctx.clearRect(0,0,w,h);let g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#14232a');g.addColorStop(1,S.level===2?'#33231f':'#191a20');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.strokeStyle='#52626644';ctx.lineWidth=1;
+ if(['menu','intro','load1'].includes(S.state)){
+  const intro=S.state==='intro',p=intro?Math.min(1,S.elapsed/6):0;
+  for(let i=0;i<5;i++){const y=70+i*31;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  ctx.save();ctx.translate(w/2,145);ctx.rotate(Math.PI/4);ctx.strokeStyle='#b88c5566';ctx.strokeRect(-58,-58,116,116);ctx.restore();
+  ctx.fillStyle='#080e12';ctx.fillRect(145,47,110,154);ctx.strokeStyle='#d8ad6c';ctx.lineWidth=3;ctx.strokeRect(145,47,110,154);ctx.fillStyle='#edbd78';ctx.globalAlpha=.1+p*.2;ctx.fillRect(148,50,104,149);ctx.globalAlpha=1;
+  for(let i=0;i<16;i++){const x=80+(i*53%240),y=240-((t*13+i*29)%190);ctx.fillStyle=`rgba(237,189,120,${.15+(i%4)*.1})`;ctx.fillRect(x,y,2,4);}
+  ctx.fillStyle='#ede2cd';ctx.textAlign='center';ctx.font='19px Georgia';ctx.fillText(intro?'La descente commence':'LES DEUX PORTES',200,232);ctx.font='10px monospace';ctx.fillStyle='#9ea9aa';ctx.fillText(intro?'INTRO ANIMÉE · SUBSTITUTION VIDÉO':'UNE TENTATIVE VERS LA LUMIÈRE',200,251);
+  if(intro){ctx.fillStyle='#8cddd2';ctx.beginPath();ctx.arc(200,180-p*40,6,0,Math.PI*2);ctx.fill();}
+ }else{
+  const cx=200,cy=145;ctx.fillStyle=S.level===2?'#3b3430':'#253238';ctx.beginPath();ctx.moveTo(cx,44);ctx.lineTo(366,140);ctx.lineTo(cx,238);ctx.lineTo(34,140);ctx.closePath();ctx.fill();ctx.strokeStyle=S.level===2?'#84664c':'#49616a';ctx.stroke();
+  for(let i=-3;i<=3;i++){ctx.strokeStyle='#80949022';ctx.beginPath();ctx.moveTo(75+i*20,116-i*12);ctx.lineTo(239+i*20,212-i*12);ctx.stroke();ctx.beginPath();ctx.moveTo(75+i*20,166+i*12);ctx.lineTo(239+i*20,70+i*12);ctx.stroke();}
+  [[90,122],[310,122],[152,71],[247,71]].forEach(([x,y])=>{ctx.fillStyle='#1c2428';ctx.fillRect(x-9,y-22,18,30);ctx.fillStyle=S.level===2?'#d98b51':'#83cfc0';ctx.fillRect(x-6,y-23,12,3);});
+  const at=S.elapsed,move=combatStates.has(S.state),px=200+(move?Math.sin(at*1.3)*45:0),py=146+(move?Math.cos(at*.9)*18:0);
+  const units=move?[{x:px,y:py,c:'#91e1d3',r:6},...Array.from({length:2},(_,i)=>({x:160+i*92+Math.sin(at*.7+i)*15,y:112+Math.cos(at+i)*20,c:'#e69b76',r:['boss1','boss2'].includes(S.state)?11:6}))]:[{x:200,y:148,c:'#91e1d3',r:6}];
+  for(const u of units){ctx.fillStyle='#060b0d88';ctx.beginPath();ctx.ellipse(u.x,u.y+8,u.r+4,4,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=u.c;ctx.beginPath();ctx.arc(u.x,u.y,u.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e4ede6';ctx.fillRect(u.x-1,u.y-3,2,2);}
+  if(move){ctx.strokeStyle='#edbd7877';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px,py,23,at*2,at*2+1.2);ctx.stroke();ctx.fillStyle='#30211e';ctx.fillRect(100,24,200,5);ctx.fillStyle='#cb8967';ctx.fillRect(100,24,200*Math.max(0,1-S.elapsed/N[S.state].duration),5);}
+  if(S.state==='victory'||S.state==='death'){ctx.fillStyle='#101719c9';ctx.fillRect(0,0,w,h);ctx.fillStyle=S.state==='victory'?'#edbd78':'#e5aaa0';ctx.textAlign='center';ctx.font='21px Georgia';ctx.fillText(S.state==='victory'?'LES PORTES S’OUVRENT':'LA BRAISE S’ÉTEINT',200,130);ctx.font='12px monospace';ctx.fillText(`${S.coins} fragments · ${S.hp} PV`,200,155);}
+ }
+ if(S.paused){ctx.fillStyle='#101619ad';ctx.fillRect(0,0,w,h);ctx.fillStyle='#d9e8e5';ctx.textAlign='center';ctx.font='18px monospace';ctx.fillText('PAUSE',w/2,h/2);ctx.font='10px monospace';ctx.fillText('LES CHARGEMENTS CONTINUENT',w/2,h/2+22);}
+}
+function snapshot(){return{...M,simulation:{session_id:S.runId,scenario:S.scenario,current_state:S.state,paused:S.paused,sim_time_s:+S.time.toFixed(3),game_time_s:+S.gameTime.toFixed(3),player:{instance_id:'player-01',hp:S.hp,coins:S.coins,boon:S.boon},route:S.route,visited:[...S.visited],jobs:S.jobs.map(j=>({...j,progress:+j.progress.toFixed(4)})),trace:{complete:S.traceComplete,dropped:S.dropped,gaps:S.gaps,retained_after_seq:S.retainedAfter,events:S.events},selected_definition:selected},interpretation_rules:['Cette simulation est une spécification illustrative ; aucun script Godot n’est fourni ni exécuté.','Les relations du graphe sont déclarées ; les événements sont simulés et ne prouvent pas une causalité réelle.','Lire invariants, contrats et dépendances avant de produire un plan de code.','Épingler et vérifier la version Godot et ses API avant implémentation.','Les données et temps simulés ne constituent pas des budgets de performance mesurés.']};}
+function brief(){const data=snapshot();return`# EMBER — Les Deux Portes\n\nTu es chargé de planifier puis d’implémenter une tranche de roguelike d’action dans Godot / GDScript. Ce document décrit une FICTION DE CONCEPTION, pas un dépôt déjà implémenté. L’univers doit rester original.\n\n## But\nMenu → introduction (passable) → niveau I avec deux sentinelles, récompense, choix sanctuaire/élite et boss → transition asynchrone → niveau II avec deux vagues, autel, boss et bilan. Mort et pause possibles.\n\n## Invariants à respecter\n${M.invariants.map(x=>'- '+x.id+' : '+x.rule).join('\n')}\n\n## Périmètre du travail\n1. Épingler une version Godot ; vérifier les API de threads, chargement et pause.\n2. Définir les contrats et fixtures du premier lot avant de coder.\n3. Produire un plan de sessions avec objectif, fichiers, dépendances, prompt et critère d’acceptation.\n4. Implémenter une tranche de bout en bout, puis étendre aux deux niveaux.\n5. Garder l’architecture du jeu distincte du runtime d’instrumentation.\n6. Ne pas présenter les valeurs de mémoire, délais, pistes ou traces de cette simulation comme des mesures du moteur.\n\n## Lots et dépendances\n${M.implementation_plan.map(t=>`${t.id} — ${t.title}\nPrérequis : ${t.depends_on.join(', ')||'aucun'}\nFichiers : ${t.files.join(', ')}\nAcceptation : ${t.acceptance}`).join('\n\n')}\n\n## Cas à valider\n- Succès par le sanctuaire ET par l’élite.\n- Pause pendant intro, combat et chargement ; l’I/O poursuit, le commit attend.\n- Passage au niveau II retardé sans blocage du principal.\n- Échec d’une ressource et nouvelle tentative.\n- Résultat d’un worker d’une ancienne run ignoré.\n- Mort : pas de double butin, annulation logique et bilan cohérent.\n- Trace incomplète : diagnostic indéterminé.\n\n## État illustré lors de l’export\n${JSON.stringify({state:S.state,scenario:S.scenario,route:S.route,player:data.simulation.player,trace_complete:S.traceComplete},null,2)}\n\n## Livrables attendus de l’IA\nUn découpage ordonné en sessions, des contrats explicites, les scripts/scènes du lot retenu, des tests exécutés et un compte rendu qui distingue prévu, implémenté et vérifié. Ne pas créer tous les fichiers en une seule tâche.\n\nLe fichier ember-contrat.json est le complément structuré : nœuds, relations typées, fichiers, signaux, politiques de pause, contextes, tâches et traces. Télécharger aussi le Contrat JSON depuis l’onglet voisin pour donner à l’IA le modèle complet.\n`;}
+function openExport(mode='brief'){exportMode=mode;$('dialog-title').textContent='Transmettre le projet à une IA';$('dialog-subtitle').textContent='Un modèle commun : carte, fichiers, contrats et plan de codage.';$('export-tabs').style.display='flex';$('export-note').textContent='Aucun envoi automatique. Les fichiers Godot décrits sont à implémenter.';updateExport();if(!$('export-dialog').open)$('export-dialog').showModal();}
+function updateExport(){document.querySelectorAll('[data-export]').forEach(b=>b.classList.toggle('active',b.dataset.export===exportMode));if(exportMode==='brief'){$('export-content').value=brief();exportName='ember-brief-codage.md';}else if(exportMode==='json'){$('export-content').value=JSON.stringify(snapshot(),null,2);exportName='ember-contrat.json';}else if(exportMode==='trace'){$('export-content').value=JSON.stringify({schema_version:M.schema_version,evidence:'simulated',...snapshot().simulation},null,2);exportName='ember-trace-simulee.json';}}
+function showFile(path){const f=M.files.find(f=>f.path===path);if(!f)return;const owners=f.node_ids.map(id=>N[id]);exportMode='file';exportName='ember-fiche-'+path.split('/').pop()+'.md';$('dialog-title').textContent=path.split('/').pop();$('dialog-subtitle').textContent=path+' · fichier à créer';$('export-tabs').style.display='none';$('export-note').textContent='Fiche de conception : aucun contenu de fichier Godot existant n’est inventé.';$('export-content').value=`# Fichier prévu : ${path}\n\nStatut : À IMPLÉMENTER\n\nResponsabilité\n${f.role}\n\nÉléments propriétaires\n${owners.map(n=>`- ${n.id} : ${n.label}\n  Entrées : ${n.inputs.join(', ')}\n  Sorties : ${n.outputs.join(', ')}\n  Contexte : ${threadNames[n.execution_context]}\n  Pause : ${pauseNames[n.pause_policy]}`).join('\n')||'Asset ou fixture à produire.'}\n\nLots concernés\n${M.implementation_plan.filter(t=>t.files.includes(path)).map(t=>t.id+' — '+t.title+'\nAcceptation : '+t.acceptance).join('\n\n')||'À rattacher au lot d’assets ou de validation.'}\n\nLes noms et responsabilités sont proposés. Ils doivent être validés avant le codage.\n`;$('export-dialog').showModal();}
+async function download(){const text=$('export-content').value,type=exportName.endsWith('.json')?'application/json':'text/markdown';try{const dl=window.claude&&typeof window.claude.use==='function'?await window.claude.use('downloads'):null;if(dl){await dl.save({filename:exportName,data:text});notify('Export proposé au téléchargement : '+exportName);return;}}catch(err){if(err&&err.code==='declined'){notify('Téléchargement annulé.');return;}}const url=URL.createObjectURL(new Blob([text],{type:type+';charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=exportName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Export préparé : '+exportName);}
+async function copy(){try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText($('export-content').value);else{$('export-content').focus();$('export-content').select();if(!document.execCommand('copy'))throw Error('copy');}notify('Contenu copié.');}catch{$('export-content').focus();$('export-content').select();notify('Texte sélectionné : utilisez Ctrl+C ou Cmd+C.');}}
+function handleAction(event){const b=event.target.closest('button');if(!b)return;if(b.dataset.view)setView(b.dataset.view);if(b.dataset.file)inspectFile(b.dataset.file);if(b.dataset.openFile)showFile(b.dataset.openFile);if(b.dataset.select)selectNode(b.dataset.select);if(b.dataset.focus)focusNode(b.dataset.focus);if(b.dataset.planNode){const id=b.dataset.planNode;setView(['data','threads','level1','level2','overview'].find(v=>V[v].pos[id])||'overview');selectNode(id);focusNode(id);}if(b.dataset.eventNode)selectNode(b.dataset.eventNode);if(b.dataset.route)choose(b.dataset.route);if(b.dataset.retry)retry();if(b.dataset.resume)pauseGame();if(b.dataset.showThreads)setView('threads');if(b.dataset.exportRun)openExport('trace');if(b.dataset.newRun)reset(true);if(b.dataset.die){if(combatStates.has(S.state)){enter('death');renderAll();}else notify('La mort peut être injectée pendant un combat actif.');}if(b.dataset.close)$(b.dataset.close).close();if(b.dataset.export){exportMode=b.dataset.export;updateExport();}}
+document.addEventListener('click',handleAction);
+$('play-btn').onclick=()=>{S.playing=!S.playing;renderAll();};$('step-btn').onclick=()=>{S.playing=false;advance(1);renderAll();drawArena();};$('reset-btn').onclick=()=>reset(false);$('pause-game').onclick=pauseGame;$('skip-btn').onclick=()=>{if(S.state==='intro'&&!S.paused){emit('intro.skipped','intro');enter('load1');renderAll();}};$('scenario').onchange=()=>{reset(false);notify('Scénario sélectionné. Lancez une nouvelle lecture.');};$('search').oninput=e=>{search=e.target.value.trim().toLowerCase();renderTree();paintActivity();};$('fit-btn').onclick=fitGraph;$('zoom-in').onclick=()=>zoom(1.2);$('zoom-out').onclick=()=>zoom(1/1.2);$('export-btn').onclick=()=>openExport();$('help-btn').onclick=()=>$('help-dialog').showModal();$('download-btn').onclick=download;$('copy-btn').onclick=copy;
+$('graph').addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,cx:camera.x,cy:camera.y,node:e.target.closest('[data-node]')?.dataset.node,moved:false};$('graph').setPointerCapture(e.pointerId);});
+$('graph').addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>4){drag.moved=true;userCamera=true;$('graph-wrap').classList.add('dragging');camera.x=drag.cx+dx;camera.y=drag.cy+dy;applyCamera();}});
+$('graph').addEventListener('pointerup',()=>{if(drag&&!drag.moved&&drag.node)selectNode(drag.node);drag=null;$('graph-wrap').classList.remove('dragging');});$('graph').addEventListener('pointercancel',()=>{drag=null;$('graph-wrap').classList.remove('dragging');});
+$('graph').addEventListener('wheel',e=>{e.preventDefault();const r=$('graph').getBoundingClientRect();zoom(e.deltaY<0?1.08:1/1.08,e.clientX-r.left,e.clientY-r.top);},{passive:false});$('graph').addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)&&e.target.dataset.node){e.preventDefault();selectNode(e.target.dataset.node);}});
+new ResizeObserver(()=>{if(!userCamera)fitGraph();}).observe($('graph-wrap'));
+document.addEventListener('visibilitychange',()=>{lastFrame=performance.now();});
+function frame(now){if(!lastFrame)lastFrame=now;const dt=Math.min(.1,(now-lastFrame)/1000);lastFrame=now;if(S.playing){advance(dt*Number($('speed').value));renderElapsed+=dt;if(renderElapsed>.10){renderElapsed=0;renderAll();}}drawArena();requestAnimationFrame(frame);}
+$('node-count').textContent=M.nodes.length;$('edge-count').textContent=M.edges.length;$('file-count').textContent=M.files.length;
+reset();renderTree();setView('overview');selectNode('intro');requestAnimationFrame(frame);
+document.body.classList.add('show-plan');$('plan-btn').addEventListener('click',()=>{const on=document.body.classList.toggle('show-plan');$('plan-btn').setAttribute('aria-pressed',on);});$('dock-btn').addEventListener('click',()=>{const on=document.body.classList.toggle('dock-collapsed');$('dock-btn').setAttribute('aria-pressed',on);$('dock-btn').textContent=on?'Afficher les panneaux du bas':'Masquer les panneaux du bas';});
+window.EmberAtlas={getModel:()=>JSON.parse(JSON.stringify(M)),getSnapshot:snapshot,advance:seconds=>{advance(seconds);renderAll();drawArena();},setScenario:value=>{$('scenario').value=value;reset(false);},chooseRoute:choose,pauseGame,selectNode,setView,retry,reset,getCamera:()=>({...camera})};
+})();
+</script>
+</body></html>
