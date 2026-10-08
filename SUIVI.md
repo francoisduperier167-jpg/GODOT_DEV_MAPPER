@@ -26,7 +26,7 @@ Le MVP et la V1 sont découpés en tâches dès maintenant, d'après `mvp.md`, `
 | Étape 5 — Intégration | **5.A** Réception éditeur et essai : S24 → S26 · **5.B** Instrumentation du banc : S25 | S27 | 4 |
 | Étape 6 — Interface et robustesse | **6.A** Panneau et chemin observé : S28 → S29 → S31 · **6.B** Robustesse : S30 | S32 | 5 |
 | Étape 7 — Valeur et revue | **7.A** Bugs injectés et mesure de valeur : S33 → S34 | S35 | 3 |
-| MVP — phases P4a à P8 | **M.A** Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P · **M.B** Phases P6, P7 : S39 → S39.P → S40 → S40.P | S41 → S41.P | 63, dont 51 tâches de phase |
+| MVP — phases P4a à P8 | **M.A** Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P · **M.B** Phases P6, P7 : S39 → S39.P → S40 → S40.P | S41 → S41.P | 64, dont 52 tâches de phase |
 | V1 — phases P9 à P16 | **V.A** Phases P9, P12, P13, P15 : S42 → S42.P → S45 → S45.P → S46 → S46.P → S48 → S48.P · **V.B** Phase P10 : S43 → S43.P · **V.C** Phase P11 : S44 → S44.P · **V.D** Phase P14 : S47 → S47.P | S49 → S49.P | 74, dont 58 tâches de phase |
 
 ```mermaid
@@ -301,12 +301,13 @@ flowchart TB
 ### Piste M.A · Phases P4a, P4b, P5 — démarre après S35
 
 - [ ] **S36** · P4a Évaluations : rendu et backend statique : revue du découpage · réalise IA 1 · vérifie IA 3 · après S35 · fiche `suivi/S36-P4a-decoupage.md`
-  - Découpage provisoire : 5 tâches, S36.1 à S36.5, revues par S36 au début de la phase (budget de la phase : 6 à 12 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
+  - Découpage provisoire : 6 tâches, S36.1 à S36.6, revues par S36 au début de la phase (budget de la phase : 6 à 12 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
 - [ ] **S36.1** · Étalon des relations attendues sur le banc d'essai · réalise IA 3 · vérifie IA 1 · après S36 · fiche `suivi/S36.1-etalon-relations.md`
 - [ ] **S36.2** · SPIKE-03, rendu du graphe : GraphEdit, canevas ou hybride · réalise IA 1 · vérifie IA 3 · après S36 · fiche `suivi/S36.2-spike03-rendu.md`
 - [ ] **S36.3** · SPIKE-04, extraction maison des relations d'appel · réalise IA 2 · vérifie IA 1 · après S36.1 · fiche `suivi/S36.3-spike04-maison.md`
 - [ ] **S36.4** · SPIKE-04, évaluation de GDScript AST Flow · réalise IA 1 · vérifie IA 3 · après S36.1 · fiche `suivi/S36.4-spike04-astflow.md`
 - [ ] **S36.5** · Décisions de rendu et de backend statique · réalise IA 1 · vérifie IA 3 · après S36.2, S36.3, S36.4 · fiche `suivi/S36.5-decisions-p4a.md`
+- [ ] **S36.6** · Outils de contrat par convention : un dossier par format, un fichier par contrat · réalise IA 2 · vérifie IA 1 · après S36 · fiche `suivi/S36.6-outils-contrat.md`
 - [ ] **S36.P** · Porte de P4a · réalise IA 1 · vérifie IA 3 · après S36, S36.* · fiche `suivi/S36.P-P4a-porte.md`
 - [ ] **S37** · P4b Backend statique et inventaire (CAP-08, CAP-09) : revue du découpage · réalise IA 1 · vérifie IA 3 · après S36.P · fiche `suivi/S37-P4b-decoupage.md`
   - Découpage provisoire : 11 tâches, S37.1 à S37.11, revues par S37 au début de la phase (budget de la phase : 8 à 14 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
@@ -339,8 +340,8 @@ flowchart TB
 
 - [ ] **S39** · P6 Historique, persistance, protocole MVP (CAP-11, CAP-07 complet) : revue du découpage · réalise IA 1 · vérifie IA 3 · après S35 · fiche `suivi/S39-P6-decoupage.md`
   - Découpage provisoire : 12 tâches, S39.1 à S39.12, revues par S39 au début de la phase (budget de la phase : 10 à 16 h humaines). Une tâche ajoutée par la revue s'insère avec elles.
-- [ ] **S39.1** · Révision des contrats C-04, C-06 et C-07 en version 2 · réalise IA 1 · vérifie IA 3 · après S39 · fiche `suivi/S39.1-contrats-c04-c06-v2.md`
-- [ ] **S39.2** · Contrat C-10 : format de session persistée · réalise IA 1 · vérifie IA 3 · après S39 · fiche `suivi/S39.2-contrat-c10-session.md`
+- [ ] **S39.1** · Révision des contrats C-04, C-06 et C-07 en version 2 · réalise IA 1 · vérifie IA 3 · après S39, S36.6 · fiche `suivi/S39.1-contrats-c04-c06-v2.md`
+- [ ] **S39.2** · Contrat C-10 : format de session persistée · réalise IA 1 · vérifie IA 3 · après S39, S36.6 · fiche `suivi/S39.2-contrat-c10-session.md`
 - [ ] **S39.3** · Codec de l'enveloppe v2, lecture de la v1 · réalise IA 2 · vérifie IA 1 · après S39.1 · fiche `suivi/S39.3-codec-v2.md`
 - [ ] **S39.4** · FlowTrace v2 : capacités, frames, ticks, nouveaux événements · réalise IA 2 · vérifie IA 1 · après S39.3 · fiche `suivi/S39.4-flowtrace-v2.md`
 - [ ] **S39.5** · Connexion tardive et reconnexion, côté jeu · réalise IA 2 · vérifie IA 1 · après S39.4 · fiche `suivi/S39.5-connexion-tardive-jeu.md`

@@ -10,7 +10,7 @@ Ce document fixe les règles quand trois IA construisent le projet à tour de r�
 | --- | --- |
 | `SUIVI.md` | Liste de progression : une ligne par unité, rangée dans sa piste autonome ou son rendez-vous, cochée à la fusion ; recette finale |
 | `suivi/Sxx-*.md` | Fiche d'exécution d'une unité : ce qu'il faut faire, fichiers autorisés, prompts de réalisation et de vérification, sous-étapes R, V et F à cocher |
-| `suivi/outil.py` | Commandes des IA (`etat`, `prendre`, `cocher`, `fusionner`, `publier`, `correction`, `arreter`, `verrou`) ; cohérence (`verifier`) ; génération (`generer`) ; tableau de bord (`tableau`) ; calendrier simulé (`calendrier`) |
+| `suivi/outil.py` | Commandes des IA (`etat`, `prendre`, `cocher`, `fusionner`, `publier`, `correction`, `arreter`, `verrou`) ; levée d'un arrêt, pour toi (`lever`) ; cohérence (`verifier`) ; génération (`generer`) ; tableau de bord (`tableau`) ; calendrier simulé (`calendrier`) |
 | `suivi/tableau.html` | Tableau de bord : cinq carrés par unité, du rouge au vert ; un carré de fond par piste ; bouton « Actualiser » qui relit `SUIVI.md` et les branches sur GitHub |
 | `suivi/_modele-tache.md`, `suivi/_modele-correction.md` | Modèles des fiches créées en cours de route : tâches du MVP et de la V1, corrections demandées par une porte |
 | `docs/construction/etape-*.md`, `mvp.md`, `v1.md` | Conception de chaque tâche. Les fiches en recopient le travail technique à l'identique ; `python3 suivi/outil.py verifier` signale tout écart |
@@ -82,12 +82,12 @@ Aucune IA ne modifie `SUIVI.md` à la main. Les commandes ne poussent jamais ave
 
 ### Relais, abandon, questions
 
-- **Reprise par la même IA.** L'auteur d'une unité en cours, ou le vérificateur d'une vérification en cours, la reprend au créneau suivant avec la même commande (`prendre`, ou `prendre --verification`, qui recrée la copie `../verif-*`) ; `etat` la lui propose.
+- **Reprise par la même IA.** L'auteur d'une unité en cours, ou le vérificateur d'une vérification en cours, la reprend au créneau suivant avec la même commande (`prendre`, ou `prendre --verification`, qui recrée la copie `../verif-*`) ; `etat` la lui propose. Une seule IA à la fois : si un autre auteur a agi en dernier sur l'unité, moins de 20 heures plus tôt, `prendre` refuse et `etat` ne la propose pas.
 - **Abandon.** Une unité en cours ou en vérification sans activité depuis 20 heures (plus que l'écart normal, nuit comprise, entre deux créneaux d'une même IA) peut être reprise par une autre IA : `prendre` l'inscrit parmi les auteurs (ou comme vérificateur) et l'IA reprend à la première case ouverte. Chaque reprise écrit une ligne « Reprise » datée dans le rapport (ou le verdict), qui remet le compteur à zéro : deux IA ne reprennent jamais la même unité l'une après l'autre.
-- **Relais.** Une unité prête, à vérifier ou à fusionner depuis 12 heures sans que l'IA prévue l'ait prise peut être prise par une autre IA, jamais par un auteur pour la vérifier ou la fusionner. Sans prérequis daté (S01, unités de correction), les 12 heures partent de l'ajout de la ligne dans `SUIVI.md`. Si le vérificateur prévu est devenu auteur, la vérification revient tout de suite à une IA non auteur.
+- **Relais.** Une unité prête, à vérifier ou à fusionner depuis 12 heures sans que l'IA prévue l'ait prise peut être prise par une autre IA, jamais par un auteur pour la vérifier ou la fusionner. Pour une unité de correction, les 12 heures partent de l'heure d'ajout écrite sur sa ligne (« ajoutée le … ») ; S01, sans prérequis, attend IA 1, sans relais. Si le vérificateur prévu est devenu auteur, la vérification revient tout de suite à une IA non auteur.
 - **Trois auteurs, jamais.** `prendre` refuse d'inscrire une troisième IA auteur : plus personne ne pourrait vérifier l'unité. Si elle ne peut plus avancer autrement, c'est l'arrêt obligatoire n° 2 (§5), que `etat` signale en tête.
 - **Question ou escalade.** IA 1 répond dans le rapport et reprend l'unité ; si IA 1 en est l'auteur, c'est IA 3. Une question qui demande une décision réservée à l'humain est un arrêt obligatoire.
-- **Refus.** L'auteur relance `prendre` : la commande ajoute une case « Rc » (problèmes du verdict corrigés), rouvre la dernière case R et les cases V, et passe à la tentative suivante. Au troisième refus, `prendre` et `etat` demandent l'arrêt obligatoire.
+- **Refus.** L'auteur relance `prendre` : la commande ajoute une case « Rc » (problèmes du verdict corrigés), rouvre la dernière case R et les cases V, et passe à la tentative suivante. Au troisième refus, `prendre` et `etat` demandent l'arrêt obligatoire. Une porte rejouée après des corrections repart de zéro : seuls comptent les refus et les escalades de la tentative en cours.
 
 ### Fusion
 
@@ -126,7 +126,9 @@ RÈGLES
 
 ## 5. Arrêts obligatoires
 
-L'IA lance `python3 suivi/outil.py arreter --ia <n> --raison "…" [--unite Sxx]` : la commande écrit `rapports/ARRET.md` sur `main`, sous le verrou, avec la date, l'IA, l'unité et son état, la raison, la preuve et ce qu'il faut de toi. Puis l'IA s'arrête. Tous les créneaux suivants s'arrêtent aussi, et les commandes refusent de prendre ou de fusionner, jusqu'à ce que tu supprimes le fichier. `etat` signale en tête (ligne 0) les arrêts n° 2 que l'état des unités impose.
+L'IA lance `python3 suivi/outil.py arreter --ia <n> --raison "…" [--unite Sxx]` : la commande écrit `rapports/ARRET.md` sur `main`, sous le verrou, avec la date, l'IA, l'unité et son état, la raison, la preuve et ce qu'il faut de toi. Puis l'IA s'arrête. Tous les créneaux suivants s'arrêtent aussi, et les commandes refusent de prendre ou de fusionner. `etat` signale en tête (ligne 0) les arrêts n° 2 que l'état des unités impose.
+
+**Lever un arrêt** (toi seul) : `python3 suivi/outil.py lever --decision "<ta décision>" [--unite Sxx]`. La commande retire `rapports/ARRET.md` de `main`, sous le verrou, et, avec `--unite`, écrit dans le rapport de l'unité une ligne « Arrêt levé » datée avec ta décision. Les refus et les escalades de l'unité se recomptent à partir de cette ligne, et S34 et S35 appliquent ta décision au lieu de redéclencher l'arrêt : il ne revient donc pas au créneau suivant. Supprimer seulement le fichier ne suffit pas pour un arrêt n° 2, que l'état de l'unité redéclencherait aussitôt.
 
 1. **Aucun signal d'utilité au POC** (S34) : c'est le critère d'arrêt du plan.
 2. **File bloquée** : une unité refusée trois fois, ou passée deux fois en ESCALADE ; ou une unité dont les trois IA sont auteurs, que plus personne ne peut vérifier.
@@ -171,18 +173,18 @@ C'est ta seule intervention prévue. Sa liste est en fin de `SUIVI.md`, complét
 
 ## 8. Calendrier et suivi
 
-Un créneau vérifie une unité, puis en réalise une autre. Chaque fiche estime ses créneaux (1, ou 2 pour les unités longues). `python3 suivi/outil.py calendrier` simule le déroulé d'après `SUIVI.md` : rôles, prérequis, estimations, relais à 12 heures, six créneaux de deux heures par jour (deux par IA). Résultat pour les 172 unités du plan :
+Un créneau vérifie une unité, puis en réalise une autre. Chaque fiche estime ses créneaux (1, ou 2 pour les unités longues). `python3 suivi/outil.py calendrier` simule le déroulé d'après `SUIVI.md` : rôles, prérequis, estimations, relais à 12 heures, six créneaux de deux heures par jour (deux par IA). Résultat pour les 173 unités du plan :
 
 | Organisation | Reprises | Fin du POC (S35) | Fin du MVP (S41.P) | Fin de la V1 (S49.P) |
 | --- | --- | --- | --- | --- |
 | IA l'une après l'autre | aucune (ratio 1) | jour 16 | jour 35 | jour 57 |
-| IA l'une après l'autre | une unité sur deux refusée une fois (ratio 1,5) | jour 21 | jour 49 | jour 81 |
+| IA l'une après l'autre | une unité sur deux refusée une fois (ratio 1,5) | jour 21 | jour 48 | jour 79 |
 | Trois IA en même temps, deux fois par jour | aucune (ratio 1) | jour 24 | jour 53 | jour 88 |
 
 La somme des estimations ne fixe pas la durée : c'est le chemin critique qui la fixe. Une chaîne d'unités réalisées par une IA et vérifiées par une autre avance d'environ deux unités par jour, quel que soit le nombre de pistes ouvertes : après chaque unité, il faut attendre le créneau du vérificateur, puis celui de l'auteur de l'unité suivante. Faire travailler les trois IA en même temps n'aide pas à six créneaux par jour : une IA ne peut pas vérifier ce qu'une autre réalise au même moment.
 
 **Trente jours ne suffisent pas avec ces règles.** Deux leviers, à décider par toi :
-- **Relais immédiat** (`RELAIS_H = 0` dans `suivi/commun.py`) : une IA qui n'a rien de son rôle prend aussitôt une unité prête d'un autre rôle, jamais pour vérifier son propre travail. Simulation (`calendrier --relais 0`) : POC au jour 10, MVP au jour 22, V1 au jour 37 sans reprise ; jours 16, 36 et 59 avec le ratio 1,5. Le prix : les rôles de conception, de développement et de vérification se mélangent davantage.
+- **Relais immédiat** (`RELAIS_H = 0` dans `suivi/commun.py`) : une IA qui n'a rien de son rôle prend aussitôt une unité prête d'un autre rôle, jamais pour vérifier son propre travail. Simulation (`calendrier --relais 0`) : POC au jour 10, MVP au jour 22, V1 au jour 37 sans reprise ; jours 16, 34 et 59 avec le ratio 1,5. Le prix : les rôles de conception, de développement et de vérification se mélangent davantage.
 - **Plus de créneaux par jour** : la durée baisse à peu près en proportion.
 
 Deux limites ne dépendent pas des IA : la sortie de Godot 4.8 stable, nécessaire à la porte de la V1, et les quotas d'usage de chaque IA, à mesurer dès la première semaine.
@@ -199,7 +201,7 @@ Les pistes autonomes évitent les créneaux perdus : quand l'unité suivante d'u
 - par bloc : créneaux consommés contre l'estimation ;
 - la liste de recette.
 
-Le recalibrage se fait à S35, avec le ratio observé sur le POC : relance alors `python3 suivi/outil.py calendrier --ratio <ratio observé>`.
+Le recalibrage se fait à S35, avec le ratio observé sur le POC (créneaux consommés sur créneaux estimés) : relance alors `python3 suivi/outil.py calendrier --ratio <ratio observé>`, qui répartit les refus en conséquence.
 
 ## 9. Environnement de chaque IA
 

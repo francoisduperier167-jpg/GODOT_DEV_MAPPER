@@ -7,8 +7,9 @@ Modèle (docs/construction/sequence.md §8) :
 - un créneau fait au plus une vérification (fusion comprise), puis une réalisation d'un créneau de travail ;
 - l'ordre de choix est celui de `outil.py etat` : vérifications, reprises, unités prêtes de son rôle, relais ;
 - relais : une unité prête ou terminée depuis 12 h peut être prise par une autre IA (jamais vérifiée par un auteur) ;
-- reprises : avec un ratio de 1,5, une unité sur deux est refusée une fois (un créneau de correction de plus et une
-  seconde vérification) ;
+- reprises : un ratio r répartit (r − 1) refus par unité, de façon régulière (1,5 : une unité sur deux refusée une
+  fois ; 2 : chaque unité refusée une fois ; 3 : deux fois) ; chaque refus coûte un créneau de correction et une
+  vérification de plus ;
 - pas d'abandon, pas d'attente du verrou de main, pas de quota.
 """
 import re
@@ -31,9 +32,11 @@ def simuler(S, mode="rotation", ratio=1.0, relais_h=C.RELAIS_H, jours_max=400):
     ids = [x for x in S["unites"] if not re.search(r"\.c\d+$", x)]
     deps = {x: C.deps_reelles(S, x) for x in ids}
     U = {}
+    extra = max(0.0, ratio - 1.0)
     for i, x in enumerate(ids):
         u = S["unites"][x]
-        U[x] = dict(r=u["r"], v=u["v"], reste=estimation(u), refus=1 if (ratio > 1.0 and i % 2 == 1) else 0,
+        refus = int((i + 1) * extra + 1e-9) - int(i * extra + 1e-9)
+        U[x] = dict(r=u["r"], v=u["v"], reste=estimation(u), refus=refus,
                     etat="attente", auteurs=[], pret=None, fin=None, fait=None, rang=i)
     fini_le = {}
 
@@ -51,7 +54,8 @@ def simuler(S, mode="rotation", ratio=1.0, relais_h=C.RELAIS_H, jours_max=400):
         if cand:
             x = cand[0]
             U[x]["etat"] = "en_verification"
-            if U[x]["refus"]:
+            if U[x]["refus"] > 0:
+                U[x]["refus"] -= 1
                 effets.append((x, "refusee"))
             else:
                 effets.append((x, "faite"))
@@ -70,7 +74,7 @@ def simuler(S, mode="rotation", ratio=1.0, relais_h=C.RELAIS_H, jours_max=400):
             if ia not in U[x]["auteurs"]:
                 U[x]["auteurs"].append(ia)
             if U[x]["etat"] == "refusee":
-                U[x]["refus"], U[x]["reste"] = 0, 1
+                U[x]["reste"] = 1
             U[x]["etat"] = "en_cours"
             U[x]["reste"] -= 1
             if U[x]["reste"] <= 0:

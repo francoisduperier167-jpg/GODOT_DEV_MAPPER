@@ -119,7 +119,7 @@ Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil
 - [ ] R2 Écrire les sections 1 à 6 de la revue. ⟶ cocher S35 R2
 - [ ] R3 Appliquer la règle de décision et l'écrire dans la revue. ⟶ cocher S35 R3
 - [ ] R4 Écrire et appliquer l'amendement PD-0.6, au statut « proposé ». ⟶ cocher S35 R4
-- [ ] R5 Si la décision est de s'arrêter : `python3 suivi/outil.py arreter --ia <n> --unite S35 --raison "…"`, puis fin du créneau (la vérification attendra ta décision) ; sinon, « aucun arrêt » écrit dans la revue. ⟶ cocher S35 R5
+- [ ] R5 Si la décision est de s'arrêter : `python3 suivi/outil.py arreter --ia <n> --unite S35 --raison "…"`, puis fin du créneau (la vérification attendra ta décision) ; sinon, « aucun arrêt » écrit dans la revue. Une ligne « Arrêt levé : … » du rapport porte la décision de l'humain : l'appliquer, sans redéclencher l'arrêt. ⟶ cocher S35 R5
 - [ ] R6 Contrôles finaux : T20-a, T20-b, T20-c, T20-d exécutés dans une copie propre, sorties collées dans le rapport ; `tools/ci/run_all_checks.sh` s'il existe → ALL_CHECKS OK ; « Statut : TERMINÉ » dans le rapport ⟶ cocher S35 R6
 
 ## Prompt de vérification

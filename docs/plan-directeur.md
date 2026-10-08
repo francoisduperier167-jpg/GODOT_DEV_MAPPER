@@ -455,7 +455,7 @@ FlowTrace est une classe à `class_name` et fonctions statiques, sans autoload :
 | P9 à P16 : V1 | CAP-12 à CAP-18, deux versions stables | 65–110 | 75–120 | 190–285 | Démonstrations CAP-12 à 18 |
 | **V1 cumulée** | | **129–198** | **143–234** | **345–528** | |
 
-À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. En mode autonome (D-09), le calendrier se compte en créneaux d'IA et se calcule par simulation du chemin critique (`python3 suivi/outil.py calendrier`, `docs/construction/sequence.md` §8) : à six créneaux par jour, POC vers le jour 16 à 21, MVP vers le jour 35 à 49, V1 vers le jour 57 à 81 ; avec un relais immédiat entre IA, POC vers le jour 10 à 16, MVP vers le jour 22 à 36, V1 vers le jour 37 à 59. Ce sont des objectifs de travail, à recalibrer après le POC.
+À 10 h par semaine, avec deux files actives : POC en 3 à 5 semaines, MVP en 1,5 à 3 mois, V1 en 3,5 à 5,5 mois. En mode autonome (D-09), le calendrier se compte en créneaux d'IA et se calcule par simulation du chemin critique (`python3 suivi/outil.py calendrier`, `docs/construction/sequence.md` §8) : à six créneaux par jour, POC vers le jour 16 à 21, MVP vers le jour 35 à 48, V1 vers le jour 57 à 79 ; avec un relais immédiat entre IA, POC vers le jour 10 à 16, MVP vers le jour 22 à 34, V1 vers le jour 37 à 59. Ce sont des objectifs de travail, à recalibrer après le POC.
 
 **Mesure de valeur, élargie**
 

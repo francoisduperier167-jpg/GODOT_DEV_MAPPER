@@ -33,12 +33,17 @@ def exiger_arret(uid, ia, raison):
     sys.exit(4)
 
 
+def nom(ia):
+    """« IA n », ou « Humain » pour les commandes réservées à l'humain (lever)."""
+    return f"IA {ia}" if isinstance(ia, int) else "Humain"
+
+
 def identite(ia):
     """Options -c pour signer les commits « IA n » si aucune identité Git n'est configurée."""
     p = C.git("config", "user.email", check=False)
     if p.stdout.strip():
         return []
-    return ["-c", f"user.name=IA {ia}", "-c", f"user.email=ia{ia}@godot-dev-mapper.invalid"]
+    return ["-c", f"user.name={nom(ia)}", "-c", f"user.email={nom(ia).lower().replace(' ', '')}@godot-dev-mapper.invalid"]
 
 
 def commit(ia, message, cwd):
@@ -249,6 +254,11 @@ def prendre(uid, ia, verification=False):
         stop(f"{uid} est en {rap['statut']} : elle revient à IA {C.resolveur(rap)}, qui répond dans le rapport et reprend l'unité.")
     if etat == "refusee" and not auteur and u["r"] != ia:
         stop(f"{uid} est refusée : elle revient à son auteur ({liste_ia(rap['auteurs'])}) ou à IA {u['r']}.")
+    if etat == "en_cours" and auteur:     # une unité refusée n'est tenue par personne : tout auteur la reprend
+        autre = tenue_par_autre(etapes, rap, ver, ia, t)
+        if autre:
+            stop(f"{uid} est tenue par IA {autre[1]}, co-autrice, depuis le {C.horodatage(autre[0])} UTC : une seule IA par branche. "
+                 f"Tu la reprendras si elle reste {C.ABANDON_H} h sans activité.")
     if etat in ("en_cours", "abandonnee", "refusee", "bloquee"):
         if not auteur and len(set(rap["auteurs"])) >= 2:
             stop(f"{uid} a déjà deux auteurs ({liste_ia(rap['auteurs'])}) : tu serais la troisième, et plus personne ne pourrait la vérifier. "
@@ -257,6 +267,15 @@ def prendre(uid, ia, verification=False):
     stop(f"{uid} est « {C.LIBELLES[etat]} » : rien à réaliser maintenant"
          + (" ; si tu n'en es pas l'auteur, prends-la avec --verification" if etat in ("a_verifier", "verif_abandonnee", "en_verification") else "")
          + (" ; la fusion revient à l'IA qui a signé le verdict : `fusionner`" if etat == "a_fusionner" else ""))
+
+
+def tenue_par_autre(etapes, rap, ver, ia, t=None):
+    """(date, IA) si un autre auteur a agi en dernier sur l'unité il y a moins de ABANDON_H, sinon None."""
+    t = t or C.maintenant()
+    quand, qui = C.dernier_acteur(etapes, rap, ver)
+    if qui is not None and qui != ia and qui in rap["auteurs"] and (t - quand).total_seconds() < C.ABANDON_H * 3600:
+        return quand, qui
+    return None
 
 
 def ici():
@@ -499,10 +518,10 @@ def prendre_verrou(ia, motif, attendre_min=30):
     vide = C.git("mktree", entree="").stdout.strip()
     fin = time.time() + attendre_min * 60
     while True:
-        sha = C.git(*identite(ia), "commit-tree", vide, "-m", f"IA {ia} · {motif} · {C.horodatage()} UTC").stdout.strip()
+        sha = C.git(*identite(ia), "commit-tree", vide, "-m", f"{nom(ia)} · {motif} · {C.horodatage()} UTC").stdout.strip()
         p = C.git("push", "--quiet", f"--force-with-lease={C.REF_VERROU}:", "origin", f"{sha}:{C.REF_VERROU}", check=False)
         if p.returncode == 0:
-            print(f"VERROU PRIS : IA {ia} · {motif}")
+            print(f"VERROU PRIS : {nom(ia)} · {motif}")
             return sha
         e = etat_verrou()
         if e is None:
@@ -704,6 +723,11 @@ def fusionner(uid, ia, porte_ko=False, godot=None):
             supprimer_copie(chemin)
             refuser_fusion(u, ia, rap, "Conflit de fusion avec main : l'auteur intègre main dans sa branche et résout.\n" + p.stdout + p.stderr)
         script = chemin / "tools" / "ci" / "run_all_checks.sh"
+        if script.exists() and not ko and exe is None:
+            exe = trouver_godot(godot)    # run_all_checks.sh est arrivé sur main pendant l'attente du verrou
+            if exe is None:
+                stop(f"Godot introuvable alors que tools/ci/run_all_checks.sh existe désormais sur main : contrôles de fusion impossibles. "
+                     "Verdict inchangé, verrou rendu ; obtiens Godot (bloc GODOT des fiches) et relance.", 6)
         if ko:
             print("Porte KO : la fusion n'apporte que le rapport de porte ; contrôles globaux non relancés, ligne de la porte laissée ouverte.")
         elif script.exists():
@@ -812,7 +836,8 @@ def correction(porte, fautive, titre, realise, verifie, ia):
     k = 1 + sum(1 for x in S["unites"] if x.startswith(base + ".c"))
     cid = f"{base}.c{k}"
     (racine / "suivi" / f"{cid}-correction.md").write_text(C.fiche_correction(cid, porte, fautive, titre, realise, verifie), encoding="utf-8")
-    ligne = f"- [ ] **{cid}** · Correction : {titre} · réalise IA {realise} · vérifie IA {verifie} · après — · fiche `suivi/{cid}-correction.md`"
+    ligne = (f"- [ ] **{cid}** · Correction : {titre} · réalise IA {realise} · vérifie IA {verifie} · après — · fiche `suivi/{cid}-correction.md`"
+             f" · ajoutée le {C.horodatage()} UTC")
     lignes = texte.splitlines()
     i = S["unites"][porte]["ligne"] - 1
     if not porte.endswith(".P"):
@@ -854,7 +879,8 @@ def arreter(ia, raison, unite=None, preuve=None, humain=None):
         ap.parent.mkdir(exist_ok=True)
         ap.write_text(f"# Arrêt obligatoire\n\n- Date : {C.horodatage()} UTC\n- Déclaré par : IA {ia}\n- Unité : {unite or '—'}\n"
                       f"- Raison : {raison}\n{detail}- Preuve : {preuve or 'voir le rapport et la fiche de l’unité'}\n"
-                      f"- Ce qu'il faut de toi : {humain or 'lire la raison, décider (docs/construction/sequence.md §5), puis supprimer rapports/ARRET.md sur main pour relancer les créneaux'}\n",
+                      f"- Ce qu'il faut de toi : {humain or 'lire la raison et décider (docs/construction/sequence.md §5)'}\n"
+                      f"- Pour relancer les créneaux : python3 suivi/outil.py lever --decision \"<ta décision>\"" + (f" --unite {unite}" if unite else "") + "\n",
                       encoding="utf-8")
         C.git("add", "rapports/ARRET.md", cwd=chemin)
         commit(ia, f"ARRÊT : {raison[:70]}", chemin)
@@ -864,6 +890,56 @@ def arreter(ia, raison, unite=None, preuve=None, humain=None):
         supprimer_copie(chemin)
         lacher_verrou(sha)
     print(f"ARRÊT DÉCLARÉ : rapports/ARRET.md poussé sur main par IA {ia}. Termine ton créneau en citant la raison : {raison}")
+
+
+def lever(decision, unite=None):
+    """Réservée à l'humain : retire rapports/ARRET.md de main, sous le verrou, et, avec --unite, écrit dans le rapport de
+    l'unité une ligne « Arrêt levé » datée avec la décision. Les refus et les escalades se recomptent depuis cette ligne :
+    l'arrêt ne se redéclenche pas aussitôt."""
+    au_clone_principal()
+    C.fetch()
+    S = suivi_distant()
+    if unite and unite not in S["unites"]:
+        stop(f"{unite} absente de SUIVI.md", 2)
+    ligne = f"- Arrêt levé : {C.horodatage()} UTC par l'humain : {decision}"
+    sha = prendre_verrou("humain", "Levée d'arrêt")
+    copies = []
+    try:
+        C.fetch()
+        if unite:
+            u = S["unites"][unite]
+            br = C.branche_de(u)
+            if br in C.branches_distantes():
+                tmp = C.RACINE.parent / f"levee-{C.stem_de(u)}"
+                copies.append(tmp)
+                recreer_copie(tmp, "--detach", str(tmp), f"origin/{br}")
+                rp = tmp / "rapports" / f"{unite}.md"
+                texte = rp.read_text(encoding="utf-8") if rp.exists() else f"# Rapport {unite}\n"
+                tete, sep, reste = texte.partition(C.TENTATIVES_PRECEDENTES)
+                rp.write_text(tete.rstrip("\n") + "\n" + ligne + "\n" + (sep + reste if sep else ""), encoding="utf-8")
+                C.git("add", f"rapports/{unite}.md", cwd=tmp)
+                commit("humain", f"{unite} : arrêt levé ({decision[:60]})", tmp)
+                if not pousser("humain", br, tmp):
+                    stop(f"poussée de la levée sur {br} refusée.", 5)
+                print(f"Rapport de {unite} : « Arrêt levé » écrit sur {br}.")
+            else:
+                print(f"{unite} n'a pas de branche : rien à écrire dans son rapport.")
+        if arret_present():
+            chemin = C.RACINE.parent / "levee-main"
+            copies.append(chemin)
+            recreer_copie(chemin, "--detach", str(chemin), "origin/main")
+            C.git("rm", "--quiet", "rapports/ARRET.md", cwd=chemin)
+            commit("humain", f"Arrêt levé : {decision[:70]}", chemin)
+            if not pousser("humain", "main", chemin):
+                stop("poussée de main refusée.", 5)
+            print("rapports/ARRET.md retiré de main.")
+        else:
+            print("rapports/ARRET.md absent de main.")
+    finally:
+        for c in copies:
+            supprimer_copie(c)
+        lacher_verrou(sha)
+    print(f"ARRÊT LEVÉ : {decision}")
 
 
 # ---------------------------------------------------------------- état pour une IA
@@ -893,7 +969,7 @@ def etat(ia):
         if raison:
             lignes[0].append(f"{uid} {raison} → arreter --ia {ia} --unite {uid} --raison \"{uid} : {raison}\"")
         elif code == "bloquee":
-            if ia == C.resolveur(rap):
+            if ia == C.resolveur(rap) and (ia in aut or len(set(aut)) < 2):
                 lignes[1].append(f"{uid} en {rap['statut']} : réponds et reprends → prendre {uid} --ia {ia}")
         elif code == "en_verification":
             if ver["verificateur"] == ia:
@@ -905,16 +981,17 @@ def etat(ia):
             elif vieux(fin):
                 lignes[7].append(f"{uid} à vérifier depuis plus de {C.RELAIS_H} h (prévue IA {u['v']}) → prendre {uid} --ia {ia} --verification")
         elif code == "a_fusionner" and ia not in aut:
-            if fusion_en_cours(e, uid):
+            if fusion_en_cours(e, uid) and e["age_min"] <= C.VERROU_MIN:
                 continue
             if V[-1]["ia"] == ia:
                 lignes[3].append(f"{uid} acceptée, à fusionner → fusionner {uid} --ia {ia}")
             elif vieux(C.lire_date(V[-1]["date"])):
                 lignes[7].append(f"{uid} acceptée depuis plus de {C.RELAIS_H} h (vérifiée par IA {V[-1]['ia']}) → fusionner {uid} --ia {ia}")
         elif code in ("en_cours", "refusee") and (ia in aut or (code == "refusee" and u["r"] == ia and len(set(aut)) < 2)):
-            lignes[4].append(f"{uid} {C.LIBELLES[code].lower()}, à reprendre → prendre {uid} --ia {ia}")
+            if not (code == "en_cours" and ia in aut and tenue_par_autre(etapes, rap, ver, ia, t)):
+                lignes[4].append(f"{uid} {C.LIBELLES[code].lower()}, à reprendre → prendre {uid} --ia {ia}")
         elif code == "abandonnee":
-            if u["r"] == ia or ia in aut:
+            if ia in aut or (u["r"] == ia and len(set(aut)) < 2):
                 lignes[5].append(f"{uid} abandonnée (plus de {C.ABANDON_H} h sans activité) → prendre {uid} --ia {ia}")
             elif len(set(aut)) < 2:
                 lignes[7].append(f"{uid} abandonnée (plus de {C.ABANDON_H} h sans activité, prévue IA {u['r']}) → prendre {uid} --ia {ia}")

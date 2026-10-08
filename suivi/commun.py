@@ -25,7 +25,11 @@ RE_FAIT = re.compile(r"fait le (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC")
 RE_ETAPE = re.compile(r"^- \[( |x)\] ((?:Rc|R|V|F)\d+(?:\.\d+)?) (.*)$")
 RE_SIGNE = re.compile(r" — IA ([123]) · (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC(?: · (ACCEPTÉE|REFUSÉE))?$")
 RE_SATELLITE = re.compile(r"^S\d\d\.(\d+|c\d+)$")
-RE_REPRISE = re.compile(r"(?m)^\W*Reprise\s*:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC")
+RE_REPRISE = re.compile(r"(?m)^\W*Reprise\s*:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC(?: par IA ([123]))?")
+RE_LEVEE = re.compile(r"(?m)^- Arrêt levé\s*:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC")
+RE_AJOUTEE = re.compile(r"ajoutée le (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) UTC")
+TENTATIVES_PRECEDENTES = "\n## Tentatives précédentes"
+
 
 
 def maintenant():
@@ -71,8 +75,9 @@ def lire_suivi(texte):
             coche, uid, titre, r, v, apres, fiche, suite = m.groups()
             dep = [] if apres.strip() == "—" else [x.strip() for x in apres.split(",")]
             f = RE_FAIT.search(suite)
+            a = RE_AJOUTEE.search(suite)
             unites[uid] = dict(id=uid, coche=coche == "x", titre=titre, r=int(r), v=int(v), apres=dep, fiche=fiche,
-                               suite=suite, fait=f.group(1) if f else None, ligne=no,
+                               suite=suite, fait=f.group(1) if f else None, ajoutee=a.group(1) if a else None, ligne=no,
                                section=sec["titre"] if sec else None, groupe=grp["id"] if grp else None)
             if grp is not None:
                 grp["unites"].append(uid)
@@ -96,21 +101,14 @@ def prerequis_manquants(S, uid):
     return [d for d in deps_reelles(S, uid) if d not in S["unites"] or not S["unites"][d]["coche"]]
 
 
-def pret_depuis(S, uid, ref="origin/main", cwd=None):
-    """Date à laquelle l'unité est devenue prête : fusion de son dernier prérequis ou, sans prérequis daté,
-    commit qui a ajouté sa ligne dans SUIVI.md (S01, unités de correction). None si introuvable."""
+def pret_depuis(S, uid):
+    """Date à laquelle l'unité est devenue prête : fusion de son dernier prérequis, ou, pour une unité de
+    correction, « ajoutée le … » écrit sur sa ligne par `correction`. None sinon : S01 attend IA 1, sans relais."""
+    u = S["unites"][uid]
     dates = [S["unites"][d]["fait"] for d in deps_reelles(S, uid) if d in S["unites"] and S["unites"][d]["fait"]]
     if dates:
         return lire_date(max(dates))
-    return ligne_ajoutee_le(uid, ref, cwd)
-
-
-def ligne_ajoutee_le(uid, ref="origin/main", cwd=None):
-    p = git("log", "--format=%ct", f"-S**{uid}** ·", ref, "--", "SUIVI.md", cwd=cwd, check=False)
-    ts = p.stdout.split()
-    if p.returncode != 0 or not ts:
-        return None
-    return datetime.datetime.fromtimestamp(int(ts[-1]), datetime.timezone.utc)
+    return lire_date(u["ajoutee"]) if u.get("ajoutee") else None
 
 
 def branche_de(u):
@@ -148,6 +146,17 @@ def derniere_activite(etapes, *autres):
     return lire_date(max(dates)) if dates else None
 
 
+def dernier_acteur(etapes, *autres):
+    """(date, IA) de la dernière activité signée : case cochée, ou ligne « Reprise … par IA n ». (None, None) sinon."""
+    l = [(e["date"], e["ia"]) for e in etapes if e["date"] and e["ia"]]
+    for a in autres:
+        l += (a or {}).get("acteurs", [])
+    if not l:
+        return None, None
+    d, ia = max(l)
+    return lire_date(d), ia
+
+
 def signer_ligne(ligne, ia, verdict=None, t=None):
     ligne = ligne.replace("- [ ]", "- [x]", 1)
     return ligne + f" — IA {ia} · {horodatage(t)} UTC" + (f" · {verdict}" if verdict else "")
@@ -161,9 +170,12 @@ def decocher_ligne(ligne):
 # ---------------------------------------------------------------- rapports
 
 def lire_rapport(texte):
-    r = dict(statut=None, auteurs=[], tentative=1, creneaux=0, reprises=[], escalades=0, decision=None)
+    """Champs de la tentative en cours : la partie « ## Tentatives précédentes » (porte rejouée) n'est jamais lue.
+    Refus et escalades se comptent depuis la dernière ligne « Arrêt levé » écrite par `lever`."""
+    r = dict(statut=None, auteurs=[], tentative=1, creneaux=0, reprises=[], acteurs=[], escalades=0, refus=0, decision=None, levee=None)
     if not texte:
         return r
+    texte = texte.split(TENTATIVES_PRECEDENTES)[0]
     m = re.search(r"(?m)^\W*Statut\s*:\s*([A-ZÉ]+)", texte)
     if m:
         r["statut"] = m.group(1)
@@ -176,8 +188,13 @@ def lire_rapport(texte):
     m = re.search(r"(?m)^\W*Créneaux utilisés\s*:\s*(\d+)", texte)
     if m:
         r["creneaux"] = int(m.group(1))
-    r["reprises"] = RE_REPRISE.findall(texte)
-    r["escalades"] = len(re.findall(r"(?m)^\W*Reprise\s*:.*\bESCALADE\b", texte)) + (r["statut"] == "ESCALADE")
+    r["reprises"] = [d for d, _ in RE_REPRISE.findall(texte)]
+    r["acteurs"] = [(d, int(i)) for d, i in RE_REPRISE.findall(texte) if i]
+    lev = RE_LEVEE.findall(texte)
+    r["levee"] = max(lev) if lev else None
+    apres = texte[max(m.end() for m in RE_LEVEE.finditer(texte)):] if lev else texte
+    r["escalades"] = len(re.findall(r"(?m)^\W*Reprise\s*:.*\bESCALADE\b", apres)) + (r["statut"] == "ESCALADE")
+    r["refus"] = len(re.findall(r"(?m)^\W*Reprise\s*:.*\(état : Refusée", apres))
     m = re.search(r"(?m)^\W*Décision\s*:\s*(PASSER|CORRIGER D['’]ABORD)", texte)
     if m:
         r["decision"] = "PASSER" if m.group(1) == "PASSER" else "CORRIGER D'ABORD"
@@ -185,7 +202,7 @@ def lire_rapport(texte):
 
 
 def lire_verdict(texte):
-    v = dict(verdict=None, verificateur=None, reprises=[])
+    v = dict(verdict=None, verificateur=None, reprises=[], acteurs=[])
     if not texte:
         return v
     m = re.search(r"(?m)^\W*Verdict\s*:\s*(EN COURS|ACCEPTÉE|REFUSÉE)", texte)
@@ -194,7 +211,8 @@ def lire_verdict(texte):
     m = re.search(r"(?m)^\W*Vérificateur\s*:\s*IA ([123])", texte)
     if m:
         v["verificateur"] = int(m.group(1))
-    v["reprises"] = RE_REPRISE.findall(texte)
+    v["reprises"] = [d for d, _ in RE_REPRISE.findall(texte)]
+    v["acteurs"] = [(d, int(i)) for d, i in RE_REPRISE.findall(texte) if i]
     return v
 
 
@@ -208,11 +226,15 @@ def resolveur(rap):
 
 
 def arret_requis(etat, rap):
-    """Raison d'un arrêt obligatoire n° 2 (§5) que l'état de l'unité impose, ou None."""
-    if etat == "refusee" and rap["tentative"] >= 3:
+    """Raison d'un arrêt obligatoire n° 2 (§5) que l'état de l'unité impose, ou None. Les refus et les escalades
+    se comptent depuis le dernier « Arrêt levé » ; après une levée, les cas de trois auteurs restent à la décision
+    écrite par l'humain et ne redéclenchent pas l'arrêt."""
+    if etat == "refusee" and rap["refus"] + 1 >= 3:
         return f"refusée trois fois (tentative {rap['tentative']})"
     if etat == "bloquee" and rap["escalades"] >= 2:
         return "passée deux fois en ESCALADE"
+    if rap.get("levee"):
+        return None
     if etat == "bloquee" and resolveur(rap) not in rap["auteurs"] and len(rap["auteurs"]) >= 2:
         return f"{rap['statut']} à traiter par IA {resolveur(rap)}, qui serait la troisième IA auteur : plus personne ne pourrait la vérifier"
     if len(set(rap["auteurs"])) >= 3:

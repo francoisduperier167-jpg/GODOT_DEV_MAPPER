@@ -8,7 +8,7 @@
 | Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
 | Piste | M.A Phases P4a, P4b, P5 : S36 → S36.P → S37 → S37.P → S38 → S38.P (unité 1 sur 6) |
 | Commence après | S35 (cochée dans `SUIVI.md`) |
-| Indépendante de | S39, S39.1, S39.2, S39.3, S39.4, S39.5, S39.6, S39.7, S39.10, S39.12 |
+| Indépendante de | S39, S39.12 |
 | Branche | `tache/S36-P4a-decoupage` |
 | Fiche de conception | `docs/construction/mvp.md`, section P4a |
 | Estimation | 1 créneau |
@@ -17,7 +17,7 @@
 
 ## Ce qu'il faut faire
 
-- Revoir le découpage provisoire de la phase P4a : 5 tâches (S36.1, S36.2, S36.3, S36.4, S36.5), écrites avant le POC d'après `docs/construction/mvp.md` et le plan directeur.
+- Revoir le découpage provisoire de la phase P4a : 6 tâches (S36.1, S36.2, S36.3, S36.4, S36.5, S36.6), écrites avant le POC d'après `docs/construction/mvp.md` et le plan directeur.
 - Le confronter aux résultats du POC (`docs/revues/revue-poc.md`), aux décisions (`docs/DECISIONS.md`), aux spikes, aux mesures et aux rapports des phases précédentes.
 - Pour chaque tâche : la garder, la préciser (fiche modifiée), la retirer, ou la remplacer ; ajouter les tâches manquantes depuis `suivi/_modele-tache.md`. Total dans le budget de la phase : 6 à 12 h humaines.
 - Écrire `docs/construction/mvp-P4a.md` : objectif, obligations, méthodologie, points de contrôle et cheminement d'amélioration de la phase, précisés par les résultats ; tableau des tâches retenues, avec la raison de chaque changement.
@@ -34,6 +34,7 @@
 - **S36.3** · SPIKE-04, extraction maison des relations d'appel · réalise IA 2 · vérifie IA 1 · après S36.1 · `suivi/S36.3-spike04-maison.md`
 - **S36.4** · SPIKE-04, évaluation de GDScript AST Flow · réalise IA 1 · vérifie IA 3 · après S36.1 · `suivi/S36.4-spike04-astflow.md`
 - **S36.5** · Décisions de rendu et de backend statique · réalise IA 1 · vérifie IA 3 · après S36.2, S36.3, S36.4 · `suivi/S36.5-decisions-p4a.md`
+- **S36.6** · Outils de contrat par convention : un dossier par format, un fichier par contrat · réalise IA 2 · vérifie IA 1 · après S36 · `suivi/S36.6-outils-contrat.md`
 
 ## Prompt de réalisation
 
@@ -85,7 +86,7 @@ RÈGLES
 TRAVAIL TECHNIQUE — fin de la copie exacte du guide
 
 ADAPTATIONS DU MODE AUTONOME
-- Le découpage existe déjà : les fiches suivi/S36.1-… à suivi/S36.5-…, listées dans cette fiche. Tu le revois au lieu de partir de zéro ; le document à produire reste celui du guide, docs/construction/mvp-P4a.md.
+- Le découpage existe déjà : les fiches suivi/S36.1-… à suivi/S36.6-…, listées dans cette fiche. Tu le revois au lieu de partir de zéro ; le document à produire reste celui du guide, docs/construction/mvp-P4a.md.
 - Budget : traduis les heures humaines de la phase en créneaux d'IA avec le ratio observé au POC (docs/revues/revue-poc.md).
 - Tu gardes une tâche telle quelle si rien ne la contredit. Tu la modifies si un résultat l'exige (décision de spike, contrat révisé, outil renommé, mesure), en le citant.
 - Une tâche ajoutée : nouvelle fiche suivi/S36.<k>-<nom>.md depuis suivi/_modele-tache.md, toutes sections remplies, sous-étapes au format « ⟶ cocher ». Une tâche retirée : sa fiche reste, avec la raison en tête ; le vérificateur retire sa ligne de SUIVI.md à la fusion.
@@ -119,7 +120,7 @@ Après chaque sous-étape : `git add` de ses fichiers, puis `python3 suivi/outil
 
 - [ ] R0 Prise en charge : `python3 suivi/outil.py prendre S36 --ia <n>` (prérequis cochés dans `SUIVI.md` : S35 ; branche `tache/S36-P4a-decoupage` créée ou reprise ; `rapports/S36.md` au statut EN COURS) ⟶ cochée par `prendre`
 - [ ] R1 Lire `docs/revues/revue-poc.md`, `docs/DECISIONS.md`, `docs/spikes/`, `PROJECT_STATE.md` et les rapports des phases précédentes ; noter les faits qui touchent la phase. ⟶ cocher S36 R1
-- [ ] R2 Relire chaque fiche du découpage provisoire (S36.1, S36.2, S36.3, S36.4, S36.5) et décider : garder, préciser, retirer ou remplacer, avec la raison. ⟶ cocher S36 R2
+- [ ] R2 Relire chaque fiche du découpage provisoire (S36.1, S36.2, S36.3, S36.4, S36.5, S36.6) et décider : garder, préciser, retirer ou remplacer, avec la raison. ⟶ cocher S36 R2
 - [ ] R3 Appliquer les décisions aux fiches ; créer les fiches des tâches ajoutées. ⟶ cocher S36 R3
 - [ ] R4 Écrire `docs/construction/mvp-P4a.md`. ⟶ cocher S36 R4
 - [ ] R5 Écrire dans le rapport les changements à porter dans `SUIVI.md` (lignes, prérequis, rôles), ou « aucun changement ». ⟶ cocher S36 R5

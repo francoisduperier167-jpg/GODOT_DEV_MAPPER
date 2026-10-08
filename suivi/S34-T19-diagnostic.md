@@ -18,7 +18,7 @@
 
 - Préparer `fake_editor.gd --record` et `tools/gdm_query.gd`, puis diagnostiquer les trois bugs : 1 avec l'outil, 2 sans, 3 avec, sans avoir lu l'enveloppe.
 - Compter pour chaque bug les exécutions, lectures, modifications temporaires et le temps ; proposer la cause ; ouvrir l'enveloppe seulement après ; écrire `docs/mesures/valeur-poc-substitution.md`.
-- Appliquer le critère d'arrêt : si l'outil n'a aidé sur aucun des bugs 1 et 3, déclencher l'arrêt obligatoire avec `python3 suivi/outil.py arreter` (il écrit `rapports/ARRET.md` sur `main`, sous le verrou) ; sinon, écrire « critère d'arrêt : non atteint » dans la mesure.
+- Appliquer le critère d'arrêt : si l'outil n'a aidé sur aucun des bugs 1 et 3, déclencher l'arrêt obligatoire avec `python3 suivi/outil.py arreter` (il écrit `rapports/ARRET.md` sur `main`, sous le verrou) ; sinon, écrire « critère d'arrêt : non atteint » dans la mesure. Si le rapport porte déjà une ligne « Arrêt levé : … », l'humain a tranché : appliquer sa décision, sans redéclencher l'arrêt.
 
 ## Fichiers autorisés
 
@@ -91,7 +91,7 @@ Ensuite seulement, récupère l'enveloppe, note l'heure, et note pour chaque bug
 
 RAPPORT dans docs/mesures/valeur-poc-substitution.md : le tableau de T19 adapté (colonnes : bug, branche, avec l'outil, préparation, exécutions, lectures, modifications, temps, cause proposée, confiance, cause exacte), puis une conclusion qualitative. Écris en tête : « Signal mesuré pour un agent, pas pour une personne ; la mesure humaine se fait à la recette. »
 
-CRITÈRE D'ARRÊT : l'outil a aidé sur un bug s'il a permis de trouver la cause exacte avec moins d'exécutions qu'au bug 2, ou là où le bug 2 n'a pas été trouvé. S'il n'a aidé ni sur le bug 1 ni sur le bug 3 : python3 suivi/outil.py arreter --ia <n> --unite S34 --raison "S34 : aucun signal d'utilité au POC" --preuve "docs/mesures/valeur-poc-substitution.md sur la branche de S34", puis arrête-toi. La commande écrit rapports/ARRET.md sur main, sous le verrou ; ta branche n'est jamais poussée sur main.
+CRITÈRE D'ARRÊT : l'outil a aidé sur un bug s'il a permis de trouver la cause exacte avec moins d'exécutions qu'au bug 2, ou là où le bug 2 n'a pas été trouvé. S'il n'a aidé ni sur le bug 1 ni sur le bug 3 : python3 suivi/outil.py arreter --ia <n> --unite S34 --raison "S34 : aucun signal d'utilité au POC" --preuve "docs/mesures/valeur-poc-substitution.md sur la branche de S34", puis arrête-toi. La commande écrit rapports/ARRET.md sur main, sous le verrou ; ta branche n'est jamais poussée sur main. Si rapports/S34.md porte déjà une ligne « Arrêt levé : … », l'humain a tranché après un premier arrêt : applique sa décision et ne relance pas arreter.
 TRAVAIL TECHNIQUE — fin
 
 CONTRÔLES DE LA FICHE

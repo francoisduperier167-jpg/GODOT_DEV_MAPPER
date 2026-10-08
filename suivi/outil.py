@@ -13,10 +13,13 @@ Pour les IA, pendant un créneau (toujours avec ton numéro d'IA) :
     python3 suivi/outil.py arreter --ia N --raison "…" [--unite Sxx]   arrêt obligatoire : rapports/ARRET.md sur main
     python3 suivi/outil.py verrou etat | prendre --ia N --motif "…" | rendre --ia N
 
+Pour toi seul, après un arrêt obligatoire :
+    python3 suivi/outil.py lever --decision "…" [--unite Sxx]  retire ARRET.md ; « Arrêt levé » dans le rapport de l'unité
+
 Pour la cohérence et l'affichage :
     python3 suivi/outil.py verifier                          cohérence de SUIVI.md et des fiches
     python3 suivi/outil.py generer [--force]                 régénère SUIVI.md et les fiches depuis le guide
-    python3 suivi/outil.py tableau [--sans-fetch]            régénère suivi/tableau.html
+    python3 suivi/outil.py tableau [--sans-fetch] [--ref R]  régénère suivi/tableau.html (SUIVI.md lu sur origin/main)
     python3 suivi/outil.py calendrier                        fin estimée du POC, du MVP et de la V1, par simulation
 
 Bibliothèque standard seulement. Règles : docs/construction/sequence.md.
@@ -46,6 +49,7 @@ def main():
     t = sp.add_parser("tableau")
     t.add_argument("--sans-fetch", action="store_true")
     t.add_argument("--sortie", default=None)
+    t.add_argument("--ref", default="origin/main", help="référence où lire SUIVI.md, les fiches et ARRET.md")
     e = sp.add_parser("etat")
     e.add_argument("--ia", type=numero_ia, required=True)
     p = sp.add_parser("prendre")
@@ -78,6 +82,9 @@ def main():
     ar.add_argument("--unite", default=None)
     ar.add_argument("--preuve", default=None)
     ar.add_argument("--humain", default=None, help="ce qu'il faut de l'humain")
+    lv = sp.add_parser("lever")
+    lv.add_argument("--decision", required=True)
+    lv.add_argument("--unite", default=None)
     ca = sp.add_parser("calendrier")
     ca.add_argument("--mode", choices=["rotation", "simultane"], default=None)
     ca.add_argument("--ratio", type=float, default=None)
@@ -95,7 +102,7 @@ def main():
         sys.exit(generation.verifier())
     if a.cmd == "tableau":
         import tableau
-        tableau.ecrire(fetch=not a.sans_fetch, sortie=a.sortie)
+        tableau.ecrire(fetch=not a.sans_fetch, sortie=a.sortie, ref=a.ref)
         return
     if a.cmd == "calendrier":
         import calendrier
@@ -117,6 +124,8 @@ def main():
         travail.correction(a.porte, a.fautive, a.titre, a.realise, a.verifie, a.ia)
     elif a.cmd == "arreter":
         travail.arreter(a.ia, a.raison, a.unite, a.preuve, a.humain)
+    elif a.cmd == "lever":
+        travail.lever(a.decision, a.unite)
     elif a.cmd == "verrou":
         if a.action != "etat" and a.ia is None:
             ap.error("verrou prendre et verrou rendre demandent --ia")

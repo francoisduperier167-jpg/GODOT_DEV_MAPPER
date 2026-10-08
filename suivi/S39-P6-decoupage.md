@@ -8,7 +8,7 @@
 | Vérifie | IA 3 (vérification), jamais un auteur de l'unité |
 | Piste | M.B Phases P6, P7 : S39 → S39.P → S40 → S40.P (unité 1 sur 4) |
 | Commence après | S35 (cochée dans `SUIVI.md`) |
-| Indépendante de | S36, S36.P, S37, S37.P, S38, S36.1, S36.2, S36.3, S36.4, S36.5, S37.1, S37.2, S37.3, S37.4, et 13 autres (voir SUIVI.md) |
+| Indépendante de | S36, S36.P, S37, S37.P, S38, S36.1, S36.2, S36.3, S36.4, S36.5, S36.6, S37.1, S37.2, S37.3, et 14 autres (voir SUIVI.md) |
 | Branche | `tache/S39-P6-decoupage` |
 | Fiche de conception | `docs/construction/mvp.md`, section P6 |
 | Estimation | 1 créneau |
@@ -29,8 +29,8 @@
 
 ## Tâches du découpage provisoire
 
-- **S39.1** · Révision des contrats C-04, C-06 et C-07 en version 2 · réalise IA 1 · vérifie IA 3 · après S39 · `suivi/S39.1-contrats-c04-c06-v2.md`
-- **S39.2** · Contrat C-10 : format de session persistée · réalise IA 1 · vérifie IA 3 · après S39 · `suivi/S39.2-contrat-c10-session.md`
+- **S39.1** · Révision des contrats C-04, C-06 et C-07 en version 2 · réalise IA 1 · vérifie IA 3 · après S39, S36.6 · `suivi/S39.1-contrats-c04-c06-v2.md`
+- **S39.2** · Contrat C-10 : format de session persistée · réalise IA 1 · vérifie IA 3 · après S39, S36.6 · `suivi/S39.2-contrat-c10-session.md`
 - **S39.3** · Codec de l'enveloppe v2, lecture de la v1 · réalise IA 2 · vérifie IA 1 · après S39.1 · `suivi/S39.3-codec-v2.md`
 - **S39.4** · FlowTrace v2 : capacités, frames, ticks, nouveaux événements · réalise IA 2 · vérifie IA 1 · après S39.3 · `suivi/S39.4-flowtrace-v2.md`
 - **S39.5** · Connexion tardive et reconnexion, côté jeu · réalise IA 2 · vérifie IA 1 · après S39.4 · `suivi/S39.5-connexion-tardive-jeu.md`
