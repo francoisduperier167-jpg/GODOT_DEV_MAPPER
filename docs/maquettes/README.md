@@ -6,6 +6,7 @@ Simulations fictives du rendu de l'outil, appliquées à un roguelike imaginaire
 | --- | --- |
 | `ember-atlas-roguelike.html` | Version d'origine |
 | `ember-atlas-roguelike-v2.html` | Version améliorée, le 8 octobre 2026 |
+| `ember-atlas-roguelike-v3.html` | Version complète : personnages, monde et inventaire. C'est celle qui est publiée. |
 
 ## Ce que la version améliorée change
 
@@ -30,3 +31,29 @@ Simulations fictives du rendu de l'outil, appliquées à un roguelike imaginaire
 - Vocabulaire : « non observé dans cette tentative », jamais « non parcouru ».
 
 **Divers** : panneaux du bas repliables, rôle d'accessibilité du graphe corrigé, export téléchargeable aussi dans une page publiée.
+
+## Ce que la version complète (v3) ajoute
+
+La v2 couvrait le déroulé de la partie, les scripts, les chargements et la sauvegarde. Il lui manquait la caméra, la physique détaillée, la navigation, les machines à états des personnages, l'inventaire, les animations et les vagues d'ennemis. Ils sont ajoutés : le modèle passe de 38 à 68 définitions, et de 55 à 106 relations.
+
+**Vue Personnages** (pastille « POC puis MVP »)
+- Machines à états de la sentinelle, du joueur et des boss. Les deux boss partagent une même définition de phases : deux instances, une définition.
+- La décision « À portée ? » de chaque sentinelle est le cas de démonstration du POC. Un sélecteur d'instance (`sentinel-01`, `sentinel-02`) montre l'état courant et le chemin observé de chacune ; ils diffèrent.
+- L'inspecteur donne, pour chaque instance, ses passages dans l'état, son état actuel et sa dernière décision (vraie ou fausse, avec la distance).
+
+**Vue Monde** (pastille « MVP »)
+- Physique à pas fixe, 60 pas par seconde, figée pendant la pause. Corps du joueur, hitbox des ennemis, hurtbox du joueur, couches et masques de collision, flèches des archers.
+- Un contact détecté au pas N est appliqué par CombatResolver au pas N + 1. Le journal affiche le pas de chaque événement : l'ordre des événements ne prouve pas la cause.
+- Navigation (agent et maillage), directeur de vagues, caméra (suivi, limites de salle, tremblement, cadrage des boss), animations.
+
+**Inventaire** (vue Scripts & données) : objet au sol, inventaire, catalogue d'objets. La Braise vive est ramassée au premier butin et utilisée contre le Forgeron sous 50 PV. La Frappe ardente et l'Écho de braise sont des reliques équipées.
+
+**Deux scénarios de bug**
+- « Masque de collision erroné » : sentinel-02 attaque sans jamais toucher. L'inspecteur de la hitbox montre « 2 attaques, 0 contact » et la surcharge de masque extraite de la scène.
+- « Caméra bloquée » : après le choix de route, la caméra garde les limites d'une autre salle. L'inspecteur signale l'incohérence avec la dernière écriture connue des limites.
+
+**Plan de réalisation d'EMBER** : 14 lots au lieu de 11 (P12 machines à états, P13 physique et monde, P14 inventaire).
+
+**Mesures** : sur les sept vues, aucune relation ne traverse une carte et aucune étiquette n'est masquée par une carte ou une autre étiquette. La vue Personnages affiche 21 étiquettes de transition sur 24, dont les deux branches de la décision. Les 15 vérifications de la v2 passent toujours, et 13 vérifications nouvelles aussi, sans erreur JavaScript.
+
+**Piste pour le plan** : relever les couches et masques de collision dans l'inventaire des scènes (MVP). Ce n'est pas encore au plan directeur.
