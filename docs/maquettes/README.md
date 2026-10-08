@@ -70,4 +70,13 @@ Les atlas montrent la carte hors exécution. `ember-en-direct.html` montre l'out
 - **Arrêts** : conditions évaluées dans le jeu (fin du pas) ou dans l'éditeur (quelques pas plus tard, après l'aller-retour).
 - **Scénarios** : parcours nominal, masque de collision erroné, événement perdu, jeu interrompu.
 
+**Carte des scripts**, vue par défaut, superposée au jeu en transparence (opacité réglable) :
+
+- un cadre par type de script : ennemis en rouge, héros en vert, décor en bleu, systèmes en gris ; une carte repliable par script, avec ses instances, ses états, ses variables, ses assets et, pour EnemyBrain, l'organigramme de `choose_action` à la manière du rapport du parseur Lua ;
+- des flèches typées entre scripts (appel, signal, variable lue, variable écrite, collision) qui s'épaississent quand l'événement arrive ;
+- une chaîne numérotée au choix (« Une sentinelle frappe le héros », « Le héros vide la salle »), chaque étape avec son fichier, sa ligne et sa provenance : extraite du code, ou observée avec son compte ;
+- à gauche, l'arborescence `res://` et l'arbre de la scène en cours, colorés par type ; un clic relie le fichier ou le nœud à sa carte.
+
+La touche M bascule vers la vue des instances.
+
 **Écart au plan** : la superposition et le pilotage ne sont pas au plan directeur. La page les marque « hors plan » et propose CAP-21 (pilotage, MVP), CAP-22 (superposition, V1) et SPIKE-07. Rien n'est vérifié sur Godot.

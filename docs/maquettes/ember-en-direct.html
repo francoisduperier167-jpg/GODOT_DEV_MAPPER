@@ -110,7 +110,7 @@ body:not(.show-plan) .when{display:none}
 .step.armed small{color:var(--amber)}
 .step.nosim{color:#6f7f88;font-style:italic}
 
-.banner{z-index:4;top:62px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 600px));min-width:340px;padding:10px 12px;border-radius:8px;border:1px solid #6a5134;background:rgba(41,37,29,.95);font-size:13px;line-height:1.5;box-shadow:0 10px 30px #0008}
+.banner{z-index:5;top:62px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 600px));min-width:340px;padding:10px 12px;border-radius:8px;border:1px solid #6a5134;background:rgba(41,37,29,.95);font-size:13px;line-height:1.5;box-shadow:0 10px 30px #0008}
 .banner.bad{border-color:#653d3a;background:rgba(42,29,28,.96)}
 .banner.info{border-color:#3f6f69;background:rgba(22,42,41,.95)}
 .banner b{color:var(--text)}
@@ -232,6 +232,138 @@ kbd{font:11.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2
 .code .k{color:#c8a0e8}.code .s{color:#a6c69d}.code .c{color:#6f8893}.code .f{color:var(--blue)}
 .code-note{font-size:12.5px;color:var(--muted);margin-top:10px}
 
+
+/* Carte des scripts : un cadre par type de script, une carte par script, les flux entre scripts */
+:root{--c-hero:#7fd18b;--c-enemy:#f07a6e;--c-decor:#7fb2ef;--c-sys:#aab6bd;--c-tool:#b4a1db}
+.seg{display:flex;gap:2px;margin-right:6px}
+.seg button{font-size:12px;padding:4px 10px}
+.stage.mode-map .panel,.stage.mode-map .chips{display:none}
+.stage:not(.mode-map) .map{display:none}
+.map{--a:.55;top:62px;bottom:72px;left:10px;right:10px;display:grid;grid-template-columns:232px minmax(0,1fr);gap:8px;z-index:2}
+.map-tree{display:flex;flex-direction:column;min-height:0;border:1px solid var(--glass-line);border-radius:8px;background:rgba(14,19,23,calc(var(--a) + .12))}
+.mt-tabs{display:flex;gap:4px;align-items:center;padding:6px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.mt-tabs button{font-size:12px;padding:3px 9px}
+.mt-tabs button[aria-selected=true]{border-color:var(--teal);background:#1f3838;color:#c3eeea}
+.mt-body{overflow:auto;padding:6px 4px 8px;min-height:0;font:12px/1.45 var(--mono);scrollbar-width:thin;scrollbar-color:#34444d transparent}
+.tr-folder>summary{list-style:none;cursor:pointer;color:#93a7b1;padding:1px 6px;white-space:nowrap;display:flex;align-items:center}
+.tr-folder>summary>.tr-item{flex:1;min-width:0;padding-left:2px}
+.tr-folder>summary::-webkit-details-marker{display:none}
+.tr-folder>summary::before{content:"▸ ";color:#5d7480}
+.tr-folder[open]>summary::before{content:"▾ "}
+.tr-kids{padding-left:12px}
+.tr-item{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;border-radius:4px;padding:1px 6px;text-align:left;font:inherit;color:#b8c8cf;white-space:nowrap}
+.tr-item:hover{background:#1d2a31}
+.tr-item.on{background:#2b2e22;color:var(--amber)}
+.tr-item.inert{color:#71818b;cursor:default}
+.tr-item.inert:hover{background:none}
+.tr-item .gd{width:8px;height:8px;border-radius:2px;flex:none;background:var(--g,#4d5d66)}
+.tr-item small{color:var(--faint);font-size:11px;overflow:hidden;text-overflow:ellipsis}
+.tr-item small.bad-t{color:var(--red)}
+.tr-legend{display:flex;flex-wrap:wrap;gap:4px 10px;padding:6px 8px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.tr-legend span{display:inline-flex;align-items:center;gap:5px}
+.tr-legend i{width:8px;height:8px;border-radius:2px;background:var(--g)}
+.map-graph{display:flex;flex-direction:column;min-height:0;min-width:0;border:1px solid var(--glass-line);border-radius:8px;background:rgba(9,12,14,calc(var(--a) * .45));overflow:hidden}
+.map-bar{display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;padding:6px 8px;border-bottom:1px solid var(--line);background:rgba(17,23,27,calc(var(--a) + .14));font-size:12px}
+.map-bar label{color:var(--muted)}
+.map-bar select{font-size:12px;padding:3px 6px}
+.map-bar input[type=range]{width:96px;accent-color:var(--teal)}
+.map-bar button{font-size:12px;padding:3px 8px}
+.legend{display:flex;gap:4px 10px;flex-wrap:wrap;margin-left:auto;color:var(--muted);font-size:11.5px}
+.legend span{white-space:nowrap}
+.legend i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:4px}
+.lg-call i{border-color:#c9d6dc}.lg-signal i{border-color:#78cec5;border-top-style:dashed}.lg-read i{border-color:#edbd78;border-top-style:dotted}.lg-write i{border-color:#edbd78}.lg-col i{border-color:#b4a1db;border-top-style:dashed}
+.map-scroll{position:relative;flex:1;overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#34444d transparent}
+.map-content{position:relative;min-width:920px;padding:30px 58px 16px}
+.map-edges{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:0}
+.map-labels{position:absolute;inset:0;pointer-events:none;z-index:3}
+.row-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:64px;align-items:start;position:relative;z-index:1}
+.row-decor{margin-top:56px;position:relative;z-index:1}
+.grp{--g-rgb:170 182 189;border:1px solid rgb(var(--g-rgb) / .55);border-radius:10px;background:rgb(var(--g-rgb) / calc(var(--a) * .14));padding:0 8px 8px;min-width:0}
+.grp.hero{--g-rgb:127 209 139}.grp.enemy{--g-rgb:240 122 110}.grp.decor{--g-rgb:127 178 239}.grp.sys{--g-rgb:170 182 189}
+.grp-h button{display:flex;align-items:baseline;gap:8px;width:100%;border:0;background:none;padding:6px 2px 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:650;color:rgb(var(--g-rgb));text-align:left}
+.grp-h button:hover{background:none}
+.grp-h small{font:11px var(--mono);letter-spacing:0;text-transform:none;color:var(--faint);font-weight:400}
+.grp-h .sw{width:10px;height:10px;border-radius:3px;background:rgb(var(--g-rgb));align-self:center}
+.grp .cards{display:flex;flex-direction:column;gap:8px}
+.row-decor .grp .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:start}
+.grp.folded{padding-bottom:0}
+.card{border:1px solid rgb(var(--g-rgb) / .5);border-radius:7px;background:rgba(13,17,20,calc(var(--a) + .14));box-shadow:0 2px 10px #0005;min-width:0}
+.card.sel{box-shadow:0 0 0 2px rgb(var(--g-rgb)),0 4px 16px #0008}
+.card-h{display:flex;align-items:center;gap:2px;padding:4px 6px 0 2px}
+.card-h .fold{border:0;background:none;padding:0;color:var(--muted);font-size:12px;width:22px;height:22px;flex:none}
+.card-h .nm{border:0;background:none;padding:1px 3px;font:600 13px var(--mono);color:var(--text);text-align:left;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-h .nm:hover{color:rgb(var(--g-rgb));background:none}
+.card-h .kd{font-size:10.5px;color:rgb(var(--g-rgb));border:1px solid rgb(var(--g-rgb) / .5);border-radius:999px;padding:0 6px;white-space:nowrap}
+.card-line{padding:0 8px 0 26px}
+.card-line .path{border:0;background:none;padding:0;font:11px/1.45 var(--mono);color:#7f969f;text-align:left;overflow-wrap:anywhere}
+.card-line .path:hover{color:var(--teal);background:none}
+.card-st{padding:1px 8px 6px 26px;font:11.5px/1.4 var(--mono);color:#cfe0e3}
+.card-b{padding:2px 8px 8px;border-top:1px solid rgb(var(--g-rgb) / .22);display:flex;flex-direction:column;gap:4px}
+.sec h4{margin:6px 0 3px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.sec p,.sec .txt{font-size:12px;color:#b9c9d0;margin:0;line-height:1.45}
+.irow{display:grid;grid-template-columns:auto 1fr auto auto;gap:6px;align-items:center;width:100%;font:11.5px var(--mono);padding:2px 4px;border:0;border-radius:4px;color:#c6d4da;background:none;text-align:left}
+.irow:hover{background:rgb(var(--g-rgb) / .14)}
+.irow .dot{color:rgb(var(--g-rgb))}
+.irow.on{background:rgb(var(--g-rgb) / .2)}
+.states{display:flex;flex-wrap:wrap;gap:4px}
+.stt{font:11px var(--mono);padding:1px 6px;border:1px solid var(--line);border-radius:4px;color:#93a7b1;background:rgba(10,13,15,.55)}
+.stt.cur{border-color:rgb(var(--g-rgb));color:var(--text);background:rgb(var(--g-rgb) / .2)}
+.stt i{font-style:normal;color:rgb(var(--g-rgb));margin-left:4px}
+.flow{display:flex;flex-direction:column;align-items:center;font:11px/1.35 var(--mono)}
+.flow .f-start{background:#0d1418;border:1px solid #7f969f;color:var(--text);border-radius:999px;padding:2px 10px;font-weight:600}
+.flow .f-act{border:1px solid var(--line);border-radius:4px;padding:3px 7px;color:#b9c9d0;background:rgba(10,13,15,.6);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow .f-cond{padding:4px 20px;background:#1e2c3d;color:#d6e6f2;clip-path:polygon(11px 0,calc(100% - 11px) 0,100% 50%,calc(100% - 11px) 100%,11px 100%,0 50%)}
+.flow .vline{width:1px;height:9px;background:#5d7480}
+.f-br{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+.f-b{border:1px solid var(--line);border-radius:4px;padding:3px 6px;color:#b9c9d0;background:rgba(10,13,15,.6)}
+.f-b b{font-weight:600;color:var(--muted);margin-right:5px}
+.f-b i{display:block;font-style:normal;color:var(--faint);font-size:10.5px}
+.f-b.last.yes{border-color:var(--amber);background:#2b2617}.f-b.last.yes b{color:var(--amber)}
+.f-b.last.no{border-color:var(--teal);background:#16302f}.f-b.last.no b{color:var(--teal)}
+.f-note{font-size:11px;color:var(--faint);text-align:center;margin-top:5px}
+.vars{display:flex;flex-wrap:wrap;gap:4px}
+.var{font:11px var(--mono);padding:1px 6px;border:1px solid var(--line);border-radius:4px;background:rgba(10,13,15,.55);color:#cfe0e3;text-align:left}
+.var small{color:var(--faint);margin-left:5px;font-size:10.5px}
+button.var:hover{border-color:var(--amber);background:rgba(43,38,23,.8)}
+.var.bad{border-color:#653d3a;color:#f6b5b0}
+.more{font-size:11.5px;color:#a9bcc5;margin-top:2px}
+.more summary{cursor:pointer;color:var(--muted);font-size:11px}
+.more p{margin:4px 0 0;font:11px/1.55 var(--mono);color:#a9bcc5}
+.map-edges path{fill:none;stroke-width:1.6;opacity:.6;transition:none}
+.map-edges path.k-call{stroke:#c9d6dc}
+.map-edges path.k-signal{stroke:#78cec5;stroke-dasharray:6 4}
+.map-edges path.k-read{stroke:#edbd78;stroke-dasharray:2 4}
+.map-edges path.k-write{stroke:#edbd78}
+.map-edges path.k-col{stroke:#b4a1db;stroke-dasharray:8 3 2 3}
+.map-edges path.hl{opacity:1;stroke-width:2.4}
+.map-edges path.dim{opacity:.12}
+.map-edges path.pulse{opacity:1;stroke-width:3.6}
+.map-edges path.bad{stroke:#ef8b85}
+.elabel{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:5px;font:11px/1.3 var(--mono);color:#e3e8e9;background:rgba(12,16,19,.96);border:1px solid #3c4c57;border-radius:4px;padding:1px 6px 1px 2px;white-space:nowrap}
+.elabel.plain{padding-left:6px}
+.elabel.bad{border-color:#653d3a;color:#f6b5b0}
+.elabel .n,.nbadge{display:inline-block;width:17px;height:17px;border-radius:50%;background:var(--amber);color:#251c10;font:700 10.5px/17px var(--sans);text-align:center;flex:none}
+.nbadge{position:absolute;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(12,16,19,.9)}
+.nbadge.dimb{opacity:.3}
+.map-graph .banner{position:static;transform:none;width:auto;min-width:0;border-radius:0;border-inline:0;border-top:0;box-shadow:none;padding:7px 10px}
+.map-graph .banner .b-actions{margin-top:5px}
+.chain{list-style:none;margin:0;padding:6px 8px;display:flex;gap:6px;overflow-x:auto;border-top:1px solid var(--line);background:rgba(17,23,27,calc(var(--a) + .14));scrollbar-width:thin;scrollbar-color:#34444d transparent}
+.chain:empty{display:none}
+.chain li{flex:0 0 auto}
+.chain button{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 7px;align-items:start;width:250px;text-align:left;padding:4px 7px;font-size:11.5px;line-height:1.3;background:rgba(10,13,15,.65)}
+.chain .tx{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chain button:hover{border-color:var(--amber)}
+.chain .n{grid-row:span 2;width:18px;height:18px;border-radius:50%;background:var(--amber);color:#251c10;font:700 10.5px/18px var(--sans);text-align:center}
+.chain .w{font:10.5px var(--mono);color:#7f969f}
+.chain .pv{font:10.5px var(--mono);color:var(--faint)}
+.chain .pv.obs{color:var(--teal)}.chain .pv.bad{color:var(--red)}
+@media (max-width:899px){
+ .map{grid-template-columns:1fr;order:1;border-top:1px solid var(--line)}
+ .map-tree{max-height:240px;border-radius:0;border-inline:0}
+ .map-graph{border-radius:0;border-inline:0}
+ .map-scroll{max-height:72vh}
+}
+
 @media (max-width:1180px){
  .panel{width:236px}.panel.right{width:262px}
  .banner{width:min(520px,calc(100% - 40px));top:62px}
@@ -275,8 +407,8 @@ kbd{font:11.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2
  <section class="lede">
   <div>
    <div class="eyebrow">Les Deux Portes · niveau I · salle des sentinelles</div>
-   <h1>Le jeu tourne, l’outil se pose par-dessus et pilote les étapes</h1>
-   <p>Le jeu s’exécute dans l’onglet Jeu de l’éditeur. L’interface de l’outil se superpose à l’image : elle montre ce qui est observé, instance par instance, et elle commande l’exécution. Suspendre, avancer d’un pas, s’arrêter quand une décision change ou quand une étape se termine.</p>
+   <h1>Le jeu tourne, la carte des scripts se pose par-dessus</h1>
+   <p>Le jeu s’exécute dans l’onglet Jeu de l’éditeur. Par-dessus, en transparence, la carte range les scripts par type : ennemis en rouge, héros en vert, décor en bleu, systèmes en gris. Chaque carte se replie, montre ses états, ses variables et ses assets, et les flèches suivent le flux d’un script à l’autre pendant que le jeu tourne. L’arborescence de gauche dit où vit chaque script.</p>
   </div>
   <div class="scenario">
    <label for="scenario">Scénario</label>
@@ -294,11 +426,12 @@ kbd{font:11.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2
   <div class="editor-tabs">
    <span class="tab">2D</span><span class="tab">3D</span><span class="tab">Script</span><span class="tab on">Jeu</span>
    <span class="grow"></span>
+   <div class="seg" role="group" aria-label="Ce qui se superpose au jeu"><button id="mode-map" aria-pressed="true" title="Raccourci : M">Carte des scripts</button><button id="mode-inst" aria-pressed="false" title="Raccourci : M">Instances</button></div>
    <span class="engine">Godot 4.7.2 · jeu intégré à l’éditeur<span class="when illus" title="Cadre d’éditeur dessiné pour la maquette.">illustration</span></span>
    <button id="ui-btn" aria-pressed="true" title="Raccourci : H">Interface de l’outil : affichée</button>
   </div>
 
-  <div class="stage" id="stage">
+  <div class="stage mode-map" id="stage">
    <div class="screen" id="screen">
     <canvas id="game" role="img" aria-label="Image du jeu simulé : la salle des sentinelles, le joueur et deux sentinelles"></canvas>
     <canvas id="tool" aria-hidden="true"></canvas>
@@ -306,6 +439,26 @@ kbd{font:11.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2
     <div class="dead-screen" id="dead-screen" hidden><div><strong>Le jeu ne répond plus</strong><p>Le processus du jeu s’est arrêté sans envoyer de fin de session. L’outil garde la trace reçue et marque la session « fin inconnue ».</p></div></div>
    </div>
 
+
+   <div class="map ov" id="map" aria-label="Carte des scripts, superposée au jeu">
+    <aside class="map-tree" aria-label="Où vivent les scripts">
+     <div class="mt-tabs" role="tablist"><button role="tab" id="tab-files" aria-selected="true">Fichiers res://</button><button role="tab" id="tab-scene" aria-selected="false">Scène en cours</button><span class="when mvp" title="Arborescence res:// reliée au graphe : MVP (P5). Arbre de la scène en cours, lu par le débogueur : MVP.">MVP</span></div>
+     <div class="mt-body" id="tree"></div>
+     <div class="tr-legend" aria-label="Couleurs des types de script"><span style="--g:var(--c-enemy)"><i></i>ennemis</span><span style="--g:var(--c-hero)"><i></i>héros</span><span style="--g:var(--c-decor)"><i></i>décor</span><span style="--g:var(--c-sys)"><i></i>systèmes</span></div>
+    </aside>
+    <section class="map-graph" aria-label="Scripts et flux">
+     <div class="map-bar">
+      <label for="chain-sel">Chaîne</label>
+      <select id="chain-sel"><option value="hit">Une sentinelle frappe le héros</option><option value="clear">Le héros vide la salle</option><option value="none">Aucune</option></select>
+      <label for="alpha">Opacité</label><input type="range" id="alpha" min="15" max="95" value="55">
+      <button id="fold-all">Tout replier</button><button id="unfold-all">Tout déplier</button>
+      <span class="when out" title="Proposition : CAP-22, superposition sur l’image. Flux de variables : V1 (CAP-14).">hors plan</span>
+      <span class="legend" aria-label="Types de flux"><span class="lg-call"><i></i>appel</span><span class="lg-signal"><i></i>signal</span><span class="lg-read"><i></i>variable lue</span><span class="lg-write"><i></i>variable écrite</span><span class="lg-col"><i></i>collision</span></span>
+     </div>
+     <div class="map-scroll" id="map-scroll"><div class="map-content" id="map-content"></div></div>
+     <ol class="chain" id="chain" aria-label="Étapes de la chaîne"></ol>
+    </section>
+   </div>
    <nav class="steps ov" id="steps" aria-label="Étapes du déroulé du jeu">
     <span class="steps-label">Étapes<span class="when mvp" title="Game Flow annoté, blocs déclarés : MVP (phase P7). S’arrêter à une étape : proposition hors plan.">MVP</span></span>
     <ol id="steps-list"></ol>
@@ -364,13 +517,14 @@ kbd{font:11.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2
      <li>Instances distinctes, décision par invocation, chemin observé à trois états : cohérent, incohérent, indéterminé (POC).</li>
      <li>Lien vers le code à la bonne révision ; démarrage et arrêt confirmés, bail, fin inconnue (POC).</li>
      <li>Étapes annotées, transitions d’état et signaux (MVP).</li>
+     <li>Arborescence res:// reliée au graphe, arbre de la scène en cours (MVP) ; flux de variables, qui lit et qui écrit (V1, CAP-14).</li>
     </ul>
    </article>
    <article class="note prop">
     <h3>À ajouter, si tu valides</h3>
     <ul>
      <li><b>CAP-21, pilotage de l’exécution</b> : suspendre, reprendre, avancer d’un pas, jusqu’à une décision, jusqu’à la fin d’une étape, arrêts conditionnels. Commandes <code>suspend</code>, <code>resume</code>, <code>step</code>, <code>arm_break</code> ; événements <code>suspended</code>, <code>resumed</code>, <code>break_hit</code>. Phase proposée : MVP.</li>
-     <li><b>CAP-22, superposition sur l’image</b> : repères d’instance, portées, hitbox. Événement <code>instance_sample</code> : positions à l’écran, dix par seconde en marche, exactes en pause. Phase proposée : V1.</li>
+     <li><b>CAP-22, superposition sur l’image</b> : carte des scripts en transparence, rangée par type et repliable ; repères d’instance, portées, hitbox. Événement <code>instance_sample</code> : positions à l’écran, dix par seconde en marche, exactes en pause. Phase proposée : V1.</li>
      <li><b>SPIKE-07</b> : s’appuyer sur la suspension et l’image suivante de l’onglet Jeu, dessiner par-dessus le jeu intégré, mesurer le retard des repères. Rien n’est encore vérifié.</li>
     </ul>
    </article>
@@ -390,6 +544,8 @@ kbd{font:11.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2
 <dialog id="help-dialog" aria-labelledby="help-title">
  <div class="d-head"><div><h2 id="help-title">Piloter le jeu depuis l’outil</h2><p>Tout est simulé dans le navigateur : aucun Godot ne tourne derrière cette page.</p></div><button class="quiet" data-close="help-dialog" aria-label="Fermer">✕</button></div>
  <div class="d-body"><div class="help-grid">
+  <section><h3>Carte des scripts</h3><p>Un cadre par type de script : ennemis en rouge, héros en vert, décor en bleu, systèmes en gris. Une carte par script. ▾ replie une carte, le titre d’un cadre replie tout le cadre. Clique un script pour ne garder que ses flux ; clique son chemin pour le retrouver dans l’arborescence. <kbd>M</kbd> bascule entre la carte et la vue des instances.</p></section>
+  <section><h3>Lire les flux</h3><p>Trait plein : appel. Tirets verts : signal. Pointillés ambre : variable lue ; trait ambre : variable écrite. Tirets violets : collision. Une flèche s’épaissit quand l’événement correspondant arrive. Les numéros suivent la chaîne choisie, détaillée en bas de la carte.</p></section>
   <section><h3>Lire l’image</h3><p>L’image du jeu est dessinée par le jeu. Les étiquettes, les anneaux de portée et les hitbox sont dessinés par l’outil, à partir de ce qu’il a reçu. En marche, ils ont un léger retard sur l’image ; en pause, ils sont exacts.</p></section>
   <section><h3>Commandes</h3><ul><li><kbd>Espace</kbd> suspendre ou reprendre</li><li><kbd>N</kbd> avancer d’un pas de physique</li><li><kbd>D</kbd> aller jusqu’au prochain changement de décision</li><li><kbd>E</kbd> aller jusqu’à la fin de l’étape</li><li><kbd>H</kbd> masquer ou afficher l’interface de l’outil</li></ul></section>
   <section><h3>Étapes</h3><p>Le bandeau du haut suit les étapes du déroulé. Clique une étape à venir pour t’arrêter à son entrée. Les étapes passées avant le début de la collecte restent « non observées ».</p></section>
@@ -478,7 +634,7 @@ function reset(){
    'sentinel-02':{id:'sentinel-02',x:640,y:215,home:[640,215],ph:2.1,state:'patrol',hp:4,wind:0,cool:0,hurtT:0,flash:0}
   },
   prevDec:{},pendingContact:[],pendingDamage:[],loot:null,route:null,doorOpen:false,outbox:[],stopReq:null,runUntil:null,fx:[],attacks:{},contacts:{}};
- O={lastSeq:0,total:0,byType:{},gaps:[],dropped:0,rows:[],open:{},rowId:0,inst:{},invs:{},steps:{},status:'starting',game:'running',stopSeq:null,samples:{},sampleTick:0,rate:[],strikeChecks:[],fx:[],registered:new Set()};
+ O={ec:{},ep:{},dc:{},pstate:null,lastDmg:null,lastBus:null,cleared:false,lootSpawned:false,lootTaken:false,lastSeq:0,total:0,byType:{},gaps:[],dropped:0,rows:[],open:{},rowId:0,inst:{},invs:{},steps:{},status:'starting',game:'running',stopSeq:null,samples:{},sampleTick:0,rate:[],strikeChecks:[],fx:[],registered:new Set()};
  const d=SCEN[sc];
  brk={};for(const b of BRK)brk[b.id]={on:!!d[b.id],hits:0,last:null};
  entryBreaks=new Set(d.entry);
@@ -495,6 +651,7 @@ function reset(){
  jDirty=iDirty=sDirty=stepsDirty=brkDirty=true;
  $('dead-screen').hidden=true;
  renderBrk();renderSteps();renderBanner();renderInspector(true);renderJournal(true);renderSession();
+ if(mapOn){buildMap();renderTree();}
 }
 
 function emit(type,f={}){
@@ -521,7 +678,7 @@ function decision(inst,inv,result,distance){
  return ev;
 }
 function transition(s,to,via,inv){const from=s.state;s.state=to;emit('state_change',{inst:s.id,from,to,via,...(inv?{inv}:{})});}
-function sample(){const pos={};pos['player-01']=[G.player.x,G.player.y];for(const s of Object.values(G.sent))pos[s.id]=[s.x,s.y];emit('instance_sample',{pos});}
+function sample(){const pos={};pos['player-01']=[G.player.x,G.player.y];for(const s of Object.values(G.sent))pos[s.id]=[s.x,s.y];emit('instance_sample',{pos,pstate:G.player.state});}
 function beginStep(id){G.step=id;emit('block_begin',{block:id});}
 function endStep(id){emit('block_end',{block:id});}
 
@@ -595,7 +752,7 @@ function updatePlayer(){
     p.atkT=.16;p.cd=.75;st='strike';
     G.fx.push({k:'slash',x:p.x,y:p.y,a:Math.atan2(t.y-p.y,t.x-p.x),t:0,life:.18});
     if(t.state!=='hurt'){
-     t.hp--;t.flash=.15;
+     t.hp--;t.flash=.15;emit('signal_emit',{inst:t.id,probe:'combat.enemy_damaged',src:'player-01',value:t.hp});
      if(t.hp<=0){transition(t,'dead','PV à zéro');G.fx.push({k:'crumble',x:t.x,y:t.y,t:0,life:.8});}
      else if(rng()<.35){t.wind=0;t.cool=0;transition(t,'hurt','Impact reçu');t.hurtT=.3;}
     }
@@ -666,9 +823,9 @@ function strike(s){
 function chooseRoute(r){
  if(G.step!=='choice1'||G.suspended||G.killed)return;
  G.route=r;
- const inv=enter('player-01','run_director.choose_route');
- emit('decision',{inst:'player-01',inv,probe:'run_director.choose_route',result:r,distance:0});
- exitF('player-01','run_director.choose_route',inv);
+ const inv=enter('player-01','door.choose_route');
+ emit('decision',{inst:'player-01',inv,probe:'door.choose_route',result:r,distance:0});
+ exitF('player-01','door.choose_route',inv);
  endStep('choice1');beginStep('route');G.done=true;
  sDirty=true;
 }
@@ -716,29 +873,30 @@ function observe(it){
   case 'stopped':O.status='stopped';O.stopSeq=ev.seq;addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'stopped',text:`collecte arrêtée · séquence finale ${nf(ev.seq)}`});break;
   case 'initial_state':for(const id of ev.instances)ensureInst(id);if(O.steps[ev.block]?.state!=='done')O.steps[ev.block]={state:'active',begin:O.steps[ev.block]?.begin??ev.tick};addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'initial_state',text:`${ev.instances.length} instances déjà enregistrées · étape ${STEP_LABEL[ev.block]}`});stepsDirty=true;break;
   case 'instance_registered':if(!O.registered.has(ev.inst)){O.registered.add(ev.inst);addRow({seq:ev.seq,tick:ev.tick,type:'instance',inst:ev.inst,text:`${ev.inst} → ${SESSION}/${INST[ev.inst].key} · ${INST[ev.inst].def}`});}if(ev.inst!=='player-01'&&!I.state){I.state='patrol';I.since=ev.tick;}break;
-  case 'instance_sample':O.samples=ev.pos;O.sampleTick=ev.tick;break;
+  case 'instance_sample':O.samples=ev.pos;O.sampleTick=ev.tick;O.pstate=ev.pstate;break;
   case 'function_enter':
    if(ev.probe==='enemy_brain.choose_action'){const r={inv:ev.inv,inst:ev.inst,enterSeq:ev.seq,tick:ev.tick};O.invs[ev.inv]=r;I.invs.unshift(r);if(I.invs.length>10){const old=I.invs.pop();delete O.invs[old.inv];}}
    else if(ev.parent_inv&&O.invs[ev.parent_inv])O.invs[ev.parent_inv].child=ev.probe;
-   else if(ev.probe==='enemy_brain.strike'){I.attacks++;addRow({cls:'warn',seq:ev.seq,tick:ev.tick,type:'appel',inst:ev.inst,text:'enemy_brain.strike · attaque portée'});O.strikeChecks.push({inst:ev.inst,tick:ev.tick,seq:ev.seq});}
+   else if(ev.probe==='enemy_brain.strike'){I.attacks++;EC('e-strike');addRow({cls:'warn',seq:ev.seq,tick:ev.tick,type:'appel',inst:ev.inst,text:'enemy_brain.strike · attaque portée'});O.strikeChecks.push({inst:ev.inst,tick:ev.tick,seq:ev.seq});}
    break;
   case 'function_exit':if(O.invs[ev.inv])O.invs[ev.inv].exitSeq=ev.seq;break;
   case 'decision':{
-   if(ev.probe==='run_director.choose_route'){addRow({cls:'t',seq:ev.seq,tick:ev.tick,type:'décision',inst:ev.inst,text:`choose_route → <span class="r">${ev.result==='shrine'?'Sanctuaire':'Épreuve'}</span>`});break;}
+   if(ev.probe==='door.choose_route'){addRow({cls:'t',seq:ev.seq,tick:ev.tick,type:'décision',inst:ev.inst,text:`choose_route → <span class="r">${ev.result==='shrine'?'Sanctuaire':'Épreuve'}</span>`});break;}
    let r=O.invs[ev.inv];
    if(!r){r={inv:ev.inv,inst:ev.inst,tick:ev.tick,missingEnter:true};O.invs[ev.inv]=r;I.invs.unshift(r);if(I.invs.length>10){const old=I.invs.pop();delete O.invs[old.inv];}}
    r.result=ev.result;r.distance=ev.distance;r.decSeq=ev.seq;r.tick=ev.tick;
-   I.lastDec={result:ev.result,distance:ev.distance,tick:ev.tick,seq:ev.seq,inv:ev.inv};
+   I.lastDec={result:ev.result,distance:ev.distance,tick:ev.tick,seq:ev.seq,inv:ev.inv};EC('e-pos');const dc=O.dc[ev.inst]??={t:0,f:0};if(ev.result)dc.t++;else dc.f++;
    addDecision(ev);
    break;}
-  case 'state_change':I.state=ev.to;I.since=ev.tick;if(ev.to==='dead')stepsDirty=true;addRow({cls:ev.to==='dead'?'warn':'',seq:ev.seq,tick:ev.tick,type:'transition',inst:ev.inst,text:`${STATE[ev.from]||ev.from} → ${STATE[ev.to]||ev.to} <em>· ${esc(ev.via)}</em>`});break;
-  case 'signal_received':{const S=ensureInst(ev.src);S.contacts++;O.fx.push({k:'contact',inst:'player-01',t:performance.now()});addRow({seq:ev.seq,tick:ev.tick,type:'signal',inst:'player-01',text:`hurtbox.area_entered · source ${ev.src} · masque ${ev.mask}`});break;}
+  case 'state_change':I.state=ev.to;I.since=ev.tick;if(ev.to==='dead'){stepsDirty=true;EC('e-died');}addRow({cls:ev.to==='dead'?'warn':'',seq:ev.seq,tick:ev.tick,type:'transition',inst:ev.inst,text:`${STATE[ev.from]||ev.from} → ${STATE[ev.to]||ev.to} <em>· ${esc(ev.via)}</em>`});break;
+  case 'signal_received':{const S=ensureInst(ev.src);S.contacts++;EC('e-col');EC('e-area');O.fx.push({k:'contact',inst:'player-01',t:performance.now()});addRow({seq:ev.seq,tick:ev.tick,type:'signal',inst:'player-01',text:`hurtbox.area_entered · source ${ev.src} · masque ${ev.mask}`});break;}
   case 'signal_emit':
-   if(ev.probe==='combat.damage_applied'){ensureInst('player-01').hp=ev.value;addRow({seq:ev.seq,tick:ev.tick,type:'signal',inst:'player-01',text:`dégâts appliqués · PV ${ev.value} · source ${ev.src}`});}
-   else addRow({seq:ev.seq,tick:ev.tick,type:'signal',inst:ev.inst,text:`${ev.probe} · ${esc(ev.value)}`});
+   if(ev.probe==='combat.damage_applied'){ensureInst('player-01').hp=ev.value;EC('e-dmg');EC('e-hud');O.lastDmg={src:ev.src,tick:ev.tick,value:ev.value};addRow({seq:ev.seq,tick:ev.tick,type:'signal',inst:'player-01',text:`dégâts appliqués · PV ${ev.value} · source ${ev.src}`});}
+   else if(ev.probe==='combat.enemy_damaged'){I.hp=ev.value;EC('e-hit');EC('e-ehp');addRow({seq:ev.seq,tick:ev.tick,type:'signal',inst:ev.inst,text:`dégâts reçus · PV ${ev.value} · source ${ev.src}`});}
+   else{if(ev.probe==='loot.picked'){EC('e-pick');O.lootTaken=true;O.lastBus='loot_picked';}addRow({seq:ev.seq,tick:ev.tick,type:'signal',inst:ev.inst,text:`${ev.probe} · ${esc(ev.value)}`});}
    break;
-  case 'block_begin':O.steps[ev.block]={state:'active',begin:ev.tick};addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'block_begin',text:STEP_LABEL[ev.block]});stepsDirty=true;break;
-  case 'block_end':O.steps[ev.block]={...(O.steps[ev.block]||{}),state:'done',end:ev.tick};addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'block_end',text:STEP_LABEL[ev.block]});stepsDirty=true;break;
+  case 'block_begin':if(ev.block==='reward1')O.lootSpawned=true;O.steps[ev.block]={state:'active',begin:ev.tick};addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'block_begin',text:STEP_LABEL[ev.block]});stepsDirty=true;break;
+  case 'block_end':if(ev.block==='fight1'){O.cleared=true;O.lastBus='room_cleared';EC('e-clear');EC('e-door');EC('e-loot');}O.steps[ev.block]={...(O.steps[ev.block]||{}),state:'done',end:ev.tick};addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'block_end',text:STEP_LABEL[ev.block]});stepsDirty=true;break;
   case 'suspended':O.game='suspended';addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'suspended',text:'jeu suspendu à la fin du pas'});break;
   case 'resumed':O.game='running';addRow({cls:'ctl',seq:ev.seq,tick:ev.tick,type:'resumed',text:'jeu repris'});break;
  }
@@ -759,6 +917,7 @@ function observe(it){
  }
  jDirty=iDirty=true;
 }
+function EC(id){O.ec[id]=(O.ec[id]||0)+1;O.ep[id]=performance.now();}
 function markIncomplete(gap){for(const r of Object.values(O.invs)){if(r.enterSeq!=null&&r.enterSeq<gap.from&&(r.exitSeq==null||r.exitSeq>gap.to))r.incomplete=true;}}
 function pathOf(r){
  if(!r)return{k:'u',t:'indéterminé'};
@@ -953,6 +1112,242 @@ function renderChips(){
  }
 }
 
+/* ---------- Carte des scripts : un cadre par type, une carte par script, les flux entre scripts ---------- */
+const GROUPS=[{id:'hero',label:'Héros',row:'top'},{id:'sys',label:'Systèmes',row:'top'},{id:'enemy',label:'Ennemis',row:'top'},{id:'decor',label:'Décor et monde',row:'decor'}];
+const ORDER={hero:['player','input'],sys:['combat','hud','bus'],enemy:['enemy'],decor:['room','door','loot','braziers']};
+const pill=(k,t)=>`<span class="when ${k}" title="${t}">${{poc:'POC',mvp:'MVP',v1:'V1',out:'hors plan'}[k]}</span>`;
+const NODES={
+ player:{g:'hero',name:'PlayerController',type:'script',path:'res://scripts/player/player_controller.gd',body:()=>`
+  <div class="sec" data-anchor="player.insts"><h4>Instance · player.tscn</h4><button class="irow" data-hinst="player-01"><span class="dot">●</span><span>player-01</span><span data-live="p.state"></span><span data-live="p.hp"></span></button></div>
+  <div class="sec" data-anchor="player.states"><h4>États${pill('mvp','État échantillonné avec la position : proposition. Machine à états : MVP (P7).')}</h4><div class="states">${['idle','run','strike','dash'].map(s=>`<span class="stt" data-stt="player:${s}">${PSTATE[s]}</span>`).join('')}</div></div>
+  <div class="sec"><h4>Variables${pill('v1','Qui lit, qui écrit : flux de données, V1 (CAP-14).')}</h4><div class="vars"><button class="var" data-var="hp" data-anchor="player.hp">hp <b data-live="p.hpv"></b><small>écrite par CombatResolver · lue par HUD</small></button><button class="var" data-var="global_position" data-anchor="player.pos">global_position<small>lue par EnemyBrain</small></button><span class="var">speed = 118<small>export · player.tscn</small></span></div></div>
+  <div class="sec" data-anchor="player.hurtbox"><h4>Hurtbox · Area2D</h4><p class="txt">couche 2 · <span data-live="p.contacts"></span></p></div>
+  <details class="more"><summary>Signaux et assets</summary><p>Émet : hp_changed · Reçoit : loot_picked<br>Assets : player.tscn, hero_anim.tres, dash.ogg</p></details>`},
+ input:{g:'hero',name:'InputRouter',type:'script',path:'res://scripts/player/input_router.gd',body:()=>`
+  <div class="sec"><p class="txt">Lit move, attack et dash, puis émet move_requested et attack_requested vers PlayerController. Dans cette démonstration, un script joue les entrées.</p></div>`},
+ combat:{g:'sys',name:'CombatResolver',type:'script',path:'res://scripts/gameplay/combat_resolver.gd',body:()=>`
+  <div class="sec" data-anchor="combat.apply"><h4>apply_damage(source, cible, valeur)</h4><p class="txt">Applique un contact du pas N au pas N + 1. Écrit PlayerController.hp et EnemyBrain.hp.</p><p class="txt mono" data-live="c.last"></p></div>`},
+ hud:{g:'sys',name:'HUD',type:'script',path:'res://scripts/ui/hud.gd',body:()=>`
+  <div class="sec"><p class="txt">Écoute hp_changed et redessine la barre de vie. Scène hud.tscn.</p></div>`},
+ bus:{g:'sys',name:'EventBus',type:'autoload',path:'res://scripts/core/event_bus.gd',body:()=>`
+  <div class="sec"><p class="txt">Autoload /root/EventBus. Signaux room_cleared et loot_picked : il relaie, il ne décide rien.</p></div>`},
+ enemy:{g:'enemy',name:'EnemyBrain',type:'script',path:'res://scripts/enemies/enemy_brain.gd',body:()=>`
+  <div class="sec" data-anchor="enemy.insts"><h4>Instances · sentinel.tscn</h4>${['sentinel-01','sentinel-02'].map(i=>`<button class="irow" data-hinst="${i}"><span class="dot">●</span><span>${i}</span><span data-live="e.${i}.state"></span><span data-live="e.${i}.hp"></span></button>`).join('')}</div>
+  <div class="sec" data-anchor="enemy.states"><h4>États${pill('mvp','Machine à états : MVP (P7).')}</h4><div class="states">${['patrol','chase','attack','hurt','dead'].map(s=>`<span class="stt" data-stt="enemy:${s}">${STATE[s]}<i data-live="st.${s}"></i></span>`).join('')}</div></div>
+  <div class="sec"><h4>choose_action(delta)${pill('poc','Décision instrumentée : POC. Organigramme extrait du code : ADVANCED (CAP-19) ou SPIKE-04.')}</h4>
+   <div class="flow"><div class="f-start" data-anchor="enemy.choose">choose_action(delta)</div><div class="vline"></div>
+    <div class="f-act" title="distance = global_position.distance_to(target.global_position)">distance = global_position.distance_to(target.global_position)</div><div class="vline"></div>
+    <div class="f-cond" data-anchor="enemy.decision">distance &lt;= attack_range</div><div class="vline"></div>
+    <div class="f-br"><div class="f-b yes" data-anchor="enemy.strike"><b>oui</b>attack() → strike()<i data-live="e.yes"></i></div><div class="f-b no"><b>non</b>chase()<i data-live="e.no"></i></div></div></div>
+   <p class="f-note">Comptes et dernière branche de <span data-live="e.selinst"></span> : <span data-live="e.lastbranch"></span></p></div>
+  <div class="sec"><h4>Ce que lit la condition${pill('v1','Qui lit, qui écrit : flux de données, V1 (CAP-14).')}</h4><div class="vars"><button class="var" data-var="global_position">target.global_position<small>PlayerController</small></button><span class="var">attack_range = 48<small>export · sentinel.tscn</small></span><span class="var">distance<small data-live="e.dist"></small></span></div></div>
+  <div class="sec" data-anchor="enemy.hitbox"><h4>Hitbox · Area2D</h4><p class="txt">couche 3 · masque <span data-live="hb.mask"></span></p>${['sentinel-01','sentinel-02'].map(i=>`<p class="txt mono" data-live="hb.${i}"></p>`).join('')}</div>
+  <details class="more"><summary>Variables, signaux et assets</summary><p>Écrit : hp (4 au départ), state · Émet : died · Appelée par : _physics_process<br>Assets : sentinel.tscn, sentinel_anim.tres, sentinel_hit.ogg</p></details>`},
+ room:{g:'decor',name:'Room',type:'script',path:'res://scripts/world/room.gd',body:()=>`
+  <div class="sec"><p class="txt">Scène sentinels.tscn. Compte sentinels_alive et émet room_cleared à zéro. Assets : ember_floor.png, room_catalog.tres.</p></div>`},
+ door:{g:'decor',name:'Door',type:'script',path:'res://scripts/world/door.gd',body:()=>`
+  <div class="sec"><p class="txt">Porte nord. S’ouvre sur room_cleared ; porte la décision choose_route quand le joueur choisit sa sortie.</p></div>`},
+ loot:{g:'decor',name:'LootService',type:'script',path:'res://scripts/gameplay/loot_service.gd',body:()=>`
+  <div class="sec"><p class="txt">Fait apparaître pickup.tscn (Braise vive) sur room_cleared, puis émet loot_picked.</p></div>`},
+ braziers:{g:'decor',name:'brazier.tscn',type:'sans script',path:'res://scenes/props/brazier.tscn',body:()=>`
+  <div class="sec"><p class="txt">Quatre instances, aucun script, aucun flux. Asset : brazier_fire.tres.</p></div>`}
+};
+const EDGES=[
+ {id:'e-move',from:'input',to:'player',k:'signal',r:'loopL',o:12,label:'move_requested · attack_requested'},
+ {id:'e-pos',from:'player',to:'enemy',fa:'player.pos',ta:'enemy.decision',k:'read',r:'top',label:'global_position → distance'},
+ {id:'e-col',from:'enemy',to:'player',fa:'enemy.hitbox',ta:'player.hurtbox',k:'col',r:'gaps',o:-20,label:'collision · couche 3 → masque 2'},
+ {id:'e-area',from:'player',to:'combat',fa:'player.hurtbox',ta:'combat.apply',k:'signal',r:'h',ob:8,label:'area_entered'},
+ {id:'e-dmg',from:'combat',to:'player',fa:'combat.apply',ta:'player.hp',k:'write',r:'h',oa:-6,ob:-4,label:'écrit hp'},
+ {id:'e-hud',from:'player',to:'hud',fa:'player.hp',k:'signal',r:'h',oa:5,label:'hp_changed'},
+ {id:'e-hit',from:'player',to:'combat',fa:'player.states',ta:'combat.apply',k:'call',r:'h',ob:-14,label:'coup porté'},
+ {id:'e-ehp',from:'combat',to:'enemy',fa:'combat.apply',ta:'enemy.insts',k:'write',r:'h',label:'écrit hp'},
+ {id:'e-died',from:'enemy',to:'room',fa:'enemy.insts',k:'signal',r:'rightDown',o:0,o2:-12,label:'died'},
+ {id:'e-clear',from:'room',to:'bus',k:'signal',r:'up',o2:-4,ob2:-14,label:'room_cleared'},
+ {id:'e-door',from:'bus',to:'door',k:'signal',r:'down',o:0,o2:5,label:'ouvre'},
+ {id:'e-loot',from:'bus',to:'loot',k:'signal',r:'down',o:14,o2:13,label:'fait apparaître'},
+ {id:'e-pick',from:'loot',to:'player',ta:'player.insts',k:'signal',r:'upLeft',o:-6,o2:21,label:'loot_picked'}
+];
+const EDGE=Object.fromEntries(EDGES.map(e=>[e.id,e]));
+const sumDec=()=>Object.values(O.dc).reduce((a,d)=>a+d.t+d.f,0);
+const sumAtt=()=>['sentinel-01','sentinel-02'].reduce((a,i)=>a+(O.inst[i]?.attacks||0),0);
+const CHAINS={
+ hit:{steps:[
+  {t:'PlayerController.global_position est lue par EnemyBrain pour calculer distance',w:'enemy_brain.gd:47',edge:'e-pos',prov:'extrait'},
+  {t:'Décision « À portée ? » : distance ≤ attack_range (48)',w:'enemy_brain.gd:49',anchor:'enemy.decision',prov:'observé',cnt:sumDec},
+  {t:'Branche oui : attack(), puis strike() active la hitbox',w:'enemy_brain.gd:51',anchor:'enemy.strike',prov:'observé',cnt:sumAtt},
+  {t:'La hitbox (couche 3) rencontre la hurtbox du héros (masque 2)',w:'sentinel.tscn → player.tscn',edge:'e-col',prov:'observé'},
+  {t:'La hurtbox émet area_entered vers CombatResolver',w:'combat_resolver.gd:23',edge:'e-area',prov:'observé'},
+  {t:'CombatResolver écrit PlayerController.hp au pas suivant',w:'combat_resolver.gd:31',edge:'e-dmg',prov:'observé'},
+  {t:'hp_changed redessine la barre du HUD',w:'hud.gd:12',edge:'e-hud',prov:'observé'}]},
+ clear:{steps:[
+  {t:'InputRouter transmet l’attaque à PlayerController',w:'input_router.gd:18',edge:'e-move',prov:'extrait'},
+  {t:'Le coup du héros passe par CombatResolver',w:'player_controller.gd:64',edge:'e-hit',prov:'observé'},
+  {t:'CombatResolver écrit EnemyBrain.hp',w:'combat_resolver.gd:31',edge:'e-ehp',prov:'observé'},
+  {t:'À 0 PV, EnemyBrain émet died vers Room',w:'enemy_brain.gd:102',edge:'e-died',prov:'observé'},
+  {t:'Room émet room_cleared sur EventBus',w:'room.gd:27',edge:'e-clear',prov:'observé'},
+  {t:'EventBus ouvre la porte et fait apparaître le butin',w:'door.gd:9 · loot_service.gd:14',edge:'e-door',edge2:'e-loot',prov:'observé'},
+  {t:'Le butin ramassé revient à PlayerController',w:'loot_service.gd:30',edge:'e-pick',prov:'observé'}]},
+ none:{steps:[]}
+};
+const VAR_EDGES={hp:['e-dmg','e-hud'],global_position:['e-pos']};
+const FILES=[
+ ['scenes',[['actors',[['player.tscn','hero','player'],['sentinel.tscn','enemy','enemy'],['arrow.tscn',null,null]]],['levels/01_ashes',[['sentinels.tscn','decor','room'],['vestibule.tscn',null,null],['shrine.tscn',null,null]]],['props',[['brazier.tscn','decor','braziers']]],['items',[['pickup.tscn','decor','loot']]],['ui',[['hud.tscn','sys','hud']]]]],
+ ['scripts',[['player',[['player_controller.gd','hero','player'],['input_router.gd','hero','input']]],['enemies',[['enemy_brain.gd','enemy','enemy'],['boss_phases.gd',null,null]]],['gameplay',[['combat_resolver.gd','sys','combat'],['loot_service.gd','decor','loot'],['inventory.gd',null,null]]],['core',[['event_bus.gd','sys','bus'],['run_director.gd',null,null]]],['world',[['room.gd','decor','room'],['door.gd','decor','door']]],['ui',[['hud.gd','sys','hud']]]]],
+ ['resources',[['animation',[['hero_anim.tres','hero','player'],['sentinel_anim.tres','enemy','enemy']]],['rooms',[['room_catalog.tres','decor','room']]]]],
+ ['assets',[['sfx',[['dash.ogg','hero','player'],['sentinel_hit.ogg','enemy','enemy']]],['tiles',[['ember_floor.png','decor','room']]],['vfx',[['brazier_fire.tres','decor','braziers']]]]],
+ ['addons/godot_dev_mapper_runtime',[['flow_trace.gd','tool',null]]]
+];
+const SCENE=()=>[
+ ['Main','Node','',null,null,null,[
+  ['Room','Node2D','sentinels.tscn · room.gd','decor','room',null,[
+   ['Floor','TileMapLayer','ember_floor.png','decor','room',null,[]],
+   ['Braziers','Node2D','brazier.tscn ×4','decor','braziers',null,[]],
+   ['DoorNorth','StaticBody2D','door.gd','decor','door',null,[]],
+   ['Sentinel01','CharacterBody2D','enemy_brain.gd · sentinel-01','enemy','enemy','sentinel-01',[['Hitbox','Area2D','couche 3 · masque 2','enemy','enemy',null,[]],['AnimationPlayer','','sentinel_anim.tres','enemy','enemy',null,[]]]],
+   ['Sentinel02','CharacterBody2D','enemy_brain.gd · sentinel-02','enemy','enemy','sentinel-02',[['Hitbox','Area2D',G.sc==='bad_mask'?'couche 3 · masque 4 · surcharge':'couche 3 · masque 2','enemy','enemy',null,[],G.sc==='bad_mask'],['AnimationPlayer','','sentinel_anim.tres','enemy','enemy',null,[]]]],
+   ['Player','CharacterBody2D','player_controller.gd · player-01','hero','player','player-01',[['Hurtbox','Area2D','couche 2','hero','player',null,[]],['InputRouter','Node','input_router.gd','hero','input',null,[]],['Camera2D','','','hero',null,null,[]]]]]],
+  ['Pickup','Area2D',O.lootSpawned?'pickup.tscn · loot_service.gd':'apparaît à la fin du combat','decor','loot',null,[]],
+  ['HUD','CanvasLayer','hud.tscn · hud.gd','sys','hud',null,[]]]],
+ ['EventBus','autoload','event_bus.gd','sys','bus',null,[]]
+];
+let mapOn=true,chainId='hit',mapSel=null,hoverEdges=null,hoverInst=null,treeTab='files',mapLiveEls=[],edgeEls={},edgeGeo={},MAPL=null,mapRO=null,mapDrawQueued=false,lastTreeKey='';
+const folded=new Set(['input','hud','bus','room','door','loot','braziers']),gFolded=new Set();
+
+function cardHTML(id){const n=NODES[id],f=folded.has(id);return `<article class="card${mapSel===id?' sel':''}" data-node="${id}"><div class="card-h"><button class="fold" data-fold="${id}" aria-expanded="${!f}" aria-label="${f?'Déplier':'Replier'} ${n.name}">${f?'▸':'▾'}</button><button class="nm" data-mapsel="${id}" title="Ne garder que les flux de ce script">${n.name}</button><span class="kd">${n.type}</span></div><div class="card-line"><button class="path" data-reveal="${id}" title="Voir dans l’arborescence">${n.path.replace('res://','')}</button></div><div class="card-st" data-live="${id}.line"></div>${f?'':`<div class="card-b">${n.body()}</div>`}</article>`;}
+function groupHTML(g){const f=gFolded.has(g.id),ids=ORDER[g.id];return `<section class="grp ${g.id}${f?' folded':''}" data-grp="${g.id}"><div class="grp-h"><button data-gfold="${g.id}" aria-expanded="${!f}"><span class="sw"></span>${g.label}<small>${ids.length} ${ids.length>1?'scripts':'script'}${f?' · repliés':''}</small></button></div>${f?'':`<div class="cards">${ids.map(cardHTML).join('')}</div>`}</section>`;}
+function buildMap(){
+ const c=$('map-content');
+ c.innerHTML=`<svg class="map-edges" id="map-edges" aria-hidden="true"></svg><div class="row-top">${GROUPS.filter(g=>g.row==='top').map(groupHTML).join('')}</div><div class="row-decor">${groupHTML(GROUPS[3])}</div><div class="map-labels" id="map-labels"></div>`;
+ mapRO?.disconnect();mapRO=new ResizeObserver(queueEdges);mapRO.observe(c);for(const el of c.querySelectorAll('.card,.grp'))mapRO.observe(el);
+ for(const d of c.querySelectorAll('details'))d.addEventListener('toggle',queueEdges);
+ renderChain();collectLive();updateMapLive(performance.now());queueEdges();
+}
+function collectLive(){mapLiveEls=[...$('map').querySelectorAll('[data-live]')];}
+function queueEdges(){if(mapDrawQueued)return;mapDrawQueued=true;requestAnimationFrame(()=>{mapDrawQueued=false;drawEdges();});}
+function rel(el){const c=$('map-content').getBoundingClientRect(),r=el.getBoundingClientRect();return{l:r.left-c.left,t:r.top-c.top,r:r.right-c.left,b:r.bottom-c.top,cx:(r.left+r.right)/2-c.left,cy:(r.top+r.bottom)/2-c.top};}
+const shown=el=>el&&el.getClientRects().length>0;
+function endpoint(node,anchor){
+ const c=$('map-content'),g=NODES[node].g;
+ if(gFolded.has(g)){const r=rel(c.querySelector(`[data-grp="${g}"] .grp-h`));return{card:r,a:r};}
+ const cr=rel(c.querySelector(`[data-node="${node}"]`));
+ const a=anchor&&c.querySelector(`[data-anchor="${anchor}"]`);
+ return{card:cr,a:shown(a)?rel(a):{...cr,cy:cr.t+15}};
+}
+function orth(p,r=9){let d=`M${p[0][0]} ${p[0][1]}`;for(let i=1;i<p.length-1;i++){const[x0,y0]=p[i-1],[x1,y1]=p[i],[x2,y2]=p[i+1];const d1=Math.hypot(x1-x0,y1-y0)||1,d2=Math.hypot(x2-x1,y2-y1)||1,q=Math.min(r,d1/2,d2/2);d+=` L${x1-(x1-x0)/d1*q} ${y1-(y1-y0)/d1*q} Q${x1} ${y1} ${x1+(x2-x1)/d2*q} ${y1+(y2-y1)/d2*q}`;}const z=p[p.length-1];return d+` L${z[0]} ${z[1]}`;}
+function geom(e){
+ const A=endpoint(e.from,e.fa),B=endpoint(e.to,e.ta),L=MAPL;
+ const cy=(X,o)=>clamp(X.a.cy+(o||0),X.card.t+6,X.card.b-6);
+ const ya=cy(A,e.oa),yb=cy(B,e.ob);let p;
+ switch(e.r){
+  case 'h':{const ltr=A.card.cx<B.card.cx,x1=ltr?A.card.r:A.card.l,x2=ltr?B.card.l:B.card.r,dx=Math.max(26,Math.abs(x2-x1)*.55)*(ltr?1:-1);return{d:`M${x1} ${ya} C${x1+dx} ${ya} ${x2-dx} ${yb} ${x2} ${yb}`,lx:(x1+x2)/2,ly:(ya+yb)/2};}
+  case 'loopL':{const x=L.mL+(e.o||0);p=[[A.card.l,ya],[x,ya],[x,yb],[B.card.l,yb]];break;}
+  case 'top':{const y=L.cTop+(e.o||0),xa=A.card.r-34,xb=B.card.r-34;p=[[xa,A.card.t],[xa,y],[xb,y],[xb,B.card.t]];break;}
+  case 'gaps':{const y=L.cMid+(e.o||0);p=[[A.card.l,ya],[L.g2,ya],[L.g2,y],[L.g1,y],[L.g1,yb],[B.card.r,yb]];break;}
+  case 'rightDown':{const x=L.mR+(e.o||0),y=L.cMid+(e.o2||0);p=[[A.card.r,ya],[x,ya],[x,y],[B.a.cx,y],[B.a.cx,B.card.t]];break;}
+  case 'up':{const y=L.cMid+(e.o2||0),xb=B.a.cx+(e.ob2||0);p=[[A.a.cx,A.card.t],[A.a.cx,y],[xb,y],[xb,B.card.b]];break;}
+  case 'down':{const y=L.cMid+(e.o2||0),xa=A.a.cx+(e.o||0);p=[[xa,A.card.b],[xa,y],[B.a.cx,y],[B.a.cx,B.card.t]];break;}
+  case 'upLeft':{const y=L.cMid+(e.o2||0),x=L.mL+(e.o||0);p=[[A.a.cx,A.card.t],[A.a.cx,y],[x,y],[x,yb],[B.card.l,yb]];break;}
+ }
+ let best=0,lx=0,ly=0;for(let i=1;i<p.length;i++){const len=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);if(len>best){best=len;lx=(p[i][0]+p[i-1][0])/2;ly=(p[i][1]+p[i-1][1])/2;}}
+ return{d:orth(p),lx,ly};
+}
+const KCOL={call:'#c9d6dc',signal:'#78cec5',read:'#edbd78',write:'#edbd78',col:'#b4a1db'};
+function drawEdges(){
+ const c=$('map-content');if(!mapOn||!c||!c.querySelector('.row-top')||!shown(c))return;
+ const q=sel=>rel(c.querySelector(sel)),top=q('.row-top'),dec=q('.row-decor'),h=q('[data-grp="hero"]'),sy=q('[data-grp="sys"]'),en=q('[data-grp="enemy"]');
+ MAPL={cTop:top.t-15,cMid:(top.b+dec.t)/2,mL:h.l-28,mR:en.r+28,g1:(h.r+sy.l)/2,g2:(sy.r+en.l)/2};
+ const svg=$('map-edges');svg.setAttribute('width',c.scrollWidth);svg.setAttribute('height',c.scrollHeight);
+ let html='<defs>'+Object.entries(KCOL).map(([k,col])=>`<marker id="ar-${k}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="${col}"/></marker>`).join('')+'</defs>';
+ edgeGeo={};
+ for(const e of EDGES){const fg=NODES[e.from].g,tg=NODES[e.to].g;if(fg===tg&&gFolded.has(fg))continue;const g=geom(e);edgeGeo[e.id]=g;html+=`<path data-edge="${e.id}" class="k-${e.k}" d="${g.d}" marker-end="url(#ar-${e.k})"/>`;}
+ svg.innerHTML=html;edgeEls={};for(const p of svg.querySelectorAll('path[data-edge]'))edgeEls[p.dataset.edge]=p;
+ updateEdges(performance.now());
+}
+function badMask(){return G.sc==='bad_mask'&&(O.inst['sentinel-02']?.attacks||0)>0&&!(O.inst['sentinel-02']?.contacts);}
+function updateEdges(now){
+ if(!mapOn||!$('map-labels'))return;
+ const steps=CHAINS[chainId].steps,inChain=new Map();steps.forEach((s,i)=>{if(s.edge)inChain.set(s.edge,i+1);if(s.edge2)inChain.set(s.edge2,i+1);});
+ const focus=new Set();if(mapSel)for(const e of EDGES)if(e.from===mapSel||e.to===mapSel)focus.add(e.id);if(hoverEdges)for(const id of hoverEdges)focus.add(id);
+ const any=!!(mapSel||hoverEdges);
+ let lab='';
+ for(const e of EDGES){const p=edgeEls[e.id],g=edgeGeo[e.id];if(!p||!g)continue;
+  const hl=any?focus.has(e.id):inChain.has(e.id),bad=e.id==='e-col'&&badMask();
+  p.setAttribute('class',`k-${e.k}${hl?' hl':''}${any&&!hl?' dim':''}${now-(O.ep[e.id]||-1e9)<450?' pulse':''}${bad?' bad':''}`);
+  const n=inChain.get(e.id),full=(any&&focus.has(e.id))||bad;
+  const W2=$('map-content').scrollWidth;g.lx=clamp(g.lx,110,W2-110);
+  if(full){const cnt=O.ec[e.id];const txt=bad?'s-02 : masque 4 · 0 contact':`${e.label}${cnt?` · ×${nf(cnt)}`:''}`;lab+=`<div class="elabel${n?'':' plain'}${bad?' bad':''}" style="left:${g.lx}px;top:${g.ly}px">${n?`<span class="n">${n}</span>`:''}${esc(txt)}</div>`;}
+  else if(n)lab+=`<span class="nbadge${any?' dimb':''}" style="left:${g.lx}px;top:${g.ly}px" title="${esc(e.label)}">${n}</span>`;
+ }
+ steps.forEach((s,i)=>{if(!s.anchor)return;const a=$('map-content').querySelector(`[data-anchor="${s.anchor}"]`);if(!shown(a))return;const r=rel(a);lab+=`<span class="nbadge" style="left:${r.l-4}px;top:${r.t+2}px">${i+1}</span>`;});
+ $('map-labels').innerHTML=lab;
+}
+function renderChain(){
+ const steps=CHAINS[chainId].steps;
+ $('chain').innerHTML=steps.map((s,i)=>`<li><button data-chain-i="${i}"><span class="n">${i+1}</span><span class="tx" title="${esc(s.t)}">${esc(s.t)}</span><span class="w">${esc(s.w)} · <span class="pv" data-live="ch.${i}"></span></span></button></li>`).join('');
+ collectLive();
+}
+function chainCount(s){if(s.cnt)return s.cnt();return(O.ec[s.edge]||0)+(s.edge2?0:0);}
+function updateMapLive(now){
+ if(!mapOn)return;
+ const L={},P=O.inst['player-01']||{},sent=['sentinel-01','sentinel-02'];
+ const php=P.hp??100;
+ L['p.state']=PSTATE[O.pstate]||'—';L['p.hp']=`PV ${php}`;L['p.hpv']=`= ${php}`;
+ const contacts=sent.reduce((a,i)=>a+(O.inst[i]?.contacts||0),0);L['p.contacts']=`${contacts} ${plural(contacts,'contact reçu','contacts reçus')}`;
+ L['player.line']=`player-01 · ${PSTATE[O.pstate]||'—'} · PV ${php}`;
+ L['input.line']='entrées jouées par un script';
+ for(const i of sent){const I=O.inst[i]||{};L[`e.${i}.state`]=I.state?STATE[I.state]:'—';L[`e.${i}.hp`]=`PV ${I.hp??4}/4`;
+  L[`hb.${i}`]=`${i} : ${I.attacks||0} ${plural(I.attacks||0,'attaque','attaques')} · ${I.contacts||0} contact${(I.contacts||0)>1?'s':''}${G.sc==='bad_mask'&&i==='sentinel-02'?' · masque 4':''}`;}
+ L['hb.mask']=G.sc==='bad_mask'?'2 ; sentinel-02 : 4, surcharge de sentinels.tscn':'2';
+ L['enemy.line']=sent.map(i=>`${i.replace('sentinel','s')} ${O.inst[i]?.state?STATE[O.inst[i].state]:'—'}`).join(' · ');
+ const si=selected.startsWith('sentinel')?selected:'sentinel-02',dc=O.dc[si]||{t:0,f:0},ld=O.inst[si]?.lastDec;
+ L['e.yes']=`×${nf(dc.t)}`;L['e.no']=`×${nf(dc.f)}`;L['e.selinst']=si;
+ L['e.lastbranch']=ld?`${ld.result?'oui':'non'}, distance ${fr(ld.distance)}, pas ${ld.tick}`:'aucune observée';L['e.dist']=ld?`= ${fr(ld.distance)}`:'';
+ for(const s of ['patrol','chase','attack','hurt','dead'])L[`st.${s}`]=sent.filter(i=>O.inst[i]?.state===s).map(i=>i.slice(-2)).join(' ');
+ L['combat.line']=O.lastDmg?`dernier : ${O.lastDmg.src} → player-01, pas ${O.lastDmg.tick}`:'aucun dégât observé';
+ L['c.last']=O.lastDmg?`Dernier contact appliqué : ${O.lastDmg.src} → player-01 · PV ${O.lastDmg.value} · pas ${O.lastDmg.tick}`:'Aucun dégât observé pour l’instant.';
+ L['hud.line']=`affiche ${php} PV`;L['bus.line']=O.lastBus?`dernier signal : ${O.lastBus}`:'aucun signal observé';
+ const alive=sent.filter(i=>O.inst[i]?.state&&O.inst[i].state!=='dead').length;
+ L['room.line']=O.cleared?'sentinels_alive = 0 · salle vidée':`sentinels_alive = ${alive}`;
+ L['door.line']=G.route?`ouverte · choose_route : ${G.route==='shrine'?'Sanctuaire':'Épreuve'}`:O.cleared?'ouverte':'fermée';
+ L['loot.line']=O.lootTaken?'Braise vive ramassée':O.lootSpawned?'Braise vive au sol':'pas encore apparu';
+ L['braziers.line']='décor animé, sans flux';
+ CHAINS[chainId].steps.forEach((s,i)=>{const n=chainCount(s),bad=s.edge==='e-col'&&badMask();L[`ch.${i}`]=bad?'sentinel-02 : 0 contact, masque 4':s.prov==='extrait'?'extrait du code · non instrumenté':n?`observé ×${nf(n)}`:'pas encore observé';});
+ for(const el of mapLiveEls){const k=el.dataset.live,v=L[k];if(v==null)continue;if(el.textContent!==v)el.textContent=v;if(k.startsWith('ch.')){el.className='pv'+(v.startsWith('observé')?' obs':v.includes('0 contact')?' bad':'');}}
+ const cur=new Set(sent.map(i=>`enemy:${O.inst[i]?.state}`));cur.add(`player:${O.pstate}`);
+ for(const el of $('map-content').querySelectorAll('[data-stt]'))el.classList.toggle('cur',cur.has(el.dataset.stt));
+ for(const el of $('map-content').querySelectorAll('[data-hinst]'))el.classList.toggle('on',el.dataset.hinst===selected);
+ const yb=$('map-content').querySelector('.f-b.yes'),nb=$('map-content').querySelector('.f-b.no');
+ if(yb){yb.classList.toggle('last',!!ld&&ld.result);nb.classList.toggle('last',!!ld&&!ld.result);}
+ const tk=`${treeTab}|${mapSel}|${G.sc}|${O.lootSpawned}`;if(tk!==lastTreeKey)renderTree();
+ updateEdges(now);
+}
+function fileHTML(list){return list.map(([name,b,c])=>Array.isArray(b)?`<details class="tr-folder" open><summary>${esc(name)}/</summary><div class="tr-kids">${fileHTML(b)}</div></details>`:`<button class="tr-item${c?'':' inert'}${c&&c===mapSel?' on':''}" ${c?`data-tnode="${c}"`:'tabindex="-1"'} style="--g:var(--c-${b||'none'})"><span class="gd"></span>${esc(name)}<small>${name.endsWith('.gd')?'script':name.endsWith('.tscn')?'scène':'asset'}</small></button>`).join('');}
+function sceneHTML(list){return list.map(([name,type,info,g,node,inst,kids,bad])=>{const item=`<button class="tr-item${node?'':' inert'}${node&&node===mapSel?' on':''}" ${node?`data-tnode="${node}"`:'tabindex="-1"'} ${inst?`data-tinst="${inst}"`:''} style="--g:var(--c-${g||'none'})"><span class="gd"></span>${esc(name)}<small class="${bad?'bad-t':''}">${esc([type,info].filter(Boolean).join(' · '))}</small></button>`;return kids.length?`<details class="tr-folder" open><summary>${item}</summary><div class="tr-kids">${sceneHTML(kids)}</div></details>`:item;}).join('');}
+function renderTree(){lastTreeKey=`${treeTab}|${mapSel}|${G.sc}|${O.lootSpawned}`;const t=$('tree'),st=t.scrollTop;t.innerHTML=treeTab==='files'?`<div class="tr-item inert">res://</div><div class="tr-kids">${fileHTML(FILES)}</div>`:sceneHTML(SCENE());t.scrollTop=st;$('tab-files').setAttribute('aria-selected',treeTab==='files');$('tab-scene').setAttribute('aria-selected',treeTab==='scene');}
+function selectMapNode(id,reveal){
+ mapSel=mapSel===id&&!reveal?null:id;
+ if(reveal&&id){folded.delete(id);gFolded.delete(NODES[id].g);}
+ buildMap();renderTree();
+ if(reveal&&id){const card=$('map-content').querySelector(`[data-node="${id}"]`);card?.scrollIntoView({block:'nearest',inline:'nearest'});}
+}
+function placeBanner(){const b=$('banner');if(mapOn){const bar=$('map').querySelector('.map-bar');if(b.previousElementSibling!==bar)bar.after(b);}else if(b.parentElement!==$('stage'))$('stage').insertBefore(b,$('brk-panel'));}
+function setMode(on){mapOn=on;placeBanner();$('stage').classList.toggle('mode-map',on);$('mode-map').setAttribute('aria-pressed',on);$('mode-inst').setAttribute('aria-pressed',!on);if(on){buildMap();renderTree();}}
+function mapClick(b){
+ if(b.id==='mode-map'){setMode(true);return true;}
+ if(b.id==='mode-inst'){setMode(false);return true;}
+ if(b.id==='tab-files'||b.id==='tab-scene'){treeTab=b.id==='tab-files'?'files':'scene';renderTree();return true;}
+ if(b.id==='fold-all'){for(const id in NODES)folded.add(id);buildMap();return true;}
+ if(b.id==='unfold-all'){folded.clear();gFolded.clear();buildMap();return true;}
+ if(b.dataset.fold){const id=b.dataset.fold;if(folded.has(id))folded.delete(id);else folded.add(id);buildMap();return true;}
+ if(b.dataset.gfold){const id=b.dataset.gfold;if(gFolded.has(id))gFolded.delete(id);else gFolded.add(id);buildMap();return true;}
+ if(b.dataset.mapsel){selectMapNode(b.dataset.mapsel,false);return true;}
+ if(b.dataset.reveal){treeTab='files';mapSel=b.dataset.reveal;buildMap();renderTree();$('tree').querySelector('.tr-item.on')?.scrollIntoView({block:'center'});return true;}
+ if(b.dataset.tnode){if(b.dataset.tinst)setSelected(b.dataset.tinst);selectMapNode(b.dataset.tnode,true);return true;}
+ if(b.dataset.hinst){setSelected(b.dataset.hinst);updateMapLive(performance.now());return true;}
+ if(b.dataset.chainI!=null){const s=CHAINS[chainId].steps[+b.dataset.chainI];const node=s.edge?EDGE[s.edge].to:'enemy';selectMapNode(node,true);return true;}
+ return false;
+}
+
 /* ---------- Dessin : image du jeu ---------- */
 const gameCv=$('game'),toolCv=$('tool'),gctx=gameCv.getContext('2d'),tctx=toolCv.getContext('2d');
 let scale=1,cracks=[];const CS=getComputedStyle(document.documentElement),GF=CS.getPropertyValue('--game').trim(),MF=CS.getPropertyValue('--mono').trim();
@@ -1039,8 +1434,10 @@ function drawTool(now){
   c.beginPath();c.arc(pos[0],pos[1],RANGE,0,7);c.stroke();c.setLineDash([]);
   const pp=S['player-01'];
   if(pp&&!stale){c.strokeStyle=inR?'rgba(237,189,120,.55)':'rgba(120,206,197,.35)';c.lineWidth=1;c.beginPath();c.moveTo(pos[0],pos[1]);c.lineTo(pp[0],pp[1]);c.stroke();}
-  if(G.sc==='bad_mask'&&id==='sentinel-02'){c.strokeStyle='rgba(239,139,133,.85)';c.setLineDash([3,4]);c.lineWidth=1.5;c.beginPath();c.arc(pos[0],pos[1],22,0,7);c.stroke();c.setLineDash([]);c.font='11px '+MF;c.textAlign='left';const lw=c.measureText('hitbox · masque 4').width;const lx=pos[0]+RANGE+6,ly=pos[1]+4;c.fillStyle='rgba(17,23,27,.88)';c.fillRect(lx-4,ly-12,lw+8,17);c.fillStyle='rgba(239,139,133,.98)';c.fillText('hitbox · masque 4',lx,ly);}
+  if(G.sc==='bad_mask'&&id==='sentinel-02'){c.strokeStyle='rgba(239,139,133,.85)';c.setLineDash([3,4]);c.lineWidth=1.5;c.beginPath();c.arc(pos[0],pos[1],22,0,7);c.stroke();c.setLineDash([]);if(!mapOn){c.font='11px '+MF;c.textAlign='left';const lw=c.measureText('hitbox · masque 4').width;const lx=pos[0]+RANGE+6,ly=pos[1]+4;c.fillStyle='rgba(17,23,27,.88)';c.fillRect(lx-4,ly-12,lw+8,17);c.fillStyle='rgba(239,139,133,.98)';c.fillText('hitbox · masque 4',lx,ly);}}
  }
+ const hv=hoverInst&&S[hoverInst];
+ if(hv){c.strokeStyle='rgba(237,189,120,.95)';c.lineWidth=2.5;c.beginPath();c.arc(hv[0],hv[1],hoverInst==='player-01'?21:24,0,7);c.stroke();}
  const sel=S[selected];
  if(sel){c.strokeStyle='rgba(120,206,197,.95)';c.lineWidth=2;c.beginPath();c.arc(sel[0],sel[1],selected==='player-01'?17:20,0,7);c.stroke();}
  O.fx=O.fx.filter(f=>now-f.t<700);
@@ -1068,7 +1465,7 @@ function frame(now){
  drawGame(now);drawTool(now);renderChips();renderCtrl();
  if(stepsDirty)renderSteps();
  if(brkDirty)renderBrk();
- if(now-lastSlowRender>125){lastSlowRender=now;if(jDirty)renderJournal();if(iDirty)renderInspector();}
+ if(now-lastSlowRender>125){lastSlowRender=now;if(jDirty)renderJournal();if(iDirty)renderInspector();updateMapLive(now);}
  if(now-lastSessRender>250||sDirty){lastSessRender=now;renderSession();}
  requestAnimationFrame(frame);
 }
@@ -1084,6 +1481,7 @@ function openCode(){$('code-view').innerHTML=CODE.map(([n,l])=>`<div class="${n=
 
 document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b||b.disabled)return;
+ if(mapClick(b))return;
  if(b.dataset.close){$(b.dataset.close).close();return;}
  if(b.dataset.collapse){const p=$(b.dataset.collapse),c=!p.classList.contains('collapsed');p.classList.toggle('collapsed',c);b.setAttribute('aria-expanded',!c);b.textContent=c?'Déplier':'Replier';return;}
  if(b.dataset.step){const id=b.dataset.step;if(entryBreaks.has(id))entryBreaks.delete(id);else entryBreaks.add(id);stepsDirty=brkDirty=true;renderSteps();renderBrk();return;}
@@ -1103,8 +1501,15 @@ document.addEventListener('click',e=>{
   case 'see-gap':{const r=Object.values(O.invs).find(r=>r.incomplete||r.missingEnter);if(r)setSelected(r.inst,r.inv);break;}
  }
 });
+document.addEventListener('pointerover',e=>{
+ const t=e.target.closest('[data-chain-i],[data-var],[data-hinst]');
+ const he=t?.dataset.chainI!=null?(s=>[s.edge,s.edge2].filter(Boolean))(CHAINS[chainId].steps[+t.dataset.chainI]):t?.dataset.var?VAR_EDGES[t.dataset.var]||null:null;
+ const hi=t?.dataset.hinst||null;
+ if(String(he)!==String(hoverEdges)||hi!==hoverInst){hoverEdges=he&&he.length?he:null;hoverInst=hi;updateEdges(performance.now());}
+});
 document.addEventListener('change',e=>{
  const t=e.target;
+ if(t.id==='chain-sel'){chainId=t.value;renderChain();updateMapLive(performance.now());return;}
  if(t.dataset.brk){brk[t.dataset.brk].on=t.checked;brkDirty=true;renderBrk();}
  if(t.dataset.entry){if(t.checked)entryBreaks.add(t.dataset.entry);else entryBreaks.delete(t.dataset.entry);stepsDirty=brkDirty=true;renderSteps();renderBrk();}
 });
@@ -1112,6 +1517,8 @@ $('c-pause').onclick=togglePause;$('c-step').onclick=stepOnce;$('c-flip').onclic
 $('collect-btn').onclick=()=>{if(G.killed)return;sendCmd(G.collect?'stop':'start');};
 $('restart-btn').onclick=reset;$('scenario').onchange=reset;
 $('ui-btn').onclick=()=>setUi(!uiOn);
+$('alpha').oninput=e=>$('map').style.setProperty('--a',e.target.value/100);
+new ResizeObserver(queueEdges).observe($('map-scroll'));
 $('help-btn').onclick=()=>$('help-dialog').showModal();
 $('plan-btn').onclick=()=>{const on=!document.body.classList.contains('show-plan');document.body.classList.toggle('show-plan',on);$('plan-btn').setAttribute('aria-pressed',on);};
 $('game').addEventListener('click',e=>{if(G.step!=='choice1')return;const r=gameCv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;if(y<90){if(Math.abs(x-380)<50)chooseRoute('shrine');else if(Math.abs(x-580)<50)chooseRoute('elite');}});
@@ -1120,11 +1527,11 @@ document.addEventListener('keydown',e=>{
  if(e.target.closest('input,select,textarea')||document.querySelector('dialog[open]')||e.ctrlKey||e.metaKey||e.altKey)return;
  const k=e.key.toLowerCase();
  if(k===' '){if(e.target.closest('button'))return;e.preventDefault();togglePause();}
- else if(k==='n')stepOnce();else if(k==='d')flipNext();else if(k==='e')toStepEnd();else if(k==='h')setUi(!uiOn);
+ else if(k==='n')stepOnce();else if(k==='d')flipNext();else if(k==='e')toStepEnd();else if(k==='h')setUi(!uiOn);else if(k==='m')setMode(!mapOn);
 });
 new ResizeObserver(resize).observe($('screen'));
 document.body.classList.add('show-plan');
 if(innerWidth<1100&&innerWidth>=900){$('brk-panel').classList.add('collapsed');const b=document.querySelector('[data-collapse="brk-panel"]');b.textContent='Déplier';b.setAttribute('aria-expanded','false');}
-resize();reset();requestAnimationFrame(frame);
+resize();placeBanner();reset();requestAnimationFrame(frame);
 })();
 </script>
