@@ -74,7 +74,7 @@ Créer le projet Godot de développement et un plugin éditeur qui se charge et 
 - addons/godot_dev_mapper/plugin.cfg : nom « Godot Dev Mapper », version 0.0.1, script plugin.gd.
 - addons/godot_dev_mapper/plugin.gd : @tool, extends EditorPlugin. Seulement si la variable d'environnement GDM_TRACE_LIFECYCLE vaut « 1 » : afficher GDM_PLUGIN_ENTER dans _enter_tree et GDM_PLUGIN_EXIT dans _exit_tree. Rien d'autre.
 - Un README.md d'une ligne qui décrit le rôle du module, dans chaque dossier : core, protocol, store, projections, ui, editor, persistence, acquisition, compat (sous addons/godot_dev_mapper/), et dans addons/godot_dev_mapper_runtime/.
-- .gitignore : .godot/, *.out, sandbox/ (compléter le fichier existant).
+- .gitignore : .godot/, .godot-bin/, *.out, sandbox/ (compléter le fichier existant). .godot-bin/ recevra les binaires de Godot téléchargés par T03.
 
 CONTRÔLES (exécute-les tous et colle les sorties)
 T01-a  godot --headless --path . --import ; echo $?                                → 0

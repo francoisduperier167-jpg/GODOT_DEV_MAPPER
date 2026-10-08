@@ -12,7 +12,9 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 | `docs/methodologie.md` | Méthode de construction MC-0.5 : sources de vérité et leur hiérarchie, contrats, tests, CI, veille de Godot, gabarits |
 | `docs/orchestration.md` | OR-0.5 : tâches T00 à T20, dépendances, routage entre les modèles |
 | `docs/construction/` | Guide de construction GC-0.4 et sa carte interactive `carte.html` : pour chaque étape, objectif, obligations, méthodologie, points de contrôle, amélioration et prompts de réalisation et de vérification |
-| `docs/construction/sequence.md` | Déroulé séquentiel du mode autonome : ordre des 35 unités du POC puis des phases, rôles des trois IA, prompt de créneau, arrêts obligatoires, recette finale |
+| `SUIVI.md` | Liste de progression à cocher : une ligne par unité, ses prérequis, les vagues d'unités indépendantes, la recette finale |
+| `suivi/` | Une fiche d'exécution par unité : ce qu'il faut faire, fichiers autorisés, prompt de réalisation, prompt de vérification, sous-étapes à cocher ; `suivi/outil.py verifier` contrôle la cohérence |
+| `docs/construction/sequence.md` | Règles du mode autonome : rôles des trois IA, prise en charge et fusion, prompt de créneau, arrêts obligatoires, recette finale |
 | `docs/maquettes/` | Maquettes fictives du rendu : atlas EMBER hors exécution, et mode en direct avec la carte des scripts superposée au jeu |
 | `docs/spikes/SPIKE-01.md` | Rapport de SPIKE-01a : canal du débogueur, partie jeu, mesuré sur 4.7.2 et 4.8-dev7 |
 | `spikes/` | Prototypes jetables des spikes |
@@ -28,8 +30,8 @@ Préparation d'un plugin pour Godot : **Godot Visual Program & Execution Explore
 
 **En mode autonome**, le mode proposé (D-09) :
 1. Donne à chaque IA, au début de chacun de ses créneaux, le prompt de créneau de `docs/construction/sequence.md` (§4), avec son nom et son rôle.
-2. La première IA au rôle de concepteur commence par l'unité S01, le dossier de décisions. Les suivantes enchaînent seules, une unité après l'autre.
-3. Tu n'interviens qu'à la recette finale (§8), ou si un fichier `rapports/ARRET.md` apparaît sur `main` (§6).
+2. L'IA choisit seule son travail dans `SUIVI.md` : la première unité disponible pour son rôle, ou une unité à vérifier. Elle suit la fiche de l'unité dans `suivi/` et coche les sous-étapes au fur et à mesure ; une autre IA reprend à la première case non cochée. La première unité est S01, le dossier de décisions, par le concepteur.
+3. Tu n'interviens qu'à la recette finale (fin de `SUIVI.md`), ou si un fichier `rapports/ARRET.md` apparaît sur `main` (§5 de `sequence.md`).
 
 **En mode piloté**, le mode d'origine :
 1. Relire `docs/plan-directeur.md` et trancher les décisions bloquantes D-01, D-02, D-05 et D-07 (§10).

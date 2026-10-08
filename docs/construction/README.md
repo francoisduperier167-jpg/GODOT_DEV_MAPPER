@@ -2,9 +2,9 @@
 
 Révision GC-0.4 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.5, OR-0.5, MC-0.5 et SPIKE-01a
 
-**Changements depuis GC-0.3** : déroulé séquentiel pour le mode autonome (`sequence.md`) ; T05 ne dépend plus de T01 ; PC2.1 compte six critères ; T05 exécutable sous écran virtuel.
+**Changements depuis GC-0.3** : mode autonome (`sequence.md`, `SUIVI.md`, fiches `suivi/`) ; `.godot-bin/` ignoré par T01 ; amendement de fin de POC numéroté PD-0.6 ; T05 ne dépend plus de T01 ; PC2.1 compte six critères ; T05 exécutable sous écran virtuel.
 
-**En mode autonome (D-09)**, l'ordre d'exécution, les rôles des trois IA, le prompt de créneau et les adaptations des étapes sont dans `sequence.md`. Ce guide reste la référence de chaque tâche : objectif, fichiers autorisés, contrôles, prompts.
+**En mode autonome (D-09)**, les règles, les rôles des trois IA et le prompt de créneau sont dans `sequence.md` ; la liste de progression à cocher est `SUIVI.md`, à la racine ; chaque unité a sa fiche d'exécution dans `suivi/`, avec ses prompts et ses sous-étapes. Ce guide reste la conception de chaque tâche : les fiches en recopient le travail technique à l'identique, et `python3 suivi/outil.py verifier` signale tout écart.
 
 **Changements depuis GC-0.2**, après une relecture externe :
 - copies de travail isolées pour chaque tâche et pour son vérificateur ;
@@ -73,7 +73,7 @@ L'étape de fusion est aussi l'étape d'intégration : `run_all_checks.sh` y est
 
 | Fichier | Contenu |
 | --- | --- |
-| `sequence.md` | Déroulé séquentiel du mode autonome : une unité après l'autre, trois IA en rotation, recette humaine finale |
+| `sequence.md` | Règles du mode autonome : rôles des trois IA, prise en charge et fusion, prompt de créneau, arrêts obligatoires, recette finale |
 | `etape-0.md` | Décisions, squelettes de documents, environnement de Qwen (T00) |
 | `etape-1.md` | Fondations : projet, runner, contrôle de dépendances, CI, banc d'essai (T01 à T04) |
 | `etape-2.md` | Spikes : partie éditeur du canal (T05), frontière de compatibilité (T06) |

@@ -44,7 +44,7 @@ La valeur de la cartographie elle-même (retrouver un appelant, comprendre un sy
 | PC7.2 | Mesure complète | `docs/mesures/valeur-poc.md` | Durées indicatives, coûts, observations qualitatives, cause trouvée contre cause réelle |
 | PC7.3 | Revue préparée | Synthèse d'Opus | Budgets consommés contre prévus, réussite par modèle, signal d'utilité, risques |
 | PC7.4 | Décision | `docs/DECISIONS.md` | Continuer, réduire, réorienter ou arrêter, avec sa justification |
-| PC7.5 | Plan à jour | Amendement du plan (PD-0.5) | Budgets recalibrés ; décisions sur SPIKE-03, SPIKE-04 et la reprise d'AST Flow |
+| PC7.5 | Plan à jour | Amendement du plan (PD-0.6) | Budgets recalibrés ; décisions sur SPIKE-03, SPIKE-04 et la reprise d'AST Flow |
 
 ## Cheminement d'amélioration
 
@@ -110,7 +110,7 @@ PRODUIS docs/revues/revue-poc.md avec :
    - reprise d'AST Flow comme backend statique ;
    - routage des modèles pour le MVP ;
    - besoin, ou non, d'une mesure de valeur plus large au MVP.
-7. Proposition d'amendement du plan (PD-0.5) : budgets recalibrés et décisions retenues. Le diff exact, sans l'appliquer.
+7. Proposition d'amendement du plan (PD-0.6) : budgets recalibrés et décisions retenues. Le diff exact, sans l'appliquer.
 ```
 
 **Contrôles**
@@ -119,5 +119,5 @@ PRODUIS docs/revues/revue-poc.md avec :
 | --- | --- | --- |
 | T20-a | Chiffres de la revue recalculés par Gemini depuis `PROJECT_STATE.md` | Mêmes totaux |
 | T20-b | Décision consignée et datée dans `docs/DECISIONS.md` | Présente |
-| T20-c | Amendement du plan appliqué après ta validation | PD-0.5 en tête du plan |
+| T20-c | Amendement du plan appliqué après ta validation | PD-0.6 en tête du plan |
 | T20-d | Si la décision est de continuer | Découpage de P4a lancé avec le prompt de `mvp.md` |
