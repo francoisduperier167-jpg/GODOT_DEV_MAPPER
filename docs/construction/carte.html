@@ -438,7 +438,7 @@ footer p { margin: 0; }
     "T02": { title: "Runner de tests et contrôle de dépendances", author: "qwen", verifier: "gemini", deps: ["T01"] },
     "T03": { title: "Contrôle unique, lint et CI", author: "qwen", verifier: "opus", deps: ["T02"] },
     "T04": { title: "Banc d'essai", flow: "t04", author: "qwen", verifier: "toi", deps: ["0.A"] },
-    "T05": { title: "SPIKE-01b : partie éditeur du canal", author: "opus", verifier: "gemini", deps: ["T01"], machine: true, vp: "spike01b" },
+    "T05": { title: "SPIKE-01b : partie éditeur du canal", author: "opus", verifier: "gemini", deps: ["0.B"], machine: true, vp: "spike01b" },
     "T06": { title: "SPIKE-02 : frontière de compatibilité", author: "opus", verifier: "gemini", deps: ["T03"] },
     "T07": { title: "Contrats C-01, C-02, C-05", author: "opus", verifier: "gemini", deps: ["T06"], vp: "contrat" },
     "T08": { title: "Contrats C-03, C-04, C-06, C-07", author: "opus", verifier: "gemini", deps: ["T05", "T06", "T07"], vp: "contrat", freeze: true },

@@ -1,6 +1,10 @@
 # Guide de construction, étape par étape
 
-Révision GC-0.3 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.4, OR-0.4, MC-0.4 et SPIKE-01a
+Révision GC-0.4 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.5, OR-0.5, MC-0.5 et SPIKE-01a
+
+**Changements depuis GC-0.3** : déroulé séquentiel pour le mode autonome (`sequence.md`) ; T05 ne dépend plus de T01 ; PC2.1 compte six critères ; T05 exécutable sous écran virtuel.
+
+**En mode autonome (D-09)**, l'ordre d'exécution, les rôles des trois IA, le prompt de créneau et les adaptations des étapes sont dans `sequence.md`. Ce guide reste la référence de chaque tâche : objectif, fichiers autorisés, contrôles, prompts.
 
 **Changements depuis GC-0.2**, après une relecture externe :
 - copies de travail isolées pour chaque tâche et pour son vérificateur ;
@@ -69,6 +73,7 @@ L'étape de fusion est aussi l'étape d'intégration : `run_all_checks.sh` y est
 
 | Fichier | Contenu |
 | --- | --- |
+| `sequence.md` | Déroulé séquentiel du mode autonome : une unité après l'autre, trois IA en rotation, recette humaine finale |
 | `etape-0.md` | Décisions, squelettes de documents, environnement de Qwen (T00) |
 | `etape-1.md` | Fondations : projet, runner, contrôle de dépendances, CI, banc d'essai (T01 à T04) |
 | `etape-2.md` | Spikes : partie éditeur du canal (T05), frontière de compatibilité (T06) |
@@ -220,7 +225,7 @@ Chaque amélioration acceptée est appliquée au guide, dont la révision augmen
 | --- | --- | --- | --- |
 | 0 Décisions et environnement | Décisions, squelettes, T00 | 2–4 | Squelettes : oui. Décisions : non, elles sont à toi. T00 : non, Qwen est local |
 | 1 Fondations | T01 à T04 | 4–6 | T01 à T03 : oui, sauf l'envoi sur GitHub. T04 : en partie |
-| 2 Spikes | T05, T06 | 4–6 | T06 : oui. T05 : non, il faut l'éditeur avec rendu |
+| 2 Spikes | T05, T06 | 4–6 | T06 : oui. T05 : oui sous écran virtuel avec rendu logiciel (vérifié le 8 octobre 2026) ; la mesure sur GPU reste à faire sur ta machine |
 | 3 Contrats | T07, T08 | 4–6 | T07 : oui. T08 : non, il attend SPIKE-01b (T05). La validation reste à toi |
 | 4 Implémentation | T09 à T13c | 4–7, objectif favorable | Godot sans interface suffit, mais tout dépend de T08, donc de T05 |
 | 5 Intégration | T14, T15 | 2–4 | Après T08 : T15 et la logique de T14. Essai dans l'éditeur : non |
@@ -230,7 +235,7 @@ Chaque amélioration acceptée est appliquée au guide, dont la révision augmen
 | MVP | P4a à P8 | 43–74 | Voir `mvp.md` |
 | V1 | P9 à P16 | 75–120 | Voir `v1.md` |
 
-Sans ta machine, le projet avance jusqu'à T07 : décisions, squelettes, T01 à T04, T06 et T07. T08 attend SPIKE-01b (T05), qui exige l'éditeur avec rendu ; tout le reste du POC dépend de T08. La carte interactive applique ces dépendances d'elle-même.
+Sans ta machine, le projet avance jusqu'à T07 : décisions, squelettes, T01 à T04, T06 et T07. T08 attend SPIKE-01b (T05), qui demande l'éditeur avec rendu : un écran virtuel avec rendu logiciel suffit, ce qui a été vérifié le 8 octobre 2026 dans un conteneur, sur Godot 4.7.2. La carte interactive applique ces dépendances d'elle-même.
 
 ## Outillage créé au fil des étapes
 

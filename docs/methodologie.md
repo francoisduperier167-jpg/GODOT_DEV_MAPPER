@@ -1,6 +1,8 @@
 # Méthodologie de construction — Godot Visual Program & Execution Explorer
 
-Révision MC-0.4 · statut : **proposé** · 8 octobre 2026 · entrées : `prompts/methodologie.txt` v2.2, `docs/plan-directeur.md` PD-0.4 (proposé), `docs/spikes/SPIKE-01.md` · remplace MC-0.3
+Révision MC-0.5 · statut : **proposé** · 8 octobre 2026 · entrées : `prompts/methodologie.txt` v2.2, `docs/plan-directeur.md` PD-0.5 (proposé), `docs/spikes/SPIKE-01.md` · remplace MC-0.4
+
+Changements depuis MC-0.4 : état des entrées mis à jour ; `REGLES_AGENTS.md` comme source unique des règles, 150 lignes au plus ; seuil de débit de SPIKE-01 aligné sur le plan ; budget de veille en heures ; mode autonome et séquentiel (D-09), décrit dans `docs/construction/sequence.md`.
 
 Changements depuis MC-0.3 : copies de travail isolées ; fichiers partagés réservés à la fusion ; QUESTION réservée aux changements de contrat, de périmètre ou d'interface publique ; validation des formats en deux niveaux.
 
@@ -8,19 +10,19 @@ Changements depuis MC-0.2 : hiérarchie des sources ; documents historiques marq
 
 Changements depuis MC-0.1 : unités de pilotage en heures ; spikes réordonnés ; compatibilité allégée avant la preuve de valeur ; quatre modèles ; fixtures de cycle de vie ; dossier runtime autonome dans le contrôle de dépendances.
 
-La partie 9, les vingt premières tâches et le déroulé pas à pas, est dans `docs/orchestration.md` (OR-0.4), qui sert de backlog vivant.
+La partie 9, les vingt premières tâches et le déroulé pas à pas, est dans `docs/orchestration.md` (OR-0.5), qui sert de backlog vivant. En mode autonome (D-09), l'ordre d'exécution est celui de `docs/construction/sequence.md`.
 
 ## 1. Hypothèses, entrées réelles et mode d'emploi
 
-| Élément | État au 7 octobre 2026 |
+| Élément | État au 8 octobre 2026 |
 | --- | --- |
 | Prompt de méthodologie | v2.2, fourni |
-| Plan directeur | PD-0.4, fourni, non validé |
+| Plan directeur | PD-0.5, fourni, non validé |
 | Estimation | `docs/estimation.md`, fournie |
-| Dépôt GODOT_DEV_MAPPER | Documents seulement, aucun code |
+| Dépôt GODOT_DEV_MAPPER | Documents et prototype jetable de SPIKE-01a ; aucun code du plugin |
 | Décisions approuvées | Aucune, hors paramètres connus |
 | Versions de Godot | 4.7.2 bloquante ; préversion 4.8 (dev 7) contrôlée à part |
-| Outils de test | Non choisis (D-05) ; aucune commande n'est encore vérifiée |
+| Outils de test | Runner non choisi (D-05) ; commandes de contrôle vérifiées le 8 octobre 2026 avec Godot 4.7.2 et gdtoolkit 4.5.0, listées dans `docs/construction/README.md` |
 
 Mode d'emploi :
 
@@ -57,7 +59,7 @@ Un test peut être faux, un contrat peut devoir évoluer : une contradiction ouv
 | `docs/TEST_PLAN.md` | Stratégie, commandes vérifiées | Oui | Nouvelle catégorie de test |
 | `PROJECT_STATE.md` | État réel, budget consommé, mesures, dette | Non | Fin de tâche |
 | `docs/adr/` | Décisions | Oui, une fois acceptées | Décision |
-| `CLAUDE.md` | Règles courtes pour les agents, 200 lignes au plus | Oui | Correction répétée deux fois |
+| `REGLES_AGENTS.md` | Règles courtes pour les agents, 150 lignes au plus ; `CLAUDE.md` et `GEMINI.md` en sont des copies produites par `tools/sync_rules.sh` | Oui | Correction répétée deux fois |
 
 Au POC, SPEC, ARCHITECTURE et CONTRACTS peuvent tenir dans un même fichier. On extrait DATA_MODEL, RUNTIME_PROTOCOL ou GRAPH_MODEL quand un contrat devient stable ou que CONTRACTS dépasse environ 400 lignes. Une définition n'existe qu'à un seul endroit.
 
@@ -91,7 +93,7 @@ Ce contrôle textuel ne voit pas les appels dynamiques ; la revue ciblée le com
 
 | Spike | Question | Mesure | Succès | Durée max, heures humaines |
 | --- | --- | --- | --- | --- |
-| SPIKE-01 | Un aller-retour jeu-éditeur fonctionne-t-il, y compris après un redémarrage et depuis une classe statique ? | Débit, latence, pertes | 2 000 événements par seconde en lots sans perte ; redémarrage propre | Partie jeu faite (SPIKE-01a, KEEP) ; partie éditeur en T05, 3 h |
+| SPIKE-01 | Un aller-retour jeu-éditeur fonctionne-t-il, y compris après un redémarrage et depuis une classe statique ? | Débit, latence, pertes | 10 000 événements par seconde en lots sans perte (plan §8) ; redémarrage propre | Partie jeu faite (SPIKE-01a : 24 000 sans rendu, KEEP) ; partie éditeur en T05, 3 h |
 | SPIKE-02 | Façade, détection de capacités, UID et isolation de compilation tiennent-ils sur 4.7.2 et la préversion, testés à la main ? | Erreurs de compilation, comportement | Plugin actif sur les deux versions | 3 h |
 | SPIKE-03 | Quel rendu tient 300 éléments visibles ? | Temps de frame, latence d'interaction | 16 ms au plus à 300 éléments | 3 à 6 h, au début du MVP |
 | SPIKE-04 | GDScript AST Flow ou extraction maison ? | Relations correctes, fausses, manquées ; coût d'intégration | 90 % des appels directs résolus, aucune relation certaine fausse | 3 à 6 h, au début du MVP |
@@ -100,7 +102,7 @@ Ce contrôle textuel ne voit pas les appels dynamiques ; la revue ciblée le com
 
 Chaque spike vit dans `spikes/`, hors du plugin, et se conclut par KEEP, REWRITE ou DISCARD dans `docs/spikes/`. Sans exécution réelle, son résultat reste « à vérifier ».
 
-La première tranche, les phases et leurs budgets sont ceux du plan directeur (§9). Le pilotage suit séparément les heures humaines, le temps agent et les capacités acceptées (définitions : PD-0.4, §0). `PROJECT_STATE.md` suit la consommation réelle ; un dépassement de 50 % déclenche une revue de continuation sans attendre la fin de phase.
+La première tranche, les phases et leurs budgets sont ceux du plan directeur (§9). Le pilotage suit séparément les heures humaines, le temps agent et les capacités acceptées (définitions : PD-0.5, §0). `PROJECT_STATE.md` suit la consommation réelle ; un dépassement de 50 % déclenche une revue de continuation sans attendre la fin de phase.
 
 ## 5. Tâches, contexte, autonomie et orchestration
 
@@ -185,7 +187,7 @@ Claude Code : `/clear` entre deux tâches ; `opusplan` pour les tâches de conce
 | Temporalité incorrecte | Bloc interrompu et occurrence incomplète distingués | MVP |
 | Plugin fragile | Activer, désactiver et réactiver nettoie tout | POC |
 
-**CI, à créer en T03, après le runner de T02.** Le workflow `ci.yml` teste chaque push sur 4.7.2, de façon bloquante, et la dernière préversion dans un job séparé non bloquant. Les binaires officiels viennent de l'archive du projet godot-builds. Chaque job lance le runner en mode headless, le contrôle de dépendances et le lint. Chaque contrôle ajouté ensuite est un script de `tools/ci/checks.d/`, que `run_all_checks.sh` exécute dans l'ordre. Les formats JSON se valident en deux niveaux : le schéma, puis des règles sémantiques à codes d'erreur (références, unicité d'une clé, ordre des séquences, taille en octets) ; chaque fixture invalide doit être rejetée avec le code de son nom, et lui seul. La veille hebdomadaire automatisée n'arrive qu'au MVP, ou plus tôt après une rupture constatée. Les commandes exactes restent « non vérifiées » jusqu'à leur exécution en T02 et T03.
+**CI, à créer en T03, après le runner de T02.** Le workflow `ci.yml` teste chaque push sur 4.7.2, de façon bloquante, et la dernière préversion dans un job séparé non bloquant. Les binaires officiels viennent de l'archive du projet godot-builds. Chaque job lance le runner en mode headless, le contrôle de dépendances et le lint. Chaque contrôle ajouté ensuite est un script de `tools/ci/checks.d/`, que `run_all_checks.sh` exécute dans l'ordre. Les formats JSON se valident en deux niveaux : le schéma, puis des règles sémantiques à codes d'erreur (références, unicité d'une clé, ordre des séquences, taille en octets) ; chaque fixture invalide doit être rejetée avec le code de son nom, et lui seul. La veille hebdomadaire automatisée n'arrive qu'au MVP, ou plus tôt après une rupture constatée. Les commandes vérifiées le 8 octobre 2026 sont listées dans le guide ; toute autre commande reste « non vérifiée » jusqu'à son exécution en T02 et T03.
 
 Un test headless ne valide pas l'interface. Un import sans erreur ne prouve pas que tous les scripts fonctionnent.
 
@@ -213,7 +215,7 @@ Un test headless ne valide pas l'interface. Un import sans erreur ne prouve pas 
 4. À la sortie stable, bascule de la version de développement ; la plus ancienne stable sort de la fenêtre au cycle suivant.
 5. La matrice de `docs/COMPATIBILITY.md` est regénérée.
 
-Budget : 1 à 3 sessions par version mineure. Une rupture qui impose du code hors de `compat/` déclenche une revue d'architecture.
+Budget : 2 à 8 heures par version mineure. Une rupture qui impose du code hors de `compat/` déclenche une revue d'architecture.
 
 **Outils tiers réutilisés** : version épinglée, licence vérifiée, mode d'inclusion documenté, adaptateur unique, tests de contrat sur leurs sorties, plan de sortie.
 
@@ -309,7 +311,7 @@ Mesures : temps, escalades, quota consommé
 
 ## 9. Premières tâches
 
-Voir `docs/orchestration.md` (OR-0.4), de T00 à T20, et le guide `docs/construction/` pour l'exécution pas à pas.
+Voir `docs/orchestration.md` (OR-0.5), de T00 à T20, et le guide `docs/construction/` pour l'exécution pas à pas ; en mode autonome, `docs/construction/sequence.md`.
 
 ## 10. Cohérence, décisions de démarrage et checklists
 
@@ -317,7 +319,7 @@ Contrôle de cohérence :
 
 - Chaque tâche de l'orchestration a une preuve de réussite.
 - Chaque contrat critique a un propriétaire : le développeur, assisté du grand modèle.
-- Aucune API incertaine n'est présentée comme vérifiée : les commandes et signatures restent « non vérifiées » jusqu'à T02, T03 et aux spikes.
+- Aucune API incertaine n'est présentée comme vérifiée : hors des commandes listées dans le guide, commandes et signatures restent « non vérifiées » jusqu'à T02, T03 et aux spikes.
 - Chaque mécanisme répond à un risque nommé dans le plan.
 - Chaque phase a un budget et une revue de continuation.
 - Aucune tâche n'est confiée au modèle local sans tests d'acceptation ni règle d'escalade.

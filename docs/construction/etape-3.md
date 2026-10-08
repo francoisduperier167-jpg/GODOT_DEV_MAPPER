@@ -12,7 +12,7 @@ Geler les sept contrats du POC assez précisément pour déléguer l'implémenta
 - **Validation en deux niveaux.** Les formats JSON (graphe déclaré, enveloppe runtime) ont un schéma dans `contracts/schemas/`, au format JSON Schema 2020-12 : types, champs requis, variantes d'événements, nombre maximal d'éléments. Un validateur complémentaire vérifie ce qu'un schéma ne garantit pas : références résolues, unicité d'une clé entre éléments, ordre des séquences, taille sérialisée en octets. En JSON Schema, `uniqueItems` compare des éléments entiers et `maxLength` compte des caractères, pas des octets. Chaque règle a un code d'erreur, commun au validateur Python et à l'implémentation GDScript.
 - **Motif de rejet vérifié.** Une fixture invalide se nomme `invalid_<CODE>__<description>.json` et doit être rejetée avec ce code, et lui seul. Rejetée pour un autre motif, elle ne prouve rien.
 - **Tests écrits par l'auteur du contrat.** Opus les écrit, pas l'implémenteur. Ils vont dans `tests/contract/`, chacun avec un marqueur dans `tests/pending/` qui nomme la tâche qui l'activera.
-- **Fidélité aux sources.** Les contrats reprennent PD-0.4 et les rapports de spike. Tout écart est signalé, jamais glissé.
+- **Fidélité aux sources.** Les contrats reprennent le plan directeur en vigueur (PD-0.5) et les rapports de spike. Tout écart est signalé, jamais glissé.
 - **Gel.** Tu valides avant le gel. Après, toute modification passe par une analyse d'impact et un changement de version.
 
 ## Méthodologie

@@ -1,6 +1,8 @@
 # Orchestration du projet, étape par étape
 
-Révision OR-0.4 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.4, MC-0.4, GC-0.3 et SPIKE-01a · remplace OR-0.3
+Révision OR-0.5 · statut : **proposé** · 8 octobre 2026 · fondé sur PD-0.5, MC-0.5, GC-0.4 et SPIKE-01a · remplace OR-0.4
+
+**Changements depuis OR-0.4** : dépendances alignées sur le guide et la carte (T00 dépend de 0.B, T07 de T06) ; T05 ne dépend plus de T01, son code étant jetable ; fiches T01 et T02 alignées sur le guide (`PROJECT_STATE.md` mis à jour à la fusion seulement) ; en mode autonome (D-09), une seule file et l'ordre de `docs/construction/sequence.md`.
 
 Le détail d'exécution de chaque tâche (objectif, obligations, méthodologie, contrôles exécutables, prompts de réalisation et de vérification) est dans le guide `docs/construction/`.
 
@@ -65,7 +67,7 @@ Dans le schéma, le point médian sépare les deux files d'une étape.
 
 | Étape | File A | File B | Porte de sortie |
 | --- | --- | --- | --- |
-| 0 Validation | Humain et Opus : PD-0.4, MC-0.4, décisions D-01, D-02, D-05, D-07, squelettes de docs | T00 | Décisions consignées ; Qwen opérationnel avec ses outils |
+| 0 Validation | Humain et Opus : PD-0.5, MC-0.5, décisions D-01, D-02, D-05, D-07, D-09, squelettes de docs | T00 | Décisions consignées ; Qwen opérationnel avec ses outils |
 | 1 Fondations | T01, puis T02, puis T03 | T04 | CI verte sur 4.7.2 ; un test en échec bien détecté ; banc d'essai prêt |
 | 2 Spikes | T05 | T06 | Rapports KEEP, REWRITE ou DISCARD |
 | 3 Contrats | T07 | T08, préparé en parallèle, finalisé après T07 | C-01 à C-07 validés et gelés pour le POC |
@@ -78,14 +80,14 @@ Dans le schéma, le point médian sépare les deux files d'une étape.
 
 | ID | Objectif | Étape | File | Modèle | Dépend de | Preuve de réussite | Risque |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T00 | Environnement de Qwen : serveur local et harnais avec outils, vérifiés sur une tâche jouet | 0 | — | Humain et Opus | — | Tâche jouet réussie sans intervention | Moyen |
+| T00 | Environnement de Qwen : serveur local et harnais avec outils, vérifiés sur une tâche jouet | 0 | — | Humain et Opus | 0.B | Tâche jouet réussie sans intervention | Moyen |
 | T01 | Squelette du dépôt et plugin activable | 1 | L3 | Qwen | T00, étape 0 | Activation et désactivation sans erreur sur 4.7.2 | Faible |
 | T02 | Runner de tests headless et contrôle de dépendances (`tools/check_deps`) | 1 | L1 | Qwen | T01 | Un test en échec rend un code de sortie non nul ; une dépendance interdite volontaire est détectée | Faible |
 | T03 | CI : 4.7.2 bloquant, préversion dans un job séparé ; choix et configuration du lint | 1 | L6 | Qwen, revue Opus | T01, T02 | Push vert ; push volontairement cassé rouge ; lint et contrôle de dépendances exécutés ; job préversion exécuté | Moyen |
 | T04 | Choix et préparation du banc d'essai (D-02) | 1 | L5 | Humain et Gemini | Étape 0 | Fiche du jeu (licence, version, ennemis à décision) ; copie ouverte sans erreur sur 4.7.2 | Moyen |
-| T05 | SPIKE-01b : partie éditeur du canal, sur ta machine ; la partie jeu (SPIKE-01a) est faite | 2 | L2 | Opus | T01 | Critères de la fiche T05 remplis ; rapport mis à jour | Élevé |
+| T05 | SPIKE-01b : partie éditeur du canal, sur ta machine ou sous écran virtuel ; la partie jeu (SPIKE-01a) est faite | 2 | L2 | Opus | 0.B | Critères de la fiche T05 remplis ; rapport mis à jour | Élevé |
 | T06 | SPIKE-02 : façade, capacités, UID, isolation de compilation, à la main sur 4.7.2 et la préversion | 2 | L6 | Opus | T03 | Rapport ; règle d'isolation écrite | Élevé |
-| T07 | Contrats C-01 identités et cycle de vie, C-02 ancrage, C-05 graphe déclaré | 3 | L1 | Opus et humain | Étape 0 | Contrats validés, exemples complets valides et invalides | Moyen |
+| T07 | Contrats C-01 identités et cycle de vie, C-02 ancrage, C-05 graphe déclaré | 3 | L1 | Opus et humain | T06 | Contrats validés, exemples complets valides et invalides | Moyen |
 | T08 | Contrats C-03 façades ; C-04 enveloppe, champs par type et réserve de contrôle ; C-06 Event Store ; C-07 API et protocole de session de FlowTrace | 3 | L2, L6 | Opus et humain | T05, T06, T07 | Contrats validés ; tests de contrat listés | Moyen |
 | T09 | Codec et validateur de l'enveloppe (C-04) | 4 | L1 | Qwen | T08 | Identifiants 64 bits sans perte ; version inconnue rejetée ; tailles bornées | Faible |
 | T10 | Modèle minimal, graphe déclaré, résolution des clés de sonde (C-01, C-02, C-05) | 4 | L1 | Qwen | T07, T09 | Fixture chargée ; clé inconnue « non résolue » ; références non résolues conservées | Faible |
@@ -120,17 +122,17 @@ L'ordre de dépendance est ferme. Le contenu des tâches T06 à T20 peut changer
 - **Objectif** : un projet Godot de développement et un plugin qui s'active et se désactive proprement.
 - **Prérequis** : D-01 tranchée.
 - **Fichiers à créer** : `project.godot`, `addons/godot_dev_mapper/plugin.cfg`, `addons/godot_dev_mapper/plugin.gd`, dossiers des modules avec un README d'une ligne, `addons/godot_dev_mapper_runtime/` vide, `.gitignore` Godot.
-- **Fichiers interdits** : `docs/` sauf PROJECT_STATE.md, `prompts/`.
+- **Fichiers interdits** : `docs/`, `prompts/`, `PROJECT_STATE.md` (mis à jour à l'étape de fusion).
 - **Critères d'acceptation** : activation et désactivation sans erreur ni avertissement ; `plugin.gd` ne fait que déléguer ; aucune autre classe n'hérite d'EditorPlugin.
 - **Vérifications** : manuelle dans l'éditeur 4.7.2 ; import headless du projet, commande consignée après exécution.
 - **Risque** : faible. **Autonomie** : A1. **Modèle** : Qwen. **File** : L3.
-- **Résultat** : patch, rapport de tâche, PROJECT_STATE.md à jour.
+- **Résultat** : patch et rapport de tâche ; `PROJECT_STATE.md` est mis à jour à la fusion.
 
 ### T02 — Runner de tests headless
 
 - **Objectif** : lancer tous les tests sans interface, avec un code de sortie non nul au moindre échec.
 - **Prérequis** : T01 ; D-05 tranchée (runner maison minimal proposé).
-- **Fichiers à créer** : `tests/run_all.gd`, `tests/unit/test_smoke.gd`, `tests/README.md`, `tools/check_deps` (dépendances interdites entre modules, API sensibles hors de la frontière, dossier runtime indépendant du plugin).
+- **Fichiers à créer** : `tests/run_all.gd`, `tests/gdm_test.gd`, `tests/unit/test_smoke.gd`, `tests/unit/test_selftest.gd`, `tests/README.md`, `tests/pending/README.md`, `tools/check_deps.py` et `tools/deps_rules.json` (dépendances interdites entre modules, API sensibles hors de la frontière, dossier runtime indépendant du plugin), `tools/check_deps_fixtures/`. Liste exacte : guide, étape 1.
 - **Fichiers interdits** : code des modules.
 - **Critères d'acceptation** : découverte des fichiers `test_*.gd` ; rapport lisible ; aucune API éditeur utilisée.
 - **Vérifications** : un test qui passe et un test volontairement en échec, en local ; une dépendance interdite volontaire détectée ; commandes consignées après exécution réelle.
@@ -160,7 +162,7 @@ L'ordre de dépendance est ferme. Le contenu des tâches T06 à T20 peut changer
 
 - **Déjà établi par SPIKE-01a** (partie jeu, conteneur, 4.7.2 et 4.8-dev7) : classe statique sans autoload, commandes appliquées à la frontière de frame, bail, aucun lot après « stopped », 24 000 événements par seconde sans perte, sans rendu. Rapport : `docs/spikes/SPIKE-01.md`.
 - **Questions restantes** : le plugin reçoit-il les lots par sa capture de débogueur ? Peut-il envoyer start, stop et le bail par la session ? Que se passe-t-il lors de lancements répétés depuis l'éditeur, et quand on désactive le plugin pendant une collecte ?
-- **Prérequis** : T01.
+- **Prérequis** : 0.B. Le plugin du spike est jetable et n'utilise pas le squelette de T01.
 - **Fichiers à créer** : `spikes/spike01_debugger/editor/` (plugin jetable) ; mise à jour de `docs/spikes/SPIKE-01.md`.
 - **Fichiers interdits** : `addons/godot_dev_mapper/`.
 - **Critères de réussite** :

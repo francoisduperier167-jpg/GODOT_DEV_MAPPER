@@ -1,6 +1,6 @@
 # Étape 2 — Spikes
 
-Tâches : file A : T05 · file B : T06 · Budget : 4 à 6 h humaines · Prérequis : T01 accepté pour T05, T03 accepté pour T06
+Tâches : file A : T05 · file B : T06 · Budget : 4 à 6 h humaines · Prérequis : 0.B accepté pour T05, T03 accepté pour T06
 
 ## Objectif
 
@@ -25,7 +25,7 @@ Lever les deux dernières inconnues techniques avant d'écrire les contrats :
 
 | ID | Contrôle | Preuve | Attendu |
 | --- | --- | --- | --- |
-| PC2.1 | Partie éditeur du canal | Section SPIKE-01b de `docs/spikes/SPIKE-01.md` | Sept critères marqués atteint ou non, chacun avec sa preuve |
+| PC2.1 | Partie éditeur du canal | Section SPIKE-01b de `docs/spikes/SPIKE-01.md` | Six critères marqués atteint ou non, chacun avec sa preuve |
 | PC2.2 | Frontière de compatibilité | `docs/spikes/SPIKE-02.md` | Quatre questions, chacune avec commande et sortie sur les deux versions |
 | PC2.3 | Reproductibilité | `spikes/spike02_compat/run.sh`, relancé par le vérificateur | Mêmes conclusions |
 | PC2.4 | Décisions consignées | `docs/DECISIONS.md` | KEEP, REWRITE ou DISCARD pour chaque spike |
